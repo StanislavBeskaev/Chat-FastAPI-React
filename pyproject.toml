@@ -9,6 +9,11 @@ python = "^3.10"
 fastapi = "^0.76.0"
 uvicorn = "^0.17.6"
 loguru = "^0.6.0"
+SQLAlchemy = "^1.4.36"
+coverage = "^6.3.2"
+passlib = "^1.7.4"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+bcrypt = "^3.2.2"
 
 [tool.poetry.dev-dependencies]
 

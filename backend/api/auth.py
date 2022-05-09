@@ -4,6 +4,9 @@ from fastapi import (
     status,
 )
 
+from .. import models
+from ..services.auth import AuthService
+
 
 router = APIRouter(
     prefix='/auth',
@@ -11,8 +14,15 @@ router = APIRouter(
 )
 
 
-# TODO реализовать
-@router.get("/registration",)
-def registration():
+# TODO документация
+@router.post(
+    "/registration",
+    response_model=models.Tokens,  # TODO токены
+    status_code=status.HTTP_201_CREATED
+)
+def registration(
+        user_data: models.UserCreate,
+        auth_service: AuthService = Depends()
+) -> models.Tokens:
     """Регистрация нового пользователя"""
-    return {"message": "Тут будет регистрация"}
+    return auth_service.registration(user_data=user_data)
