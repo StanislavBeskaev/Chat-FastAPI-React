@@ -1,0 +1,6 @@
+*env
+*.db
+build
+node_modules
+.coverage
+*probe*
