@@ -17,7 +17,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     login = Column(String, unique=True)
-    password = Column(String, nullable=False)
+    password_hash = Column(String, nullable=False)
 
 
 class RefreshToken(Base):

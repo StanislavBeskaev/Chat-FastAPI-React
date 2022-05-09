@@ -19,9 +19,10 @@ class TokenService:
 
         tokens = models.Tokens(
             access_token=cls.generate_access_token(user=user, settings=settings),
-            refresh_token=cls.generate_refresh_token(user=user, setting=settings)
+            refresh_token=cls.generate_refresh_token(user=user, setting=settings),
+            user=user
         )
-        logger.debug(f"Для пользователя {user}, сгенерированы токены: {tokens}")
+        logger.debug(f"Для пользователя {user}, сгенерированы токены: {tokens.access_token=}, {tokens.refresh_token=}")
         return tokens
 
     @classmethod
@@ -30,7 +31,7 @@ class TokenService:
         logger.debug(f"Пользователь {user_id}, запрос на сохранение refresh токена в базу: '{refresh_token}'")
         token = cls._get_refresh_token_by_user_id(user_id=user_id)
         if token:
-            logger.debug(f"Для пользователя {user_id} уже существует refresh_token с id {token.user}, обновляем")
+            logger.debug(f"Для пользователя {user_id} уже существует refresh_token, обновляем")
             token.refresh_token = refresh_token
         else:
             logger.debug(f"Для пользователя {user_id} не было refresh_token в базе, создаём новый")

@@ -6,7 +6,7 @@ from . import (
 
 
 router = APIRouter(
-    prefix="/api_library"
+    prefix="/api"
 )
 
 router.include_router(auth.router)
