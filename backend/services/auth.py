@@ -14,39 +14,36 @@ class AuthService(BaseService):
     def hash_password(cls, password: str) -> str:
         return bcrypt.hash(password)
 
-    # TODO возвращаемое значение c токенами
-    def registration(self, user_data: models.UserCreate) -> models.Tokens:
+    def register_new_user(self, user_data: models.UserCreate) -> models.Tokens:
         """Регистрация нового пользователя"""
-        logger.info(f"Попытка регистрации нового пользователя по данным: {user_data}")
-        if self._find_user_by_email(email=user_data.email):
+        logger.debug(f"Попытка регистрации нового пользователя по данным: {user_data}")
+        if self._find_user_by_login(login=user_data.login):
+            logger.warning(f"Пользователь с логином '{user_data.login}' уже существует")
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="Пользователь с таким email уже существует"
+                detail="Пользователь с таким логином уже существует"
             )
 
         new_user = self._create_new_user(user_data=user_data)
-        # TODO generateTokens, saveToken, return {...tokens, user: userDto}
         tokens = TokenService.generate_tokens(user=new_user)
 
         return tokens
 
-    # TODO подумать, может вынести в UserService?
-    def _find_user_by_email(self, email: str) -> tables.User | None:
-        """Поиск пользователя по email"""
+    def _find_user_by_login(self, login: str) -> tables.User | None:
+        """Поиск пользователя по login"""
         user = (
             self.session
             .query(tables.User)
-            .filter(tables.User.email == email)
+            .filter(tables.User.login == login)
             .first()
         )
 
         return user
 
-    # TODO подумать, может вынести в UserService?
     def _create_new_user(self, user_data: models.UserCreate) -> models.User:
         """Создание нового пользователя"""
         new_user = tables.User(
-            email=user_data.email,
+            login=user_data.login,
             password=self.hash_password(user_data.password)
         )
         self.session.add(new_user)

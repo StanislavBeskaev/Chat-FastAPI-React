@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 # TODO валидация
 class UserBase(BaseModel):
-    email: str
+    login: str
 
 
 # TODO валидация
