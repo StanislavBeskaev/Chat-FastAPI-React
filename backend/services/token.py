@@ -3,12 +3,14 @@ from datetime import datetime, timedelta
 from jose import jwt
 from loguru import logger
 
-from .. import models
+from .. import models, tables
+from ..database import get_session
 from ..settings import get_settings, Settings
 
 
 class TokenService:
     """Сервис для работы с токенами"""
+    session = next(get_session())
 
     @classmethod
     def generate_tokens(cls, user: models.User) -> models.Tokens:
@@ -21,6 +23,37 @@ class TokenService:
         )
         logger.debug(f"Для пользователя {user}, сгенерированы токены: {tokens}")
         return tokens
+
+    @classmethod
+    def save_refresh_token_to_db(cls, user_id: int, refresh_token: str) -> tables.RefreshToken:
+        """Сохранение refresh токена для пользователя с id=user_id в базу данных"""
+        logger.debug(f"Пользователь {user_id}, запрос на сохранение refresh токена в базу: '{refresh_token}'")
+        token = cls._get_refresh_token_by_user_id(user_id=user_id)
+        if token:
+            logger.debug(f"Для пользователя {user_id} уже существует refresh_token с id {token.user}, обновляем")
+            token.refresh_token = refresh_token
+        else:
+            logger.debug(f"Для пользователя {user_id} не было refresh_token в базе, создаём новый")
+            token = tables.RefreshToken(
+                user=user_id,
+                refresh_token=refresh_token
+            )
+
+        cls.session.add(token)
+        cls.session.commit()
+        logger.info(f"Для пользователя {user_id} в базу сохранён refresh_token: {refresh_token}")
+        return token
+
+    @classmethod
+    def _get_refresh_token_by_user_id(cls, user_id: int) -> tables.RefreshToken | None:
+        refresh_token = (
+            cls.session
+            .query(tables.RefreshToken)
+            .filter(tables.RefreshToken.user == user_id)
+            .first()
+        )
+
+        return refresh_token
 
     @classmethod
     def generate_access_token(cls, user: models.User, settings: Settings) -> str:

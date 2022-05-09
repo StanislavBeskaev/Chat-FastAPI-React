@@ -26,7 +26,8 @@ class AuthService(BaseService):
 
         new_user = self._create_new_user(user_data=user_data)
         tokens = TokenService.generate_tokens(user=new_user)
-
+        TokenService.save_refresh_token_to_db(user_id=new_user.id, refresh_token=tokens.refresh_token)
+        # TODO подумать, надо ли передавать данные пользователя
         return tokens
 
     def _find_user_by_login(self, login: str) -> tables.User | None:

@@ -20,9 +20,8 @@ class User(Base):
     password = Column(String, nullable=False)
 
 
-# TODO RefreshToken?
-class Token(Base):
-    __tablename__ = "tokens"
+class RefreshToken(Base):
+    __tablename__ = "refresh_tokens"
 
     id = Column(Integer, primary_key=True)
     user = Column(Integer, ForeignKey("users.id"), index=True)
