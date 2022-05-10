@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Response, status
+from fastapi.security import OAuth2PasswordRequestForm
 
 from .. import models
 from ..services.auth import AuthService
@@ -44,12 +45,12 @@ def registration(
 )
 def login(
         response: Response,
-        user_data: models.UserLogin,
+        user_data: OAuth2PasswordRequestForm = Depends(),
         auth_service: AuthService = Depends(),
         settings: Settings = Depends(get_settings)
 ) -> models.Tokens:
     """Авторизация пользователя"""
-    tokens = auth_service.login_user(user_data=user_data)
+    tokens = auth_service.login_user(login=user_data.username, password=user_data.password)
     response.set_cookie(
         key="refreshToken",
         value=tokens.refresh_token,

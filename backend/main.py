@@ -28,12 +28,13 @@ def start():
 
 
 # TODO убрать после тестов
-from fastapi import Depends
+from fastapi import Depends, Request
 from . import models
 from .dependencies import get_current_user
 
 
 @app.get("/test")
-def test(user: models.User = Depends(get_current_user)):
+def test(request: Request, user: models.User = Depends(get_current_user)):
     logger.debug(f"test, user: {user}")
+    logger.debug(f"{request.cookies}")
     return {"message": "test"}

@@ -34,18 +34,18 @@ class AuthService(BaseService):
         # TODO подумать, надо ли передавать данные пользователя
         return tokens
 
-    def login_user(self, user_data: models.UserLogin) -> models.Tokens:
+    def login_user(self, login: str, password: str) -> models.Tokens:
         """Авторизация пользователя"""
-        logger.debug(f"Попытка авторизации с данными: {user_data}")
-        user = self._find_user_by_login(user_data.login)
+        logger.debug(f"Попытка авторизации с данными: {login=} {password=}")
+        user = self._find_user_by_login(login)
         if not user:
             message = "Пользователь с таким логином не найден"
             logger.warning(message)
             raise HTTPException(status_code=401, detail=message)
 
-        if not self.verify_password(plain_password=user_data.password, hashed_password=user.password_hash):
+        if not self.verify_password(plain_password=password, hashed_password=user.password_hash):
             logger.warning(f"Попытка авторизации с неверным паролем для пользователя {user.id},"
-                           f" переданные данные: {user_data}")
+                           f" переданные данные: {login=} {password=}")
             raise HTTPException(status_code=401, detail="Неверный пароль")
 
         tokens = TokenService.generate_tokens(user=models.User.from_orm(user))

@@ -102,11 +102,12 @@ class TokenService:
 
     @classmethod
     def verify_access_token(cls, token: str) -> models.User:
+        """Проверка токена доступа"""
         logger.debug(f"Проверяем access_token: {token}")
         settings = get_settings()
         exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Не верный токен доступа',
+            detail='Не валидный токен доступа',
             headers={'WWW-Authenticate': 'Bearer'},
         )
         try:
