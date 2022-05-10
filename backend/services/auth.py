@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
 from loguru import logger
 from passlib.hash import bcrypt
+from pydantic import ValidationError
 
 from .. import models, tables
 from . import BaseService
@@ -30,8 +31,7 @@ class AuthService(BaseService):
 
         new_user = self._create_new_user(user_data=user_data)
         tokens = TokenService.generate_tokens(user=new_user)
-        TokenService.save_refresh_token_to_db(user_id=new_user.id, refresh_token=tokens.refresh_token)
-        # TODO подумать, надо ли передавать данные пользователя
+
         return tokens
 
     def login_user(self, login: str, password: str) -> models.Tokens:
@@ -49,8 +49,32 @@ class AuthService(BaseService):
             raise HTTPException(status_code=401, detail="Неверный пароль")
 
         tokens = TokenService.generate_tokens(user=models.User.from_orm(user))
-        TokenService.save_refresh_token_to_db(user_id=user.id, refresh_token=tokens.refresh_token)
-        # TODO подумать, надо ли передавать данные пользователя
+        logger.info(f"Пользователь {login} успешно авторизован")
+        return tokens
+
+    def refresh_tokens(self, refresh_token: str | None) -> models.Tokens:
+        """Обновление токенов"""
+        logger.debug(f"Попытка обновление токенов с помощью refresh токена: {refresh_token}")
+        if not refresh_token:
+            logger.warning(f"refresh токен не передан, обновление не выполняется")
+            raise HTTPException(status_code=401, detail="Не валидный refresh_token")
+
+        user_data = TokenService.verify_refresh_token(token=refresh_token)
+        refresh_token_from_db = TokenService.find_refresh_token(token=refresh_token)
+
+        if not user_data or not refresh_token_from_db:
+            logger.debug(f"Не удалось обновить токены, {user_data=}, {refresh_token_from_db=}")
+            raise HTTPException(status_code=401, detail="Не удалось обновить токены")
+
+        try:
+            user = models.User.from_orm(self._find_user_by_id(user_id=user_data.id))
+        except ValidationError as e:
+            logger.warning(f"Не удалось получить пользователя по id={user_data.id}: {str(e)}")
+            raise HTTPException(status_code=401, detail="Не удалось обновить токены")
+
+        tokens = TokenService.generate_tokens(user=user)
+
+        logger.debug(f"Токены успешно обновлены")
         return tokens
 
     def _find_user_by_login(self, login: str) -> tables.User | None:
@@ -59,6 +83,17 @@ class AuthService(BaseService):
             self.session
             .query(tables.User)
             .filter(tables.User.login == login)
+            .first()
+        )
+
+        return user
+
+    def _find_user_by_id(self, user_id: int) -> tables.User | None:
+        """Поиск пользователя по id"""
+        user = (
+            self.session
+            .query(tables.User)
+            .filter(tables.User.id == user_id)
             .first()
         )
 

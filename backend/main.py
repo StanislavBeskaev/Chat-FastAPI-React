@@ -36,5 +36,5 @@ from .dependencies import get_current_user
 @app.get("/test")
 def test(request: Request, user: models.User = Depends(get_current_user)):
     logger.debug(f"test, user: {user}")
-    logger.debug(f"{request.cookies}")
+    logger.debug(f"{request.cookies=}")
     return {"message": "test"}

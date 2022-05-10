@@ -25,13 +25,15 @@ class TokenService:
             user=user
         )
         logger.debug(f"Для пользователя {user}, сгенерированы токены: {tokens.access_token=}, {tokens.refresh_token=}")
+        cls.save_refresh_token_to_db(user_id=user.id, refresh_token=tokens.refresh_token)
+
         return tokens
 
     @classmethod
     def save_refresh_token_to_db(cls, user_id: int, refresh_token: str) -> tables.RefreshToken:
         """Сохранение refresh токена для пользователя с id=user_id в базу данных"""
         logger.debug(f"Пользователь {user_id}, запрос на сохранение refresh токена в базу: '{refresh_token}'")
-        token = cls._get_refresh_token_by_user_id(user_id=user_id)
+        token = cls._find_refresh_token_by_user_id(user_id=user_id)
         if token:
             logger.debug(f"Для пользователя {user_id} уже существует refresh_token, обновляем")
             token.refresh_token = refresh_token
@@ -48,11 +50,22 @@ class TokenService:
         return token
 
     @classmethod
-    def _get_refresh_token_by_user_id(cls, user_id: int) -> tables.RefreshToken | None:
+    def _find_refresh_token_by_user_id(cls, user_id: int) -> tables.RefreshToken | None:
         refresh_token = (
             cls.session
             .query(tables.RefreshToken)
             .filter(tables.RefreshToken.user == user_id)
+            .first()
+        )
+
+        return refresh_token
+
+    @classmethod
+    def find_refresh_token(cls, token: str) -> tables.RefreshToken | None:
+        refresh_token = (
+            cls.session
+            .query(tables.RefreshToken)
+            .filter(tables.RefreshToken.refresh_token == token)
             .first()
         )
 
@@ -112,22 +125,50 @@ class TokenService:
         )
         try:
             payload = jwt.decode(
-                token,
-                settings.jwt_access_secret,
-                algorithms=[settings.jwt_algorithm],
+                token=token,
+                key=settings.jwt_access_secret,
+                algorithms=[settings.jwt_algorithm]
             )
         except JWTError:
-            logger.debug(f"access_token не валидный")
+            logger.warning(f"access_token не валидный")
             raise exception from None
 
-        user_data = payload.get('user')
         logger.debug(f"{payload=}")
+        user_data = payload.get('user')
 
         try:
             user = models.User.parse_obj(user_data)
-        except ValidationError:
-            logger.debug(f"Сработал ValidationError")
+        except ValidationError as e:
+            logger.debug(f"Сработал ValidationError: {str(e)}")
             raise exception from None
 
         logger.debug(f"Верный access_token: {token}")
+        return user
+
+    @classmethod
+    def verify_refresh_token(cls, token) -> models.User:
+        """Проверка refresh токена"""
+        logger.debug(f"Проверяем refresh токен: {token}")
+        settings = get_settings()
+        exception = HTTPException(status_code=401, detail="Не валидный refresh_token")
+        try:
+            payload = jwt.decode(
+                token=token,
+                key=settings.jwt_refresh_secret,
+                algorithms=[settings.jwt_algorithm]
+            )
+        except JWTError:
+            logger.warning(f"refresh токен не валидный")
+            raise exception from None
+
+        logger.debug(f"{payload=}")
+        user_data = payload.get('user')
+
+        try:
+            user = models.User.parse_obj(user_data)
+        except ValidationError as e:
+            logger.debug(f"Сработал ValidationError: {str(e)}")
+            raise exception from None
+
+        logger.debug(f"Верный refresh_token: {token}")
         return user
