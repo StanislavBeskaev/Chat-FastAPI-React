@@ -16,9 +16,10 @@ function App() {
   return (
     <>
       <h1>Авторизован: {store.isAuth ? 'Да' : 'Нет'}</h1>
-      <h2>Ошибки: {store.error}</h2>
+      {store.error && <h2>Ошибки: {store.error}</h2>}
       <h2>Пользователь: {store.user.login}</h2>
       <LoginForm />
+      <button onClick={() => store.callTest()}>Тест</button>
     </>
   )
 }

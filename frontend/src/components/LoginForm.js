@@ -1,6 +1,8 @@
-import React, {useContext, useState} from 'react';
-import {Context} from "../index";
-import {observer} from "mobx-react-lite";
+import React, {useContext, useState} from 'react'
+import {observer} from "mobx-react-lite"
+
+import {Context} from "../index"
+
 
 const LoginForm = () => {
   const [login, setLogin] = useState('')

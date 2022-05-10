@@ -3,6 +3,7 @@ import {makeAutoObservable} from "mobx"
 
 import {API_URL} from '../axios/axios'
 import AuthService from '../services/AuthService'
+import axiosInstance from '../axios/axios'
 
 
 export default class Store {
@@ -17,7 +18,6 @@ export default class Store {
 
   setAuth(isAuth) {
     this.isAuth = isAuth
-    this.setError('')
   }
 
   setUser(user) {
@@ -39,10 +39,13 @@ export default class Store {
       localStorage.setItem('token', response.data['access_token'])
       this.setAuth(true)
       this.setUser(response.data.user)
+      this.setError('')
     } catch (e) {
       const errorText = e.response?.data?.detail
       console.log(errorText)
       this.setError(errorText)
+      this.setAuth(false)
+      this.setUser({})
     }
   }
 
@@ -53,10 +56,13 @@ export default class Store {
       localStorage.setItem('token', response.data['access_token'])
       this.setAuth(true)
       this.setUser(response.data.user)
+      this.setError('')
     } catch (e) {
       const errorText = e.response?.data?.detail
       console.log(errorText)
       this.setError(errorText)
+      this.setAuth(false)
+      this.setUser({})
     }
   }
 
@@ -73,5 +79,16 @@ export default class Store {
     } finally {
       this.setLoading(false)
     }
+  }
+
+  //TODO убрать после тестов
+  async callTest() {
+    try {
+      const response = await axiosInstance.get("/test")
+      alert(response.data.message)
+    } catch (e) {
+      alert(e.response?.data?.detail)
+    }
+
   }
 }
