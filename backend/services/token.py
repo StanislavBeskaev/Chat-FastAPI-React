@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
 
-from jose import jwt
+from fastapi import HTTPException, status
+from jose import jwt, JWTError
 from loguru import logger
+from pydantic import ValidationError
 
 from .. import models, tables
 from ..database import get_session
@@ -97,3 +99,34 @@ class TokenService:
         )
 
         return token
+
+    @classmethod
+    def verify_access_token(cls, token: str) -> models.User:
+        logger.debug(f"Проверяем access_token: {token}")
+        settings = get_settings()
+        exception = HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Не верный токен доступа',
+            headers={'WWW-Authenticate': 'Bearer'},
+        )
+        try:
+            payload = jwt.decode(
+                token,
+                settings.jwt_access_secret,
+                algorithms=[settings.jwt_algorithm],
+            )
+        except JWTError:
+            logger.debug(f"access_token не валидный")
+            raise exception from None
+
+        user_data = payload.get('user')
+        logger.debug(f"{payload=}")
+
+        try:
+            user = models.User.parse_obj(user_data)
+        except ValidationError:
+            logger.debug(f"Сработал ValidationError")
+            raise exception from None
+
+        logger.debug(f"Верный access_token: {token}")
+        return user

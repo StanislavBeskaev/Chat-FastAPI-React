@@ -25,3 +25,15 @@ app.include_router(api.router)
 @app.on_event("startup")
 def start():
     logger.info("Старт API")
+
+
+# TODO убрать после тестов
+from fastapi import Depends
+from . import models
+from .dependencies import get_current_user
+
+
+@app.get("/test")
+def test(user: models.User = Depends(get_current_user)):
+    logger.debug(f"test, user: {user}")
+    return {"message": "test"}
