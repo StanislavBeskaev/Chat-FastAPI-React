@@ -33,7 +33,7 @@ from . import models
 from .dependencies import get_current_user
 
 
-@app.get("/test")
+@app.get("/api/test")
 def test(request: Request, user: models.User = Depends(get_current_user)):
     logger.debug(f"test, user: {user}")
     logger.debug(f"{request.cookies=}")
