@@ -1,27 +1,37 @@
 import React, {useContext, useEffect} from 'react'
-import {Button, Container} from 'react-bootstrap'
+import {Spinner} from 'react-bootstrap'
+import {observer} from 'mobx-react-lite'
 
-import {observer} from "mobx-react-lite"
-import {Context} from "./index"
-import LoginForm from './components/LoginForm'
+import {Context} from './index'
+import LoginPage from './components/pages/LoginPage/LoginPage'
+import MainPage from './components/pages/MainPage/MainPage'
+
 
 function App() {
   const {store} = useContext(Context)
 
   useEffect(() => {
     if (localStorage.getItem('token')) {
+      console.log("checkAuth")
       store.checkAuth()
     }
   }, [])
 
+  //TODO fetchUserInfo
+  if (store.isLoading) return (<Spinner animation="border" variant="success"/>)
+
+  if (!store.isAuth) {
+    return (
+      <>
+        <LoginPage />
+      </>
+    )
+  }
+
   return (
-    <Container className="mt-3">
-      <h1>Авторизован: {store.isAuth ? 'Да' : 'Нет'}</h1>
-      {store.error && <h2>Ошибки: {store.error}</h2>}
-      <h2>Пользователь: {store.user.login}</h2>
-      <LoginForm />
-      <Button onClick={() => store.callTest()} variant="info">Тест</Button>
-    </Container>
+    <>
+      <MainPage />
+    </>
   )
 }
 

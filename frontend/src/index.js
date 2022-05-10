@@ -2,7 +2,7 @@ import React, {createContext} from 'react'
 import ReactDOM from 'react-dom/client'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
-import App from './App'
+import AppWrapper from './App'
 import Store from './store/store'
 
 
@@ -16,7 +16,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
   <Context.Provider value={{store}}>
     <React.StrictMode>
-      <App/>
+      <AppWrapper/>
     </React.StrictMode>
   </Context.Provider>
 )
