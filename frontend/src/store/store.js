@@ -41,7 +41,7 @@ export default class Store {
       this.setUser(response.data.user)
       this.setError('')
     } catch (e) {
-      const errorText = e.response?.data?.detail
+      const errorText = JSON.stringify(e?.response?.data?.detail)
       console.log(errorText)
       this.setError(errorText)
       this.setAuth(false)
@@ -58,7 +58,7 @@ export default class Store {
       this.setUser(response.data.user)
       this.setError('')
     } catch (e) {
-      const errorText = e.response?.data?.detail
+      const errorText = JSON.stringify(e?.response?.data?.detail)
       console.log(errorText)
       this.setError(errorText)
       this.setAuth(false)
@@ -75,7 +75,7 @@ export default class Store {
       this.setAuth(true)
       this.setUser(response.data.user)
     } catch (e) {
-      console.log('checkAuth error', e.response?.data?.detail)
+      console.log('checkAuth error', e?.response?.data?.detail)
     } finally {
       this.setLoading(false)
     }

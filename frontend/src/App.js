@@ -1,4 +1,5 @@
 import React, {useContext, useEffect} from 'react'
+import {Button, Container} from 'react-bootstrap'
 
 import {observer} from "mobx-react-lite"
 import {Context} from "./index"
@@ -14,13 +15,13 @@ function App() {
   }, [])
 
   return (
-    <>
+    <Container className="mt-3">
       <h1>Авторизован: {store.isAuth ? 'Да' : 'Нет'}</h1>
       {store.error && <h2>Ошибки: {store.error}</h2>}
       <h2>Пользователь: {store.user.login}</h2>
       <LoginForm />
-      <button onClick={() => store.callTest()}>Тест</button>
-    </>
+      <Button onClick={() => store.callTest()} variant="info">Тест</Button>
+    </Container>
   )
 }
 

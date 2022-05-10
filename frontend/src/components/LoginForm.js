@@ -1,4 +1,5 @@
 import React, {useContext, useState} from 'react'
+import {Container, Button, InputGroup, FormControl} from 'react-bootstrap'
 import {observer} from "mobx-react-lite"
 
 import {Context} from "../index"
@@ -10,26 +11,26 @@ const LoginForm = () => {
   const {store} = useContext(Context);
 
   return (
-    <div>
-      <input
-        onChange={e => setLogin(e.target.value)}
-        value={login}
-        type="text"
-        placeholder='Логин'
-      />
-      <input
-        onChange={e => setPassword(e.target.value)}
-        value={password}
-        type="password"
-        placeholder='Пароль'
-      />
-      <button onClick={() => store.login(login, password)}>
-        Логин
-      </button>
-      <button onClick={() => store.registration(login, password)}>
-        Регистрация
-      </button>
-    </div>
+    <Container className="mt-4 mb-3">
+      <InputGroup className="w-50 mb-3">
+        <FormControl
+          placeholder="Логин"
+          value={login}
+          onChange={e => setLogin(e.target.value)}
+        />
+        <FormControl
+          placeholder="Пароль"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+        />
+        <Button onClick={() => store.login(login, password)} variant="success">
+          Логин
+        </Button>
+        <Button onClick={() => store.registration(login, password)} variant="primary">
+          Регистрация
+        </Button>
+      </InputGroup>
+    </Container>
   )
 }
 
