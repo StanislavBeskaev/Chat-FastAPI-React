@@ -8,8 +8,9 @@ const MainPage = () => {
   const {store} = useContext(Context)
   return (
     <Container className="mt-3">
-      <h2>Пользователь: {store.user.login}</h2>
+      <h2 className="mb-4">Добро пожаловать: {store.user.login}</h2>
       <Button onClick={() => store.callTest()} variant="info">Тест</Button>
+      <Button onClick={() => store.logout()} variant="danger" className="ms-3">Выход</Button>
     </Container>
   )
 }

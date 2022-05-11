@@ -12,6 +12,8 @@ export default class AuthService {
     return axiosInstance.post('/auth/registration', {login, password})
   }
 
-//TODO logout
+  static async logout() {
+    return axiosInstance.post('/auth/logout')
+  }
 }
 

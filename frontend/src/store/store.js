@@ -6,8 +6,10 @@ import AuthService from '../services/AuthService'
 import axiosInstance from '../axios/axios'
 
 
+const LOCAL_STORAGE_ACCESS_TOKEN_KEY = 'token'
+
 export default class Store {
-  user = {}
+  user = null
   isAuth = false
   isLoading = false
   error = ''
@@ -36,7 +38,7 @@ export default class Store {
     try {
       const response = await AuthService.registration(login, password)
       console.log(response)
-      localStorage.setItem('token', response.data['access_token'])
+      localStorage.setItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY, response.data['access_token'])
       this.setAuth(true)
       this.setUser(response.data.user)
       this.setError('')
@@ -53,7 +55,7 @@ export default class Store {
     try {
       const response = await AuthService.login(login, password)
       console.log(response)
-      localStorage.setItem('token', response.data['access_token'])
+      localStorage.setItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY, response.data['access_token'])
       this.setAuth(true)
       this.setUser(response.data.user)
       this.setError('')
@@ -71,11 +73,27 @@ export default class Store {
     try {
       const response = await axios.get(`${API_URL}/auth/refresh`, {withCredentials: true})
       console.log('checkAuth response', response)
-      localStorage.setItem('token', response.data['access_token'])
+      localStorage.setItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY, response.data['access_token'])
       this.setAuth(true)
       this.setUser(response.data.user)
     } catch (e) {
       console.log('checkAuth error', e?.response?.data?.detail)
+    } finally {
+      this.setLoading(false)
+    }
+  }
+
+  async logout() {
+    this.setLoading(true)
+    try {
+      const response = await AuthService.logout()
+      this.setUser(null)
+      this.setAuth(false)
+      localStorage.removeItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY);
+    } catch (e) {
+      const errorText = JSON.stringify(e?.response?.data?.detail)
+      console.log(errorText)
+      this.setError(errorText)
     } finally {
       this.setLoading(false)
     }
