@@ -172,3 +172,10 @@ class TokenService:
 
         logger.debug(f"Верный refresh_token: {token}")
         return user
+
+    @classmethod
+    def delete_refresh_token(cls, token: str) -> None:
+        refresh_token = cls.find_refresh_token(token=token)
+        cls.session.delete(refresh_token)
+        cls.session.commit()
+        logger.debug(f"Из базы удалён refresh_token: {token}")

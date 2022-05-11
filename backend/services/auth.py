@@ -77,6 +77,19 @@ class AuthService(BaseService):
         logger.debug(f"Токены успешно обновлены")
         return tokens
 
+    @staticmethod
+    def logout(refresh_token: str | None) -> None:
+        """Выход из системы"""
+        logger.debug(f"Попытка выхода из системы, refresh_token: {refresh_token} ")
+        if not refresh_token:
+            logger.warning(f"refresh токен не передан, выход не возможен")
+            raise HTTPException(status_code=401, detail="Не валидный refresh_token")
+
+        user_data = TokenService.verify_refresh_token(token=refresh_token)
+
+        TokenService.delete_refresh_token(token=refresh_token)
+        logger.info(f"Пользователь '{user_data.login}' выполнен выход из системы")
+
     def _find_user_by_login(self, login: str) -> tables.User | None:
         """Поиск пользователя по login"""
         user = (

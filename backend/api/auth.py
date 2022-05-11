@@ -11,6 +11,7 @@ router = APIRouter(
     tags=['auth'],
 )
 
+REFRESH_TOKEN_COOKIE_KEY = "refreshToken"
 
 # TODO документация
 # TODO тесты
@@ -28,7 +29,7 @@ def registration(
     """Регистрация нового пользователя"""
     tokens = auth_service.register_new_user(user_data=user_data)
     response.set_cookie(
-        key="refreshToken",
+        key=REFRESH_TOKEN_COOKIE_KEY,
         value=tokens.refresh_token,
         expires=settings.jwt_refresh_expires_s,
         httponly=True
@@ -52,7 +53,7 @@ def login(
     """Авторизация пользователя"""
     tokens = auth_service.login_user(login=user_data.username, password=user_data.password)
     response.set_cookie(
-        key="refreshToken",
+        key=REFRESH_TOKEN_COOKIE_KEY,
         value=tokens.refresh_token,
         expires=settings.jwt_refresh_expires_s,
         httponly=True
@@ -68,17 +69,37 @@ def login(
     status_code=status.HTTP_200_OK
 )
 def refresh_tokens(
-    response: Response,
-    auth_service: AuthService = Depends(),
-    refresh_token: str = Cookie(None, alias="refreshToken"),
-    settings: Settings = Depends(get_settings)
+        response: Response,
+        auth_service: AuthService = Depends(),
+        refresh_token: str = Cookie(None, alias=REFRESH_TOKEN_COOKIE_KEY),
+        settings: Settings = Depends(get_settings)
 ) -> models.Tokens:
     """Обновление токенов"""
     tokens = auth_service.refresh_tokens(refresh_token=refresh_token)
     response.set_cookie(
-        key="refreshToken",
+        key=REFRESH_TOKEN_COOKIE_KEY,
         value=tokens.refresh_token,
         expires=settings.jwt_refresh_expires_s,
         httponly=True
     )
     return tokens
+
+
+# TODO документация
+# TODO тесты
+@router.post(
+    "/logout",
+    status_code=status.HTTP_200_OK
+)
+def logout(
+        response: Response,
+        auth_service: AuthService = Depends(),
+        refresh_token: str = Cookie(None, alias=REFRESH_TOKEN_COOKIE_KEY),
+):
+    """Выход из системы"""
+    auth_service.logout(refresh_token=refresh_token)
+    response.delete_cookie(
+        key=REFRESH_TOKEN_COOKIE_KEY
+    )
+
+    return {"message": "Выход из системы выполнен"}
