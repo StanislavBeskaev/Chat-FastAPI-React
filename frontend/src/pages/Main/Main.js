@@ -1,11 +1,12 @@
 import React, {useContext} from 'react'
 import {Button, Container} from 'react-bootstrap'
-import {Context} from '../../../index'
 import {observer} from 'mobx-react-lite'
 
+import {AuthContext} from '../../context'
 
-const MainPage = () => {
-  const {store} = useContext(Context)
+
+const Main = () => {
+  const {store} = useContext(AuthContext)
   return (
     <Container className="mt-3">
       <h2 className="mb-4">Добро пожаловать: {store.user.login}</h2>
@@ -15,4 +16,4 @@ const MainPage = () => {
   )
 }
 
-export default observer(MainPage)
+export default observer(Main)

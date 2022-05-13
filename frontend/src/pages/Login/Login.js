@@ -1,14 +1,15 @@
 import React, {useContext, useState} from 'react'
+import {Link} from 'react-router-dom'
 import {Container, Form, Button, Alert} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
-import {Context} from "../../../index"
+import {AuthContext} from '../../context'
 
 
-const LoginPage= () => {
+const Login= () => {
   const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
-  const {store} = useContext(Context);
+  const {store} = useContext(AuthContext);
 
   function handleSubmit(e) {
     e.preventDefault()
@@ -29,8 +30,9 @@ const LoginPage= () => {
         </Form.Group>
         <Button type="submit" className="me-2">Авторизоваться</Button>
       </Form>
+      <Link to="/register" className="mt-2">Регистрация</Link>
     </Container>
   )
 }
 
-export default observer(LoginPage)
+export default observer(Login)

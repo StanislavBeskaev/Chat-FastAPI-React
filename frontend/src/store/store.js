@@ -16,18 +16,19 @@ export default class Store {
 
   constructor() {
     makeAutoObservable(this)
+    console.log("Создан store")
   }
 
-  setAuth(isAuth) {
-    this.isAuth = isAuth
+  setAuth(bool) {
+    this.isAuth = bool
   }
 
   setUser(user) {
     this.user = user
   }
 
-  setLoading(isLoading) {
-    this.isLoading = isLoading
+  setLoading(bool) {
+    this.isLoading = bool
   }
 
   setError(text) {
@@ -69,24 +70,23 @@ export default class Store {
   }
 
   async checkAuth() {
-    this.setLoading(true)
     try {
+      console.log("checkAuth")
       const response = await axios.get(`${API_URL}/auth/refresh`, {withCredentials: true})
       console.log('checkAuth response', response)
       localStorage.setItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY, response.data['access_token'])
       this.setAuth(true)
+      console.log("setAuth = true")
       this.setUser(response.data.user)
     } catch (e) {
       console.log('checkAuth error', e?.response?.data?.detail)
-    } finally {
-      this.setLoading(false)
     }
   }
 
   async logout() {
     this.setLoading(true)
     try {
-      const response = await AuthService.logout()
+      await AuthService.logout()
       this.setUser(null)
       this.setAuth(false)
       localStorage.removeItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY);
