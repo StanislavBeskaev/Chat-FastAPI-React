@@ -1,36 +1,30 @@
-import React, {useContext, useState} from 'react'
+import React, {useContext, useEffect} from 'react'
 import {Link} from 'react-router-dom'
-import {Container, Form, Button, Alert} from 'react-bootstrap'
+import {Container} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
 import {AuthContext} from '../../context'
+import AuthForm from '../../components/AuthForm'
 
 
-const Login= () => {
-  const [login, setLogin] = useState('')
-  const [password, setPassword] = useState('')
-  const {store} = useContext(AuthContext);
+const Login = () => {
+  const {store} = useContext(AuthContext)
 
-  function handleSubmit(e) {
-    e.preventDefault()
-    store.login(login, password)
-  }
+  useEffect(() => {
+    store.setError("")
+  }, [])
 
   return (
-    <Container className="justify-content-center d-flex flex-column w-75" style={{height: '100vh'}}>
-      {store.error && <Alert key="danger" variant="danger">{store.error}</Alert>}
-      <Form onSubmit={handleSubmit}>
-        <Form.Group className="mb-3">
-          <Form.Label>Логин</Form.Label>
-          <Form.Control type="text" required onChange={e => setLogin(e.target.value)}/>
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Пароль</Form.Label>
-          <Form.Control type="password" required onChange={e => setPassword(e.target.value)} />
-        </Form.Group>
-        <Button type="submit" className="me-2">Авторизоваться</Button>
-      </Form>
-      <Link to="/register" className="mt-2">Регистрация</Link>
+    <Container className="justify-content-center d-flex flex-column w-50" style={{height: '100vh'}}>
+      <h1 className="mb-3">Авторизация</h1>
+      <AuthForm
+        submitHandler={store.login.bind(store)}
+        error={store.error}
+        btnText="Авторизоваться"
+      />
+      <div className="mt-3">
+        Нет учётной записи? <Link to="/register">Регистрация</Link>
+      </div>
     </Container>
   )
 }
