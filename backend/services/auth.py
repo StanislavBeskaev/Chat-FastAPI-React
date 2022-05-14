@@ -22,7 +22,7 @@ class AuthService(BaseService):
     def register_new_user(self, user_data: models.UserCreate) -> models.Tokens:
         """Регистрация нового пользователя"""
         logger.debug(f"Попытка регистрации нового пользователя по данным: {user_data}")
-        if self._find_user_by_login(login=user_data.login):
+        if self.find_user_by_login(login=user_data.login):
             logger.warning(f"Пользователь с логином '{user_data.login}' уже существует")
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -37,7 +37,7 @@ class AuthService(BaseService):
     def login_user(self, login: str, password: str) -> models.Tokens:
         """Авторизация пользователя"""
         logger.debug(f"Попытка авторизации с данными: {login=} {password=}")
-        user = self._find_user_by_login(login)
+        user = self.find_user_by_login(login)
         if not user:
             message = "Пользователь с таким логином не найден"
             logger.warning(message)
@@ -90,7 +90,7 @@ class AuthService(BaseService):
         TokenService.delete_refresh_token(token=refresh_token)
         logger.info(f"Пользователь '{user_data.login}' выполнен выход из системы")
 
-    def _find_user_by_login(self, login: str) -> tables.User | None:
+    def find_user_by_login(self, login: str) -> tables.User | None:
         """Поиск пользователя по login"""
         user = (
             self.session
@@ -116,7 +116,9 @@ class AuthService(BaseService):
         """Создание нового пользователя"""
         new_user = tables.User(
             login=user_data.login,
-            password_hash=self.hash_password(user_data.password)
+            password_hash=self.hash_password(user_data.password),
+            name=user_data.name,
+            surname=user_data.surname
         )
         self.session.add(new_user)
         self.session.commit()

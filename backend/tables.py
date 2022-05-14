@@ -17,6 +17,8 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     login = Column(String, unique=True)
+    name = Column(String, nullable=True)
+    surname = Column(String, nullable=True)
     password_hash = Column(String, nullable=False)
 
 

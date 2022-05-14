@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 # TODO валидация
@@ -6,16 +6,21 @@ class UserBase(BaseModel):
     login: str
 
 
+class UserUpdate(BaseModel):
+    name: str = Field(default='')
+    surname: str = Field(default='')
+
+
 # TODO валидация
-class UserCreate(UserBase):
+class UserCreate(UserBase, UserUpdate):
     password: str
 
 
-class UserLogin(UserCreate):
-    pass
+class UserLogin(UserBase):
+    password: str
 
 
-class User(UserBase):
+class User(UserBase, UserUpdate):
     id: int
 
     class Config:
