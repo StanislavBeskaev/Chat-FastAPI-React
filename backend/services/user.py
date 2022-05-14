@@ -10,7 +10,6 @@ class UserService(BaseService):
 
     def change_user_data(self, user_login: str, user_data: models.UserUpdate) -> models.User:
         """Изменение данных пользователя"""
-        logger.info(f"Запрос на изменение данных пользователя {user_login}, новые данные: {user_data}")
         auth_service = AuthService(session=self.session)
         user = auth_service.find_user_by_login(login=user_login)
 
@@ -19,5 +18,6 @@ class UserService(BaseService):
 
         self.session.add(user)
         self.session.commit()
+        logger.info(f"Изменение данных пользователя {user_login}, новые данные: {user_data}")
 
         return models.User.from_orm(user)

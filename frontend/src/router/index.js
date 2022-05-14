@@ -1,11 +1,14 @@
 import Main from '../pages/Main/Main'
 import Login from '../pages/Login/Login'
 import Register from '../pages/Register/Register'
+import UserData from '../pages/UserData/UserData'
+import ChangeUserData from '../pages/UserData/ChangeUserData'
 
 
 export const privateRoutes = [
     {path: '/', component: Main, exact: true},
-
+    {path: '/user-data/', component: UserData, exact: true},
+    {path: '/user-data/change', component: ChangeUserData, exact: true},
 ]
 
 export const publicRoutes = [

@@ -4,6 +4,7 @@ import {makeAutoObservable} from "mobx"
 import {API_URL} from '../axios/axios'
 import AuthService from '../services/AuthService'
 import axiosInstance from '../axios/axios'
+import UserService from '../services/UserService'
 
 
 const LOCAL_STORAGE_ACCESS_TOKEN_KEY = 'token'
@@ -99,5 +100,19 @@ export default class Store {
       alert(e.response?.data?.detail)
     }
 
+  }
+
+  async changeUserData(name, surname) {
+    this.setLoading(true)
+    try {
+      const response = UserService.changeData(name, surname)
+      this.setUser((await response).data)
+    } catch (e) {
+      const errorText = JSON.stringify(e?.response?.data?.detail)
+      console.log(errorText)
+      this.setError(errorText)
+    } finally {
+      this.setLoading(false)
+    }
   }
 }
