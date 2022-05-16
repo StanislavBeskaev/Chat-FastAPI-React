@@ -1,7 +1,7 @@
 import React, {useState} from 'react'
 import {Alert, Button, Form} from 'react-bootstrap'
 
-const AuthForm = ({submitHandler, btnText, error}) => {
+const LoginForm = ({submitHandler, btnText, error}) => {
   const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
 
@@ -28,4 +28,4 @@ const AuthForm = ({submitHandler, btnText, error}) => {
   )
 }
 
-export default AuthForm
+export default LoginForm

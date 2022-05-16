@@ -9,7 +9,7 @@ import UserService from '../services/UserService'
 
 const LOCAL_STORAGE_ACCESS_TOKEN_KEY = 'token'
 
-export default class Store {
+class Store {
   user = null
   isAuth = false
   isLoading = false
@@ -116,3 +116,5 @@ export default class Store {
     }
   }
 }
+
+export default new Store()

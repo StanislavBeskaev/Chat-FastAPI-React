@@ -4,11 +4,12 @@ import {observer} from 'mobx-react-lite'
 
 import {AuthContext} from '../context'
 import {privateRoutes, publicRoutes} from '../router'
+import store from '../stores/store'
 import Loader from './UI/Loader/Loader'
 
 
 const AppRouter = () => {
-  const {store, fetchUserInfo} = useContext(AuthContext)
+  const {fetchUserInfo} = useContext(AuthContext)
 
   console.log("fetchUserInfo", fetchUserInfo)
 

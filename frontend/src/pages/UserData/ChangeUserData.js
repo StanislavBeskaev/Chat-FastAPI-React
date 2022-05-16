@@ -1,13 +1,13 @@
-import React, {useContext, useState} from 'react'
-import {AuthContext} from '../../context'
+import React, {useState} from 'react'
 import {Button, Container, Form, Row} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 import {Link, useHistory} from 'react-router-dom'
 
+import store from '../../stores/store'
+
 const ChangeUserData = () => {
-  const {store: {user}, store} = useContext(AuthContext)
-  const [name, setName] = useState(user.name)
-  const [surname, setSurname] = useState(user.surname)
+  const [name, setName] = useState(store.user.name)
+  const [surname, setSurname] = useState(store.user.surname)
 
   const history = useHistory()
 
@@ -20,7 +20,7 @@ const ChangeUserData = () => {
   return (
     <Container className="justify-content-center d-flex flex-column w-50" style={{height: '100vh'}}>
       <h1>Изменение данных</h1>
-      <h4>Логин: {user.login}</h4>
+      <h4>Логин: {store.user.login}</h4>
       <Form onSubmit={handleSubmit} className="mb-4">
         <Form.Group>
           <Form.Label>Имя</Form.Label>

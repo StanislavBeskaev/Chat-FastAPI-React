@@ -1,13 +1,12 @@
-import React, {useContext} from 'react'
+import React from 'react'
 import {Button, Container, Row} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
-
-import {AuthContext} from '../../context'
 import {Link} from 'react-router-dom'
+
+import store from '../../stores/store'
 
 
 const Main = () => {
-  const {store} = useContext(AuthContext)
   return (
     <Container className="mt-3">
       <h2 className="mb-4">Добро пожаловать: {store.user.login}</h2>

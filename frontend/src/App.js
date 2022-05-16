@@ -2,9 +2,9 @@ import React, {useEffect, useState} from 'react'
 import {BrowserRouter} from 'react-router-dom'
 import {observer} from 'mobx-react-lite'
 
-import {store} from './index'
 import AppRouter from './components/AppRouter'
 import {AuthContext} from './context'
+import store from './stores/store'
 
 
 function App() {
@@ -21,8 +21,7 @@ function App() {
 
   return (
     <AuthContext.Provider value={{
-      fetchUserInfo,
-      store
+      fetchUserInfo
     }}>
       <BrowserRouter>
         <AppRouter/>

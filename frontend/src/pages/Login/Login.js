@@ -1,15 +1,13 @@
-import React, {useContext, useEffect} from 'react'
+import React, {useEffect} from 'react'
 import {Link} from 'react-router-dom'
 import {Container} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
-import {AuthContext} from '../../context'
-import AuthForm from '../../components/AuthForm'
+import LoginForm from '../../components/Forms/LoginForm'
+import store from '../../stores/store'
 
 
 const Login = () => {
-  const {store} = useContext(AuthContext)
-
   useEffect(() => {
     store.setError("")
   }, [])
@@ -17,7 +15,7 @@ const Login = () => {
   return (
     <Container className="justify-content-center d-flex flex-column w-50" style={{height: '100vh'}}>
       <h1 className="mb-3">Авторизация</h1>
-      <AuthForm
+      <LoginForm
         submitHandler={store.login.bind(store)}
         error={store.error}
         btnText="Авторизоваться"
