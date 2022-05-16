@@ -1,15 +1,15 @@
 import React from 'react'
 import {Form} from 'react-bootstrap'
 
+import RequiredMark from '../marks/RequiredMark'
+
 const SimpleInput = ({label, type, required, onChange}) => {
   return (
     <Form.Group className="mb-3">
       <Form.Label>
         {label}
-        {required
-          ? <span style={{color: "red"}}>*</span>
-          : null
-        }</Form.Label>
+        <RequiredMark required={required}/>
+        </Form.Label>
       <Form.Control
         type={type}
         required={required}

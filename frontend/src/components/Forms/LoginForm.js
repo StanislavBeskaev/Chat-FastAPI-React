@@ -1,7 +1,7 @@
 import React, {useState} from 'react'
 import {Alert, Button, Form} from 'react-bootstrap'
 
-import SimpleInput from '../UI/Input/SimpleInput'
+import SimpleInput from '../UI/Inputs/SimpleInput'
 
 const LoginForm = ({submitHandler, btnText, error}) => {
   const [login, setLogin] = useState('')
