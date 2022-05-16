@@ -8,8 +8,8 @@ export default class AuthService {
     return axiosInstance.post('/auth/login', formData)
   }
 
-  static async registration(login, password) {
-    return axiosInstance.post('/auth/registration', {login, password})
+  static async registration(login, password, name='', surname='') {
+    return axiosInstance.post('/auth/registration', {login, password, name, surname})
   }
 
   static async logout() {

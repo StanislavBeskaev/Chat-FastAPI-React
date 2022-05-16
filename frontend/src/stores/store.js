@@ -36,18 +36,18 @@ class Store {
     this.error = text
   }
 
-  async registration(login, password) {
-    await this._auth(login, password, AuthService.registration)
+  async registration(login, password, name, surname) {
+    await this._auth(AuthService.registration, login, password, name, surname)
   }
 
   async login(login, password) {
-    await this._auth(login, password, AuthService.login)
+    await this._auth(AuthService.login, login, password)
   }
 
-  async _auth(login, password, service) {
+  async _auth(service, ...args) {
     try {
       this.setError('')
-      const response = await service(login, password)
+      const response = await service(...args)
       console.log(response)
       localStorage.setItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY, response.data['access_token'])
       this.setAuth(true)

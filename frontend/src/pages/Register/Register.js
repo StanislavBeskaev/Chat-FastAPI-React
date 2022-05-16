@@ -3,7 +3,7 @@ import {Link} from 'react-router-dom'
 import {Container} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
-import LoginForm from '../../components/Forms/LoginForm'
+import RegistrationForm from '../../components/Forms/RegistrationForm'
 import store from '../../stores/store'
 
 
@@ -15,7 +15,7 @@ const Register = () => {
   return (
     <Container className="justify-content-center d-flex flex-column w-50" style={{height: '100vh'}}>
       <h1 className="mb-3">Регистрация</h1>
-      <LoginForm
+      <RegistrationForm
         submitHandler={store.registration.bind(store)}
         error={store.error}
         btnText="Зарегистрироваться"
