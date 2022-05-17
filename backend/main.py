@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
 from . import api
@@ -38,3 +39,6 @@ def test(request: Request, user: models.User = Depends(get_current_user)):
     logger.debug(f"test, user: {user}")
     logger.debug(f"{request.cookies=}")
     return {"message": "test"}
+
+
+app.mount("/api/static", StaticFiles(directory="files"), name="static")
