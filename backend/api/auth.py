@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, Response, status, Cookie
+from fastapi import APIRouter, Depends, Response, status, Cookie, Request
 from fastapi.security import OAuth2PasswordRequestForm
+from loguru import logger
 
 from .. import models
 from ..services.auth import AuthService
@@ -69,12 +70,15 @@ def login(
     status_code=status.HTTP_200_OK
 )
 def refresh_tokens(
+        request: Request,
         response: Response,
         auth_service: AuthService = Depends(),
         refresh_token: str = Cookie(None, alias=REFRESH_TOKEN_COOKIE_KEY),
         settings: Settings = Depends(get_settings)
 ) -> models.Tokens:
     """Обновление токенов"""
+    logger.debug(f"{request.__dict__}")
+
     tokens = auth_service.refresh_tokens(refresh_token=refresh_token)
     response.set_cookie(
         key=REFRESH_TOKEN_COOKIE_KEY,

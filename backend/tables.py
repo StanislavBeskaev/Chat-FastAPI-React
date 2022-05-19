@@ -30,3 +30,13 @@ class RefreshToken(Base):
     refresh_token = Column(String, nullable=False)
 
     user_rel = relationship(User, backref="tokens")
+
+
+class Profile(Base):
+    __tablename__ = "profiles"
+
+    id = Column(Integer, primary_key=True)
+    user = Column(Integer, ForeignKey("users.id"), index=True)
+    avatar = Column(String, nullable=True)
+
+    user_rel = relationship(User, backref="profiles")

@@ -1,15 +1,15 @@
 import React, {useState} from 'react'
 import {Link} from 'react-router-dom'
 import {Button, Container, Row} from 'react-bootstrap'
+import {observer} from 'mobx-react-lite'
 
 import store from '../../stores/store'
-import axiosInstance from '../../axios/axios'
+import AvatarBig from '../../components/Avatars/AvatarBig'
 
 
 
 const UserData = () => {
   const [file, setFile] = useState(null)
-  const [image, setImage] = useState('')
   const [successUpload, setSuccessUpload] = useState(false)
 
   const uploadFile = async () => {
@@ -17,10 +17,7 @@ const UserData = () => {
       alert("Укажите файл")
       return
     }
-    const formData = new FormData()
-    formData.append("file", file, file.name)
-    const response = await axiosInstance.post("/user/avatar", formData)
-    console.log(response)
+    await store.saveAvatar(file)
     setSuccessUpload(true)
   }
 
@@ -32,7 +29,8 @@ const UserData = () => {
       <h2>Имя: {store.user.name}</h2>
       <h2>Фамилия: {store.user.surname}</h2>
       <Link to="/user-data/change">Изменить</Link>
-      <Row className="mt-4 mb-3">
+      <Row className="mt-5 mb-3 w-50">
+        <h5>Изменить аватар</h5>
         <input
           type="file"
           id="file"
@@ -48,20 +46,11 @@ const UserData = () => {
             ? <span className="text-success">Файл загружен</span>
             : <span className="text-danger">Отправьте файл</span>
         }
-        <Button onClick={uploadFile}>Отправить файл</Button>
-      </Row>
-        <span>Выберите файл для аватара</span>
-        <input
-          type="text"
-          value={image}
-          onChange={e => setImage(e.target.value)}
-          className="mb-3"
-        />
-      <Row>
-        <img src={`http://localhost:8000/api/static/${image}`} alt="Тут будет аватар" />
+        <Button onClick={uploadFile} className="mb-3">Отправить файл</Button>
+        <AvatarBig />
       </Row>
     </Container>
   )
 }
 
-export default UserData
+export default observer(UserData)

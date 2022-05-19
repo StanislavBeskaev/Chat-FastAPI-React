@@ -1,5 +1,3 @@
-import os
-
 from fastapi import APIRouter, Depends, status, UploadFile
 from loguru import logger
 
@@ -13,6 +11,8 @@ router = APIRouter(
 )
 
 
+# TODO документация
+# TODO тесты
 @router.put(
     "/change",
     response_model=models.User,
@@ -28,42 +28,38 @@ def change_user_data(
     return updated_user
 
 
+# TODO документация
+# TODO тесты
 @router.post(
     "/avatar",
     status_code=status.HTTP_201_CREATED
 )
-def upload_avatar(file: UploadFile):
+def upload_avatar(
+        file: UploadFile,
+        user_service: UserService = Depends(),
+        current_user: models.User = Depends(get_current_user)
+):
+    """Загрузка аватара пользователя"""
     logger.debug(f"incoming file attrs: {file.__dict__}")
 
-    return {"filepath": write_binary_file(file)}
+    return {
+        "avatar_file": user_service.save_avatar(user=current_user, file=file)
+    }
 
 
-# TODO вынести в сервис работу с файлами, потом сделать сохранение в minio S3
+# TODO документация
+# TODO тесты
+@router.get(
+    "/avatar",
+    status_code=status.HTTP_200_OK
+)
+def get_avatar(
+        user_service: UserService = Depends(),
+        current_user: models.User = Depends(get_current_user),
+):
+    """Получение имени файла аватара пользователя"""
+    logger.debug(f"Запрос получения аватара для пользователя {current_user}")
 
-FILES_FOLDER = "files"
-
-
-def check_files_folder(func):
-    def wrapper(*args, **kwargs):
-        if not os.path.exists(FILES_FOLDER):
-            logger.debug(f"Создана папка под файлы {FILES_FOLDER}")
-            os.mkdir(FILES_FOLDER)
-
-        return func(*args, **kwargs)
-
-    return wrapper
-
-
-@check_files_folder
-def write_binary_file(file: UploadFile) -> str:
-    file_path = get_file_path(file.filename)
-    with open(file_path, mode="wb") as writable_file:
-        writable_file.write(file.file.read())
-
-    logger.debug(f"Бинарный файл {file.filename} записан в {file_path}")
-
-    return file_path
-
-
-def get_file_path(file_name: str) -> str:
-    return os.path.join(FILES_FOLDER, file_name)
+    return {
+        "avatar_file": user_service.get_avatar(user=current_user)
+    }

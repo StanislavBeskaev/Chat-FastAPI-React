@@ -120,10 +120,20 @@ class AuthService(BaseService):
             name=user_data.name,
             surname=user_data.surname
         )
+
         self.session.add(new_user)
         self.session.commit()
 
+        self._create_user_profile(user_id=new_user.id)
         new_user = models.User.from_orm(new_user)
         logger.info(f"Создан новый пользователь: {new_user}")
 
         return new_user
+
+    def _create_user_profile(self, user_id) -> None:
+        """Создание профиля для пользователя"""
+        user_profile = tables.Profile(user=user_id)
+        self.session.add(user_profile)
+        self.session.commit()
+
+        logger.debug(f"Создан профиль для пользователя {user_id}")

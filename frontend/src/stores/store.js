@@ -14,6 +14,7 @@ class Store {
   isAuth = false
   isLoading = false
   error = ''
+  avatarFile = ''
 
   constructor() {
     makeAutoObservable(this)
@@ -36,6 +37,24 @@ class Store {
     this.error = text
   }
 
+  setAvatarFile(file) {
+    this.avatarFile = file
+  }
+
+  async saveAvatar(file) {
+    const formData = new FormData()
+    formData.append("file", file, file.name)
+    const response = await axiosInstance.post("/user/avatar", formData)
+    console.log(response)
+    this.setAvatarFile(response.data.avatar_file)
+  }
+
+  async getAvatar() {
+    const response = await axiosInstance.get("/user/avatar")
+    console.log(response)
+    this.setAvatarFile(response.data.avatar_file)
+  }
+
   async registration(login, password, name, surname) {
     await this._auth(AuthService.registration, login, password, name, surname)
   }
@@ -52,6 +71,7 @@ class Store {
       localStorage.setItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY, response.data['access_token'])
       this.setAuth(true)
       this.setUser(response.data.user)
+      await this.getAvatar()
     } catch (e) {
       const errorText = JSON.stringify(e?.response?.data?.detail)
       console.log(errorText)
@@ -70,6 +90,7 @@ class Store {
       this.setAuth(true)
       console.log("setAuth = true")
       this.setUser(response.data.user)
+      await this.getAvatar()
     } catch (e) {
       console.log('checkAuth error', e?.response?.data?.detail)
     }
