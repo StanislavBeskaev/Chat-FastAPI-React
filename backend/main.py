@@ -1,9 +1,13 @@
-from fastapi import FastAPI
+import json
+from datetime import datetime
+
+from fastapi import FastAPI, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
 from . import api
+from .services.ws import WSConnectionManager
 
 
 app = FastAPI(
@@ -29,7 +33,7 @@ def start():
 
 
 # TODO убрать после тестов
-from fastapi import Depends, Request
+from fastapi import Depends, Request, WebSocket
 from . import models
 from .dependencies import get_current_user
 
@@ -42,3 +46,30 @@ def test(request: Request, user: models.User = Depends(get_current_user)):
 
 
 app.mount("/api/static", StaticFiles(directory="files"), name="static")
+
+
+@app.websocket("/ws/{login}")
+async def websocket_endpoint(websocket: WebSocket, login: str):
+    manager = WSConnectionManager()
+    await manager.connect(websocket)
+    logger.debug(f"Новое ws соединение от пользователя {login} {websocket.__dict__}")
+    now = datetime.now()
+    current_time = now.strftime("%H:%M")
+    message = {"time": current_time, "clientId": login, "message": "Online"}
+    await manager.broadcast(json.dumps(message))
+    try:
+        while True:
+            data = await websocket.receive_text()
+            logger.debug(f"Message from {login}: {data}")
+
+            message = {"time": current_time, "clientId": login, "message": data}
+            logger.debug(f"broadcast message: {message}")
+            await manager.broadcast(json.dumps(message))
+
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+        logger.debug(f"disconnect ws: {login}")
+
+        message = {"time": current_time, "clientId": login, "message": "Offline"}
+        logger.debug(f"broadcast message: {message}")
+        await manager.broadcast(json.dumps(message))
