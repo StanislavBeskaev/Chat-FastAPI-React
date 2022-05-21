@@ -1,17 +1,14 @@
 import React, {useEffect, useState} from 'react'
-import {Button} from 'react-bootstrap'
 
+import store from '../../stores/store'
 import {useSocket} from '../../contexts/SocketProvider'
+import Messages from './Messages'
+import TextForm from './TextForm'
 
 function SimpleChat() {
-  const [message, setMessage] = useState('')
-  const socket = useSocket()
+  const [messages, setMessages] = useState([])
 
-  const sendMessage = () => {
-    console.log(`Отправка сообщения:`, message)
-    socket.send(message)
-    setMessage('')
-  }
+  const socket = useSocket()
 
   useEffect(() => {
     if (socket == null) return
@@ -19,19 +16,25 @@ function SimpleChat() {
     socket.onmessage = (e) => {
       const msg = JSON.parse(e.data)
       console.log("Сообщение из ws: ", msg)
+      addMessage(msg)
     }
   }, [socket])
 
+  const addMessage = newMessage => {
+    setMessages(prevMessages => [...prevMessages, newMessage])
+  }
+
+  const sendText = (text) => {
+    console.log(`Отправка сообщения:`, text)
+    socket.send(text)
+  }
+
   return (
     <div className="d-flex flex-column">
-      <h1>Тут будет чат</h1>
-      <input
-        value={message}
-        onChange={e => setMessage(e.target.value)}
-      />
-      <Button onClick={sendMessage}>Отправить</Button>
+      <h1>Чат</h1>
+      <Messages messages={messages} login={store.user.login}/>
+      <TextForm sendText={sendText}/>
     </div>
-
   )
 }
 
