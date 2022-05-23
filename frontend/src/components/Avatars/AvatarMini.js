@@ -13,7 +13,7 @@ const AvatarMini = () => {
       roundedCircle={true}
       src={avatarSrc}
       alt="аватар"
-      style={{height: 80, width: 'auto'}}
+      style={{height: 40, width: 'auto'}}
     />
   )
 }

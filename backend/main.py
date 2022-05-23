@@ -40,17 +40,15 @@ async def websocket_endpoint(websocket: WebSocket, login: str):
     manager = WSConnectionManager()
     await manager.connect(websocket)
     logger.debug(f"Новое ws соединение от пользователя {login} {websocket.__dict__}")
-    now = datetime.now()
-    current_time = now.strftime("%H:%M")
     # TODO сделать разные варианты сообщений
-    message = {"time": current_time, "login": login, "text": "Online"}
+    message = {"time": get_current_time(), "login": login, "text": "Online"}
     await manager.broadcast(json.dumps(message))
     try:
         while True:
             data = await websocket.receive_text()
             logger.debug(f"Message from {login}: {data}")
 
-            message = {"time": current_time, "login": login, "text": data}
+            message = {"time": get_current_time(), "login": login, "text": data}
             logger.debug(f"broadcast message: {message}")
             await manager.broadcast(json.dumps(message))
 
@@ -58,6 +56,13 @@ async def websocket_endpoint(websocket: WebSocket, login: str):
         manager.disconnect(websocket)
         logger.debug(f"disconnect ws: {login}")
 
-        message = {"time": current_time, "login": login, "text": "Offline"}
+        message = {"time": get_current_time(), "login": login, "text": "Offline"}
         logger.debug(f"broadcast message: {message}")
         await manager.broadcast(json.dumps(message))
+
+
+def get_current_time() -> str:
+    now = datetime.now()
+    current_time = now.strftime("%H:%M")
+
+    return current_time

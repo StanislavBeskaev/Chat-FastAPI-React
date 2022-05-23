@@ -1,8 +1,8 @@
-import Main from '../pages/Main/Main'
 import Login from '../pages/Login/Login'
 import Register from '../pages/Register/Register'
 import UserData from '../pages/UserData/UserData'
 import ChangeUserData from '../pages/UserData/ChangeUserData'
+import Main from '../pages/Main/Main'
 
 
 export const privateRoutes = [

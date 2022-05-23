@@ -5,6 +5,7 @@ import {useSocket} from '../../contexts/SocketProvider'
 import Messages from './Messages'
 import TextForm from './TextForm'
 
+
 function SimpleChat() {
   const [messages, setMessages] = useState([])
 
@@ -15,7 +16,7 @@ function SimpleChat() {
 
     socket.onmessage = (e) => {
       const msg = JSON.parse(e.data)
-      console.log("Сообщение из ws: ", msg)
+      console.log('Сообщение из ws: ', msg)
       addMessage(msg)
     }
   }, [socket])
@@ -30,9 +31,12 @@ function SimpleChat() {
   }
 
   return (
-    <div className="d-flex flex-column">
-      <h1>Чат</h1>
-      <Messages messages={messages} login={authStore.user.login}/>
+    <div className="d-flex flex-column flex-grow-1">
+      <div className="flex-grow-1 overflow-auto">
+        <div className="d-flex flex-column align-items-start justify-content-end px-3">
+          <Messages messages={messages} login={authStore.user.login}/>
+        </div>
+      </div>
       <TextForm sendText={sendText}/>
     </div>
   )
