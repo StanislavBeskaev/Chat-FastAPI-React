@@ -4,7 +4,7 @@ import {observer} from 'mobx-react-lite'
 
 import {AuthContext} from '../context'
 import {privateRoutes, publicRoutes} from '../router'
-import store from '../stores/store'
+import authStore from '../stores/authStore'
 import Loader from './UI/Loader/Loader'
 import {SocketProvider} from '../contexts/SocketProvider'
 
@@ -19,9 +19,9 @@ const AppRouter = () => {
   }
 
   return (
-    store.isAuth
+    authStore.isAuth
       ?
-      <SocketProvider login={store.user.login}>
+      <SocketProvider login={authStore.user.login}>
         <Switch>
           {privateRoutes.map(route =>
             <Route

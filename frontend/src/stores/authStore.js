@@ -9,7 +9,7 @@ import UserService from '../services/UserService'
 
 const LOCAL_STORAGE_ACCESS_TOKEN_KEY = 'token'
 
-class Store {
+class AuthStore {
   user = null
   isAuth = false
   isLoading = false
@@ -18,7 +18,7 @@ class Store {
 
   constructor() {
     makeAutoObservable(this)
-    console.log("Создан store")
+    console.log("Создан authStore")
   }
 
   setAuth(bool) {
@@ -45,13 +45,11 @@ class Store {
     const formData = new FormData()
     formData.append("file", file, file.name)
     const response = await axiosInstance.post("/user/avatar", formData)
-    console.log(response)
     this.setAvatarFile(response.data.avatar_file)
   }
 
   async getAvatar() {
     const response = await axiosInstance.get("/user/avatar")
-    console.log(response)
     this.setAvatarFile(response.data.avatar_file)
   }
 
@@ -112,17 +110,6 @@ class Store {
     }
   }
 
-  //TODO убрать после тестов
-  async callTest() {
-    try {
-      const response = await axiosInstance.get("/test")
-      alert(response.data.message)
-    } catch (e) {
-      alert(e.response?.data?.detail)
-    }
-
-  }
-
   async changeUserData(name, surname) {
     this.setLoading(true)
     try {
@@ -138,4 +125,4 @@ class Store {
   }
 }
 
-export default new Store()
+export default new AuthStore()

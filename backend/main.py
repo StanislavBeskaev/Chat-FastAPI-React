@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 
-from fastapi import FastAPI, WebSocketDisconnect
+from fastapi import FastAPI, WebSocketDisconnect, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
@@ -30,19 +30,6 @@ app.include_router(api.router)
 @app.on_event("startup")
 def start():
     logger.info("Старт API")
-
-
-# TODO убрать после тестов
-from fastapi import Depends, Request, WebSocket
-from . import models
-from .dependencies import get_current_user
-
-
-@app.get("/api/test")
-def test(request: Request, user: models.User = Depends(get_current_user)):
-    logger.debug(f"test, user: {user}")
-    logger.debug(f"{request.cookies=}")
-    return {"message": "test"}
 
 
 app.mount("/api/static", StaticFiles(directory="files"), name="static")

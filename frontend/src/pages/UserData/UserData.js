@@ -3,9 +3,8 @@ import {Link} from 'react-router-dom'
 import {Button, Container, Row} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
-import store from '../../stores/store'
+import authStore from '../../stores/authStore'
 import AvatarBig from '../../components/Avatars/AvatarBig'
-
 
 
 const UserData = () => {
@@ -17,7 +16,7 @@ const UserData = () => {
       alert("Укажите файл")
       return
     }
-    await store.saveAvatar(file)
+    await authStore.saveAvatar(file)
     setSuccessUpload(true)
   }
 
@@ -25,9 +24,9 @@ const UserData = () => {
     <Container>
       <Link to="/">На главную</Link>
       <h1 className="mt-3">Данные пользователя</h1>
-      <h2>Логин: {store.user.login}</h2>
-      <h2>Имя: {store.user.name}</h2>
-      <h2>Фамилия: {store.user.surname}</h2>
+      <h2>Логин: {authStore.user.login}</h2>
+      <h2>Имя: {authStore.user.name}</h2>
+      <h2>Фамилия: {authStore.user.surname}</h2>
       <Link to="/user-data/change">Изменить</Link>
       <Row className="mt-5 mb-3 w-50">
         <h5>Изменить аватар</h5>

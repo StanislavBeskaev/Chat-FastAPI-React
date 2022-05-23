@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react'
 
-import store from '../../stores/store'
+import authStore from '../../stores/authStore'
 import {useSocket} from '../../contexts/SocketProvider'
 import Messages from './Messages'
 import TextForm from './TextForm'
@@ -32,7 +32,7 @@ function SimpleChat() {
   return (
     <div className="d-flex flex-column">
       <h1>Чат</h1>
-      <Messages messages={messages} login={store.user.login}/>
+      <Messages messages={messages} login={authStore.user.login}/>
       <TextForm sendText={sendText}/>
     </div>
   )

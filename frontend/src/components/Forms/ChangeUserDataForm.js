@@ -2,18 +2,18 @@ import React, {useState} from 'react'
 import {useHistory} from 'react-router-dom'
 import {Button, Form} from 'react-bootstrap'
 
-import store from '../../stores/store'
+import authStore from '../../stores/authStore'
 import ValueInput from '../UI/Inputs/ValueInput'
 
 const ChangeUserDataForm = () => {
-  const [name, setName] = useState(store.user.name)
-  const [surname, setSurname] = useState(store.user.surname)
+  const [name, setName] = useState(authStore.user.name)
+  const [surname, setSurname] = useState(authStore.user.surname)
 
   const history = useHistory()
 
   const handleSubmit = async e => {
     e.preventDefault()
-    await store.changeUserData(name, surname)
+    await authStore.changeUserData(name, surname)
     //TODO возможно надо перенести в ChangeUserData
     history.push("/user-data/")
   }

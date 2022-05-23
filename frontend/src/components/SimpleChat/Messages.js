@@ -25,7 +25,7 @@ const Messages = ({messages, login}) => {
                 {message.text}
               </div>
               <div className={`text-muted small ${fromMe? 'text-end' : ''}`}>
-                {message.time}, {fromMe ? 'Вы' : message.login}
+                {fromMe ? 'Вы' : message.login}, {message.time}
               </div>
             </div>
           )

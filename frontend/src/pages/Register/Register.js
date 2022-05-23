@@ -4,20 +4,20 @@ import {Container} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
 import RegistrationForm from '../../components/Forms/RegistrationForm'
-import store from '../../stores/store'
+import authStore from '../../stores/authStore'
 
 
 const Register = () => {
   useEffect(() => {
-    store.setError("")
+    authStore.setError("")
   }, [])
 
   return (
     <Container className="justify-content-center d-flex flex-column w-50" style={{height: '100vh'}}>
       <h1 className="mb-3">Регистрация</h1>
       <RegistrationForm
-        submitHandler={store.registration.bind(store)}
-        error={store.error}
+        submitHandler={authStore.registration.bind(authStore)}
+        error={authStore.error}
         btnText="Зарегистрироваться"
       />
       <Link to="/login" className="mt-3">Авторизация</Link>

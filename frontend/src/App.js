@@ -4,7 +4,7 @@ import {observer} from 'mobx-react-lite'
 
 import AppRouter from './components/AppRouter'
 import {AuthContext} from './context'
-import store from './stores/store'
+import authStore from './stores/authStore'
 
 
 function App() {
@@ -13,7 +13,7 @@ function App() {
   useEffect(() => {
     setTimeout(async () => {
       if (localStorage.getItem('token')) {
-        await store.checkAuth()
+        await authStore.checkAuth()
       }
       setFetchUserInfo(false)
     }, 700)
