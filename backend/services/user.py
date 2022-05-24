@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException
 from loguru import logger
 
 from .. import models
@@ -50,6 +50,13 @@ class UserService(BaseService):
         logger.debug(f"Для пользователя {user}, файл аватара: {user_profile.avatar}")
         return user_profile.avatar
 
+    def get_avatar_by_login(self, login: str) -> str | None:
+        """Получение имени файла аватара пользователя по логину"""
+        user_profile = self._find_profile_by_login(login=login)
+
+        logger.debug(f"Для пользователя {user_profile.user}, файл аватара: {user_profile.avatar}")
+        return user_profile.avatar
+
     @staticmethod
     def _generate_avatar_file_name(file_name: str) -> str:
         """Получение имени файла для нового аватара"""
@@ -66,6 +73,27 @@ class UserService(BaseService):
             self.session
             .query(tables.Profile)
             .filter(tables.Profile.user == user_id)
+            .first()
+        )
+
+        return profile
+
+    def _find_profile_by_login(self, login: str) -> tables.Profile:
+        """Нахождение профайла пользователя по логину пользователя"""
+        user = (
+            self.session
+            .query(tables.User)
+            .filter(tables.User.login == login)
+            .first()
+        )
+
+        if not user:
+            raise HTTPException(status_code=404, detail=f"User with login: '{login}' not found")
+
+        profile = (
+            self.session
+            .query(tables.Profile)
+            .filter(tables.Profile.user == user.id)
             .first()
         )
 
