@@ -25,7 +25,7 @@ export default function Sidebar({ login }) {
         </Tab.Content>
         <div className="p-2 border-top border-end small">
           <div>
-            <AvatarMini />
+            <AvatarMini fileName={authStore.avatarFile} />
             <span className="ms-2">
             Ваш логин: <span className="text-muted">{login}</span>
           </span>

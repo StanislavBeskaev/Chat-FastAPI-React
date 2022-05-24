@@ -1,13 +1,13 @@
 import React from 'react'
 import {Image} from 'react-bootstrap'
-
-import noAvatar from '../../img/no_avatar.png'
-import authStore from '../../stores/authStore'
 import {observer} from 'mobx-react-lite'
 
-//TODO путь до аватара как параметр
-const AvatarMini = () => {
-  const avatarSrc = authStore.avatarFile ? `http://localhost:8000/api/static/${authStore.avatarFile}` : noAvatar
+import noAvatar from '../../img/no_avatar.png'
+import {API_URL} from '../../axios/axios'
+
+
+const AvatarMini = ({fileName}) => {
+  const avatarSrc = fileName ? `${API_URL}/static/${fileName}` : noAvatar
   return (
     <Image
       roundedCircle={true}

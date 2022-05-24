@@ -14,7 +14,7 @@ function SimpleChat() {
   useEffect(() => {
     if (socket == null) return
 
-    socket.onmessage = (e) => {
+    socket.onmessage = async (e) => {
       const msg = JSON.parse(e.data)
       console.log('Сообщение из ws: ', msg)
       addMessage(msg)
