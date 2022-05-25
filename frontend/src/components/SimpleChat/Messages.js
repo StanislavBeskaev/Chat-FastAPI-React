@@ -1,6 +1,7 @@
 import React, {useCallback} from 'react'
 
-import AvatarMini from '../Avatars/AvatarMini'
+import TextMessage from './TextMessage'
+import StatusMessage from './StatusMessage'
 
 
 const Messages = ({messages, login}) => {
@@ -10,28 +11,24 @@ const Messages = ({messages, login}) => {
     }
   }, [])
 
+  const messageTypeMap = {
+    "TEXT": TextMessage,
+    "STATUS": StatusMessage
+  }
+
   return (
     <>
       {messages.map((message, index) => {
         const lastMessage = index === messages.length - 1
         const fromMe = message.login === login
+        const MessageTypeComponent = messageTypeMap[message.type]
         return (
           <div
             ref={lastMessage ? setRef : null}
             key={index}
             className={`my-1 d-flex flex-column ${fromMe ? 'align-self-end align-items-end' : 'align-items-start'}`}
           >
-            <div className={`d-flex ${fromMe ? 'flex-row-reverse' : 'flex-row'}`}>
-              <AvatarMini fileName={message.avatar_file}/>
-              <div
-                className={`mx-2 rounded px-2 py-1 ${fromMe ? 'bg-primary text-white' : 'border'}`}
-              >
-                {message.text}
-              </div>
-            </div>
-            <div className={`text-muted small ${fromMe ? 'text-end' : ''}`}>
-              {fromMe ? 'Вы' : message.login}, {message.time}
-            </div>
+            <MessageTypeComponent fromMe={fromMe} message={message} />
           </div>
         )
       })}

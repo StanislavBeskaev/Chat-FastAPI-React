@@ -16,6 +16,12 @@ class MessageType(str, Enum):
     STATUS = "STATUS"
 
 
+class OnlineStatus(str, Enum):
+    """Статусы пользователя в сети"""
+    ONLINE = "ONLINE"
+    OFFLINE = "OFFLINE"
+
+
 def get_current_time() -> str:
     now = datetime.now()
     current_time = now.strftime("%H:%M")
@@ -26,6 +32,7 @@ def get_current_time() -> str:
 class MessageData(BaseModel):
     """Данные сообщения"""
     type: MessageType
+    online_status: OnlineStatus | None = None
     time: str = get_current_time()
     login: str
     text: str | None
@@ -35,11 +42,12 @@ class MessageData(BaseModel):
 class BaseMessage(ABC):
     """Базовый класс для работы с сообщением WS"""
     message_type = None
+    online_status = None
 
     def __init__(self, login: str, user_service: UserService, text: str = "", ):
         self._login = login
         self._text = text
-        self._data = MessageData(login=login, text=text, type=self.message_type)
+        self._data = MessageData(login=login, text=text, type=self.message_type, online_status=self.online_status)
         self._user_service = user_service
 
         self._set_avatar_file()
@@ -58,6 +66,7 @@ class BaseMessage(ABC):
 class TextMessage(BaseMessage):
     """Текстовое сообщение"""
     message_type = MessageType.TEXT
+    online_status = OnlineStatus.ONLINE
 
 
 class StatusMessage(BaseMessage, ABC):
@@ -79,6 +88,8 @@ class StatusMessage(BaseMessage, ABC):
 
 class OnlineMessage(StatusMessage):
     """Сообщение при подключении пользователя"""
+    online_status = OnlineStatus.ONLINE
+
     def _get_text_templates(self) -> list[str]:
         # TODO добавить больше фраз
         online_text_templates = [
@@ -93,6 +104,8 @@ class OnlineMessage(StatusMessage):
 
 class OfflineMessage(StatusMessage):
     """Сообщение об отключении пользователя"""
+    online_status = OnlineStatus.OFFLINE
+
     def _get_text_templates(self) -> list[str]:
         # TODO добавить больше фраз
         offline_text_templates = [
