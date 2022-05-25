@@ -101,7 +101,10 @@ class OnlineMessage(StatusMessage):
             "Пользователь {login} в сети",
             "К нам подкрался {login}",
             "{login} внезапно тут",
-            "Пользователь {login} уже онлайн"
+            "Пользователь {login} уже онлайн",
+            "А вот и {login}",
+            "Хорошо, что ты пришёл {login}",
+            "Пользователь {login} ворвался в чат"
         ]
 
         return online_text_templates
@@ -117,7 +120,9 @@ class OfflineMessage(StatusMessage):
             "{login} вышел",
             "Куда ты {login}?",
             "{login} offline",
-            "Пользователь {login} решил смыться"
+            "Пользователь {login} решил смыться",
+            "Стало пусто без {login}",
+            "Пока {login}",
         ]
 
         return offline_text_templates

@@ -47,8 +47,8 @@ async def websocket_endpoint(websocket: WebSocket, login: str, user_service: Use
             data = await websocket.receive_text()
             logger.debug(f"Message from {login}: {data}")
 
-            message = TextMessage(login=login, user_service=user_service, text=data)
-            await message.send_all()
+            text_message = TextMessage(login=login, user_service=user_service, text=data)
+            await text_message.send_all()
     except WebSocketDisconnect:
         manager.disconnect(websocket)
         logger.debug(f"disconnect ws: {login}")
