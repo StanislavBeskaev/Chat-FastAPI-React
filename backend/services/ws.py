@@ -2,9 +2,6 @@ from fastapi import WebSocket
 from loguru import logger
 
 
-# TODO наверно нужно перечисление для типов сообщений
-
-
 class WSConnectionManager:
     """Singleton для обслуживания websocket соединений"""
     __instance = None

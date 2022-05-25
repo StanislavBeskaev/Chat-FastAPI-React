@@ -1,12 +1,10 @@
-import json
-from datetime import datetime
-
 from fastapi import FastAPI, WebSocketDisconnect, WebSocket, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
 from . import api
+from .services.messages import TextMessage, OnlineMessage, OfflineMessage
 from .services.user import UserService
 from .services.ws import WSConnectionManager
 
@@ -41,38 +39,19 @@ async def websocket_endpoint(websocket: WebSocket, login: str, user_service: Use
     manager = WSConnectionManager()
     await manager.connect(websocket)
     logger.debug(f"Новое ws соединение от пользователя {login} {websocket.__dict__}")
-    # TODO сделать разные варианты сообщений
-    message = {"time": get_current_time(), "login": login, "text": "Online"}
-    # TODO подумать как лучше добавлять файл аватара
-    add_avatar_file_to_message(user_service=user_service, message=message)
-    await manager.broadcast(json.dumps(message))
+    online_message = OnlineMessage(login=login, user_service=user_service)
+    # TODO позже сделать рассылку по комнатам
+    await online_message.send_all()
     try:
         while True:
             data = await websocket.receive_text()
             logger.debug(f"Message from {login}: {data}")
 
-            message = {"time": get_current_time(), "login": login, "text": data}
-            add_avatar_file_to_message(user_service=user_service, message=message)
-            logger.debug(f"broadcast message: {message}")
-            await manager.broadcast(json.dumps(message))
-
+            message = TextMessage(login=login, user_service=user_service, text=data)
+            await message.send_all()
     except WebSocketDisconnect:
         manager.disconnect(websocket)
         logger.debug(f"disconnect ws: {login}")
 
-        message = {"time": get_current_time(), "login": login, "text": "Offline"}
-        add_avatar_file_to_message(user_service=user_service, message=message)
-        logger.debug(f"broadcast message: {message}")
-        await manager.broadcast(json.dumps(message))
-
-
-def get_current_time() -> str:
-    now = datetime.now()
-    current_time = now.strftime("%H:%M")
-
-    return current_time
-
-
-def add_avatar_file_to_message(user_service: UserService, message: dict) -> None:
-    """Добавление ключа avatar_file c названием файла аватара пользователя по логину"""
-    message["avatar_file"] = user_service.get_avatar_by_login(login=message["login"])
+        offline_message = OfflineMessage(login=login, user_service=user_service)
+        await offline_message.send_all()
