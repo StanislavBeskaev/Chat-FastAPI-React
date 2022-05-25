@@ -33,7 +33,7 @@ class MessageData(BaseModel):
     """Данные сообщения"""
     type: MessageType
     online_status: OnlineStatus | None = None
-    time: str = get_current_time()
+    time: str
     login: str
     text: str | None
     avatar_file: str | None
@@ -47,10 +47,15 @@ class BaseMessage(ABC):
     def __init__(self, login: str, user_service: UserService, text: str = "", ):
         self._login = login
         self._text = text
-        self._data = MessageData(login=login, text=text, type=self.message_type, online_status=self.online_status)
+        self._data = MessageData(
+            type=self.message_type,
+            online_status=self.online_status,
+            time=get_current_time(),
+            login=login,
+            text=text,
+            avatar_file=user_service.get_avatar_by_login(login=login)
+        )
         self._user_service = user_service
-
-        self._set_avatar_file()
 
     # TODO позже принимать id чата куда посылать сообщение
     async def send_all(self) -> None:
@@ -76,9 +81,9 @@ class StatusMessage(BaseMessage, ABC):
     def __init__(self, login: str, user_service: UserService):
         super().__init__(login=login, user_service=user_service)
         self._data.type = MessageType.STATUS
-        self._data.text = self._get_message_text()
+        self._data.text = self._get_status_message_text()
 
-    def _get_message_text(self) -> str:
+    def _get_status_message_text(self) -> str:
         return random.choice(self._get_text_templates()).format(login=self._login)
 
     @abstractmethod
