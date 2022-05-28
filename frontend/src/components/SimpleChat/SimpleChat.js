@@ -1,15 +1,22 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect} from 'react'
+import {observer} from 'mobx-react-lite'
 
 import authStore from '../../stores/authStore'
+import messagesStore from '../../stores/messagesStore'
 import {useSocket} from '../../contexts/SocketProvider'
 import Messages from './Messages'
 import TextForm from './TextForm'
 
 
-function SimpleChat() {
-  const [messages, setMessages] = useState([])
 
+function SimpleChat() {
   const socket = useSocket()
+
+  useEffect(() => {
+    messagesStore.loadMessages()
+      .then(() => {})
+      .catch(e => console.log("Не удалось загрузить сообщения:", e))
+  }, [])
 
   useEffect(() => {
     if (socket == null) return
@@ -17,13 +24,10 @@ function SimpleChat() {
     socket.onmessage = async (e) => {
       const msg = JSON.parse(e.data)
       console.log('Сообщение из ws: ', msg)
-      addMessage(msg)
+      messagesStore.addMessage(msg)
     }
   }, [socket])
 
-  const addMessage = newMessage => {
-    setMessages(prevMessages => [...prevMessages, newMessage])
-  }
 
   const sendText = (text) => {
     console.log(`Отправка сообщения:`, text)
@@ -34,7 +38,7 @@ function SimpleChat() {
     <div className="d-flex flex-column flex-grow-1">
       <div className="flex-grow-1 overflow-auto">
         <div className="d-flex flex-column align-items-start justify-content-end px-3">
-          <Messages messages={messages} login={authStore.user.login}/>
+          <Messages messages={messagesStore.messages} login={authStore.user.login}/>
         </div>
       </div>
       <TextForm sendText={sendText}/>
@@ -42,4 +46,4 @@ function SimpleChat() {
   )
 }
 
-export default SimpleChat
+export default observer(SimpleChat)

@@ -2,6 +2,7 @@ import React, {useCallback} from 'react'
 
 import TextMessage from './TextMessage'
 import StatusMessage from './StatusMessage'
+import {observer} from 'mobx-react-lite'
 
 
 const Messages = ({messages, login}) => {
@@ -25,7 +26,7 @@ const Messages = ({messages, login}) => {
         return (
           <div
             ref={lastMessage ? setRef : null}
-            key={index}
+            key={message.id}
             className={`my-1 d-flex flex-column ${fromMe ? 'align-self-end align-items-end' : 'align-items-start'}`}
           >
             <MessageTypeComponent fromMe={fromMe} message={message} />
@@ -36,4 +37,4 @@ const Messages = ({messages, login}) => {
   )
 }
 
-export default Messages
+export default observer(Messages)

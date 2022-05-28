@@ -48,6 +48,7 @@ class AuthStore {
     this.setAvatarFile(response.data.avatar_file)
   }
 
+  //TODO вынести в userStore?
   async getAvatar() {
     const response = await axiosInstance.get("/user/avatar")
     this.setAvatarFile(response.data.avatar_file)

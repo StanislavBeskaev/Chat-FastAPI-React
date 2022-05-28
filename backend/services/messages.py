@@ -35,7 +35,7 @@ def get_current_time() -> datetime:
 
 
 def get_formatted_time(value: datetime) -> str:
-    return value.strftime("%H:%M")
+    return value.strftime("%d.%m.%y %H:%M")  # TODO подумать над отображением даты
 
 
 class MessageData(BaseModel):
@@ -51,7 +51,6 @@ class MessageData(BaseModel):
     @validator("time")
     def convert_from_datetime(cls, value):
         if isinstance(value, datetime):
-            logger.warning(f"MessageData datetime: {value}")
             return get_formatted_time(value)
 
         return value
