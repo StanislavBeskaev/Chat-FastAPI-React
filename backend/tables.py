@@ -3,9 +3,11 @@ from sqlalchemy import (
     Integer,
     String,
     ForeignKey,
+    DateTime
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 
 Base = declarative_base()
@@ -37,6 +39,21 @@ class Profile(Base):
 
     id = Column(Integer, primary_key=True)
     user = Column(Integer, ForeignKey("users.id"), index=True)
-    avatar = Column(String, nullable=True)
+    avatar_file = Column(String, nullable=True)
 
     user_rel = relationship(User, backref="profiles")
+
+
+# TODO подумать над всеми нужными таблицами для чатов: Chat, ChatMembers, Message и может другие
+# TODO тут нужна ссылка на чат сообщения
+class Message(Base):
+    __tablename__ = "messages"
+
+    id = Column(String, primary_key=True, autoincrement=False)
+    text = Column(String, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    time = Column(DateTime(timezone=True), server_default=func.now())
+    type = Column(String, nullable=False)  # TODO тут нужно перечисление
+    online_status = Column(String, nullable=False)  # TODO тут нужно перечисление
+
+    user_rel = relationship(User, backref="messages")

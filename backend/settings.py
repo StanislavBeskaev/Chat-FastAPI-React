@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     jwt_refresh_secret: str = "N4;0a1%cvm#da"
     jwt_refresh_expires_s: int = 60 * 60 * 24 * 30
 
+    timezone = 'Europe/Moscow'
+
 
 def get_settings() -> Settings:
     return Settings()

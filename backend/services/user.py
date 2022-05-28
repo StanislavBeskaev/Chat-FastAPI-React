@@ -36,7 +36,7 @@ class UserService(BaseService):
         files_service.save_file(file=file, file_name=store_file_name)
 
         user_profile = self._find_profile_by_user_id(user_id=user.id)
-        user_profile.avatar = store_file_name
+        user_profile.avatar_file = store_file_name
         self.session.add(user_profile)
         self.session.commit()
 
@@ -47,15 +47,15 @@ class UserService(BaseService):
         """Получение имени файла аватара пользователя"""
         user_profile = self._find_profile_by_user_id(user_id=user.id)
 
-        logger.debug(f"Для пользователя {user}, файл аватара: {user_profile.avatar}")
-        return user_profile.avatar
+        logger.debug(f"Для пользователя {user}, файл аватара: {user_profile.avatar_file}")
+        return user_profile.avatar_file
 
     def get_avatar_by_login(self, login: str) -> str | None:
         """Получение имени файла аватара пользователя по логину"""
         user_profile = self._find_profile_by_login(login=login)
 
-        logger.debug(f"Для пользователя {user_profile.user}, файл аватара: {user_profile.avatar}")
-        return user_profile.avatar
+        logger.debug(f"Для пользователя {user_profile.user}, файл аватара: {user_profile.avatar_file}")
+        return user_profile.avatar_file
 
     @staticmethod
     def _generate_avatar_file_name(file_name: str) -> str:
