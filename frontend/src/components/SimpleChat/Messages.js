@@ -27,7 +27,7 @@ const Messages = ({messages, login}) => {
           <div
             ref={lastMessage ? setRef : null}
             key={message.id}
-            className={`my-1 d-flex flex-column ${fromMe ? 'align-self-end align-items-end' : 'align-items-start'}`}
+            className={`w-50 my-1 d-flex flex-column ${fromMe ? 'align-self-end align-items-end' : 'align-items-start'}`}
           >
             <MessageTypeComponent fromMe={fromMe} message={message} />
           </div>
