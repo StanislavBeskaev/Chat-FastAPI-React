@@ -3,7 +3,8 @@ from sqlalchemy import (
     Integer,
     String,
     ForeignKey,
-    DateTime
+    DateTime,
+    Boolean
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -44,12 +45,29 @@ class Profile(Base):
     user_rel = relationship(User, backref="profiles")
 
 
+class Chat(Base):
+    __tablename__ = "chats"
+
+    id = Column(String, primary_key=True, autoincrement=False)
+    name = Column(String)
+    is_public = Column(Boolean, default=False)
+
+
+class ChatMember(Base):
+    __tablename__ = "chat_members"
+
+    id = Column(Integer, primary_key=True)
+    chat_id = Column(String, ForeignKey("chats.id"), index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+
+
 # TODO подумать над всеми нужными таблицами для чатов: Chat, ChatMembers, Message и может другие
 # TODO тут нужна ссылка на чат сообщения
 class Message(Base):
     __tablename__ = "messages"
 
     id = Column(String, primary_key=True, autoincrement=False)
+    chat_id = Column(String, ForeignKey("chats.id"), index=True)
     text = Column(String, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), index=True)
     time = Column(DateTime(timezone=True), server_default=func.now())

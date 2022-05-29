@@ -7,7 +7,7 @@ import {privateRoutes, publicRoutes} from '../router'
 import authStore from '../stores/authStore'
 import Loader from './UI/Loader/Loader'
 import {SocketProvider} from '../contexts/SocketProvider'
-import Sidebar from './Sidebar'
+import Sidebar from './Sidebar/Sidebar'
 
 
 const AppRouter = () => {

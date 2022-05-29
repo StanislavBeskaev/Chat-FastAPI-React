@@ -1,10 +1,11 @@
 import React, {useState} from 'react'
+import {Link} from 'react-router-dom'
 import {Tab, Nav, Button, Row} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
-import AvatarMini from './Avatars/AvatarMini'
-import authStore from '../stores/authStore'
-import {Link} from 'react-router-dom'
+import AvatarMini from '../Avatars/AvatarMini'
+import authStore from '../../stores/authStore'
+import Chats from './Chats'
 
 
 const CONVERSATIONS_KEY = 'conversation'
@@ -17,12 +18,12 @@ function Sidebar({ login }) {
       <Tab.Container activeKey={activeKey} onSelect={setActiveKey}>
         <Nav variant="tabs" className="justify-content-center">
           <Nav.Item>
-            <Nav.Link eventKey={CONVERSATIONS_KEY} className="btn">Conversations</Nav.Link>
+            <Nav.Link eventKey={CONVERSATIONS_KEY} className="btn">Чаты</Nav.Link>
           </Nav.Item>
         </Nav>
         <Tab.Content className="border-end overflow-auto flex-grow-1">
           <Tab.Pane eventKey={CONVERSATIONS_KEY}>
-            <h3>Тут будут чаты</h3>
+            <Chats/>
           </Tab.Pane>
         </Tab.Content>
         <div className="p-2 border-top border-end small">

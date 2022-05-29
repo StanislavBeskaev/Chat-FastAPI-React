@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import {observer} from 'mobx-react-lite'
 
 import authStore from '../../stores/authStore'
@@ -6,16 +6,23 @@ import messagesStore from '../../stores/messagesStore'
 import {useSocket} from '../../contexts/SocketProvider'
 import Messages from './Messages'
 import TextForm from './TextForm'
+import Loader from '../UI/Loader/Loader'
 
 
 
 function SimpleChat() {
+  const [loading, setLoading] = useState(true)
   const socket = useSocket()
+
+  const {messages, selectedChatId} = messagesStore
+  const {login} = authStore.user
+
 
   useEffect(() => {
     messagesStore.loadMessages()
       .then(() => {})
       .catch(e => console.log("Не удалось загрузить сообщения:", e))
+      .finally(() => setLoading(false))
   }, [])
 
   useEffect(() => {
@@ -31,14 +38,19 @@ function SimpleChat() {
 
   const sendText = (text) => {
     console.log(`Отправка сообщения:`, text)
-    socket.send(text)
+    const message = JSON.stringify({text, chatId: selectedChatId})
+    socket.send(message)
+  }
+
+  if (loading) {
+    return <Loader />
   }
 
   return (
     <div className="d-flex flex-column flex-grow-1">
       <div className="flex-grow-1 overflow-auto">
         <div className="d-flex flex-column align-items-start justify-content-end px-3">
-          <Messages messages={messagesStore.messages} login={authStore.user.login}/>
+          <Messages messages={messages[selectedChatId]} login={login}/>
         </div>
       </div>
       <TextForm sendText={sendText}/>

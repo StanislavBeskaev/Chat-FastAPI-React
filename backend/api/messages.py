@@ -16,7 +16,7 @@ router = APIRouter(
 
 @router.get(
     "/",
-    response_model=list[MessageData],
+    # response_model=list[MessageData],
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(get_current_user)]
 )

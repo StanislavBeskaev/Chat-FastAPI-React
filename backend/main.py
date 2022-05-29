@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
 from . import api
-from .services.messages import TextMessage, OnlineMessage, OfflineMessage
+from .services.messages import TextMessage, OnlineMessage, OfflineMessage, InMessage
 from .services.user import UserService
 from .services.ws import WSConnectionManager
 
@@ -47,7 +47,13 @@ async def websocket_endpoint(websocket: WebSocket, login: str, user_service: Use
             data = await websocket.receive_text()
             logger.debug(f"Message from {login}: {data}")
 
-            text_message = TextMessage(login=login, user_service=user_service, text=data)
+            new_message = InMessage.parse_raw(data)
+            text_message = TextMessage(
+                login=login,
+                user_service=user_service,
+                text=new_message.text,
+                chat_id=new_message.chat_id
+            )
             await text_message.send_all()
     except WebSocketDisconnect:
         manager.disconnect(websocket)

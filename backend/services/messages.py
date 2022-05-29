@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import pytz
 import random
 from abc import ABC, abstractmethod
@@ -6,7 +8,7 @@ from enum import Enum
 from uuid import uuid4
 
 from loguru import logger
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, Field
 
 from .. import tables
 from ..database import get_session
@@ -38,9 +40,16 @@ def get_formatted_time(value: datetime) -> str:
     return value.strftime("%d.%m.%y %H:%M")  # TODO подумать над отображением даты
 
 
+class InMessage(BaseModel):
+    """Входное сообщение"""
+    text: str
+    chat_id: str = Field(alias="chatId")
+
+
 class MessageData(BaseModel):
     """Данные сообщения"""
     id: str
+    chat_id: str
     type: MessageType
     online_status: OnlineStatus | None = None
     time: str | datetime
@@ -61,9 +70,16 @@ class BaseMessage(ABC):
     message_type = None
     online_status = None
 
-    def __init__(self, login: str, user_service: UserService, text: str = "", ):
+    def __init__(
+            self,
+            login: str,
+            user_service: UserService,
+            text: str = "",
+            chat_id: str = get_settings().main_chat_id
+    ):
         self._login = login
         self._text = text
+        self._chat_id = chat_id
         self._user_service = user_service
 
         db_message = self._create_db_message()
@@ -75,6 +91,7 @@ class BaseMessage(ABC):
             time=get_formatted_time(db_message.time),
             login=login,
             text=text,
+            chat_id=chat_id,
             avatar_file=user_service.get_avatar_by_login(login)
         )
 
@@ -98,6 +115,7 @@ class BaseMessage(ABC):
             user_id=auth_service.find_user_by_login(login=self._login).id,
             time=get_current_time(),
             type=self.message_type,
+            chat_id=self._chat_id,
             online_status=self.online_status
         )
 
@@ -171,7 +189,7 @@ class OfflineMessage(StatusMessage):
 class MessageService(BaseService):
     """Сервис для работы с сообщениями"""
 
-    def get_many(self) -> list[MessageData]:
+    def get_many(self) -> dict[str, list[MessageData]]:
         """Получение всех сообщений"""
         messages = (
             self.session
@@ -182,6 +200,7 @@ class MessageService(BaseService):
                 tables.Message.time,
                 tables.User.login,
                 tables.Message.text,
+                tables.Message.chat_id,
                 tables.Profile.avatar_file
             )
             .where(tables.Message.user_id == tables.User.id)
@@ -192,6 +211,18 @@ class MessageService(BaseService):
         )
 
         # TODO посмотреть способ получше
-        columns = ("id", "type", "online_status", "time", "login", "text", "avatar_file")
+        columns = ("id", "type", "online_status", "time", "login", "text", "chat_id", "avatar_file")
 
-        return [MessageData(**dict(zip(columns, data))) for data in messages]
+        messages = [MessageData(**dict(zip(columns, data))) for data in messages]
+
+        return self._convert_messages_to_chats(messages=messages)
+
+    # TODO возвращаемое значение
+    @staticmethod
+    def _convert_messages_to_chats(messages: list[MessageData]) -> dict[str, list[MessageData]]:
+        chats = defaultdict(list)
+
+        for message_data in messages:
+            chats[message_data.chat_id].append(message_data)
+
+        return chats
