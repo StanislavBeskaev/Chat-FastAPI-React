@@ -82,3 +82,21 @@ def get_login_avatar(
     return {
         "avatar_file": user_service.get_avatar_by_login(login=login)
     }
+
+
+# TODO документация
+# TODO тесты
+@router.get(
+    "/info/{login}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_current_user)],
+    response_model=models.UserInfo
+)
+def get_user_info(
+        login: str,
+        user_service: UserService = Depends()
+):
+    """Получение информации и пользователе по логину"""
+    logger.debug(f"Запрос получения информации и пользователе: {login}")
+
+    return user_service.get_user_info(login=login)

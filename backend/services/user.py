@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from fastapi import UploadFile, HTTPException
+from fastapi import UploadFile, HTTPException, status
 from loguru import logger
 
 from .. import models
@@ -57,6 +57,31 @@ class UserService(BaseService):
         logger.debug(f"Для пользователя {user_profile.user}, файл аватара: {user_profile.avatar_file}")
         return user_profile.avatar_file
 
+    def get_user_info(self, login: str) -> models.UserInfo:
+        user_info = (
+            self.session
+            .query(
+                tables.User.name,
+                tables.User.surname,
+                tables.Profile.avatar_file
+            )
+            .where(tables.User.login == login)
+            .where(tables.User.id == tables.Profile.user)
+            .first()
+        )
+
+        if not user_info:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=""
+            )
+
+        return models.UserInfo(
+            name=user_info[0],
+            surname=user_info[1],
+            avatar_file=user_info[2]
+        )
+
     @staticmethod
     def _generate_avatar_file_name(file_name: str) -> str:
         """Получение имени файла для нового аватара"""
@@ -80,6 +105,7 @@ class UserService(BaseService):
 
     def _find_profile_by_login(self, login: str) -> tables.Profile:
         """Нахождение профайла пользователя по логину пользователя"""
+        # TODO сделать один запрос
         user = (
             self.session
             .query(tables.User)

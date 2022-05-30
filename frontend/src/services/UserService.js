@@ -10,4 +10,10 @@ export default class UserService {
     console.log(response)
     return response.data.avatar_file
   }
+
+  static async getUserInfo(login) {
+    const response = await axiosInstance.get(`/user/info/${login}`)
+    console.log('getUserInfo:', response)
+    return response.data
+  }
 }

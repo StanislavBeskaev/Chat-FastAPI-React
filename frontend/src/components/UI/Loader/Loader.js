@@ -4,10 +4,10 @@ import {Spinner} from 'react-bootstrap'
 //TODO сделать loader побольше
 const Loader = () => {
   return (
-    <>
-      <Spinner animation="border" variant="primary" className="mt-5 ms-5 me-3" />
+    <div className="m-5">
+      <Spinner animation="border" variant="primary" className="me-2" />
       Загрузка данных
-    </>
+    </div>
 
   )
 }

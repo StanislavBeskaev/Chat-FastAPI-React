@@ -3,7 +3,6 @@ import {makeAutoObservable} from "mobx"
 import axiosInstance from '../axios/axios'
 
 
-//TODO сделать разделение сообщений по чатам
 //TODO ChatsStore
 class MessagesStore {
   messages = {}
@@ -39,10 +38,8 @@ class MessagesStore {
 
   setMessages(data) {
     this.messages = data
-    console.log(Object.keys(this.messages))
   }
 
-  //TODO добавления сообщения по chatId
   addMessage(message) {
     if (!this.isLoadData) return
 

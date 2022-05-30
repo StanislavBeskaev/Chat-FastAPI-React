@@ -1,13 +1,15 @@
 import React, {useEffect, useState} from 'react'
 import {observer} from 'mobx-react-lite'
+import {Modal} from 'react-bootstrap'
 
 import authStore from '../../stores/authStore'
 import messagesStore from '../../stores/messagesStore'
+import modalsStore from '../../stores/modalsStore'
 import {useSocket} from '../../contexts/SocketProvider'
 import Messages from './Messages'
 import TextForm from './TextForm'
 import Loader from '../UI/Loader/Loader'
-
+import AddContactModal from '../Modals/AddContactModal'
 
 
 function SimpleChat() {
@@ -42,6 +44,11 @@ function SimpleChat() {
     socket.send(message)
   }
 
+  const closeAddContactModal = () => {
+    modalsStore.setShowAddContact(false)
+    modalsStore.setAddContactLogin(null)
+  }
+
   if (loading) {
     return <Loader />
   }
@@ -54,6 +61,9 @@ function SimpleChat() {
         </div>
       </div>
       <TextForm sendText={sendText}/>
+      <Modal show={modalsStore.showAddContact} onHide={closeAddContactModal}>
+        <AddContactModal />
+      </Modal>
     </div>
   )
 }
