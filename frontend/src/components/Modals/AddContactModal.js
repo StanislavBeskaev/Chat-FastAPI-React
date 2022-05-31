@@ -38,7 +38,6 @@ const AddContactModal = () => {
             </div>
               <Button className="mt-4 align-self-center">Добавить в контакты</Button>
             </div>
-
         }
       </Modal.Body>
     </>

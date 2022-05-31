@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect} from 'react'
 import {observer} from 'mobx-react-lite'
 import {Modal} from 'react-bootstrap'
 
@@ -15,19 +15,10 @@ import AddContactModal from '../Modals/AddContactModal'
 
 
 function SimpleChat() {
-  const [loading, setLoading] = useState(true)
   const socket = useSocket()
 
-  const {messages, selectedChatId} = messagesStore
+  const {loading, messages, selectedChatId, isLoadMessages, loadError} = messagesStore
   const {login} = authStore.user
-
-
-  useEffect(() => {
-    messagesStore.loadMessages()
-      .then(() => {})
-      .catch(e => console.log("Не удалось загрузить сообщения:", e))
-      .finally(() => setLoading(false))
-  }, [])
 
   useEffect(() => {
     if (socket == null) return
@@ -51,7 +42,11 @@ function SimpleChat() {
     addContactModalStore.setLogin(null)
   }
 
-  if (loading) {
+  if (loadError) {
+    return <h2 className="m-5 text-danger">Возникла ошибка при загрузке сообщений</h2>
+  }
+
+  if (loading || !isLoadMessages) {
     return <Loader />
   }
 

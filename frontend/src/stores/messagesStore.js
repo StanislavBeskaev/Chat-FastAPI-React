@@ -8,7 +8,9 @@ class MessagesStore {
   messages = {}
   chats = []
   selectedChatId = 'MAIN'
-  isLoadData = false
+  isLoadMessages = false
+  loading = false
+  loadError = false
 
   constructor() {
     makeAutoObservable(this)
@@ -17,15 +19,32 @@ class MessagesStore {
 
   async loadMessages() {
     console.log("load messages")
-    const response = await axiosInstance.get("/messages/")
-    console.log("response:", response)
-    this.setMessages(response.data)
-    this.setChats(Object.keys(response.data))
-    this.setIsLoadData(true)
+    this.setLoading(true)
+    try{
+      const response = await axiosInstance.get("/messages/")
+      console.log("success load, response:", response)
+      this.setMessages(response.data)
+      this.setChats(Object.keys(response.data))
+      this.setLoadError(false)
+      this.setIsLoadMessages(true)
+    } catch (e) {
+      console.log("Ошибка при зарузке сообщений:", e)
+      this.setLoadError(true)
+    } finally {
+      this.setLoading(false)
+    }
   }
 
-  setIsLoadData(bool) {
-    this.isLoadData = bool
+  addMessage(message) {
+    if (!this.isLoadMessages) return
+
+    const {chat_id: chatId} = message
+    console.log(`MessagesStore add message to chatId "${chatId}":`, message)
+    this.messages[chatId].push(message)
+  }
+
+  setMessages(data) {
+    this.messages = data
   }
 
   setChats(chats) {
@@ -36,16 +55,16 @@ class MessagesStore {
     this.selectedChatId = chatId
   }
 
-  setMessages(data) {
-    this.messages = data
+  setIsLoadMessages(bool) {
+    this.isLoadMessages = bool
   }
 
-  addMessage(message) {
-    if (!this.isLoadData) return
+  setLoading(bool) {
+    this.loading = bool
+  }
 
-    const {chat_id: chatId} = message
-    console.log(`MessagesStore add message to chatId "${chatId}":`, message)
-    this.messages[chatId].push(message)
+  setLoadError(bool) {
+    this.loadError = bool
   }
 }
 
