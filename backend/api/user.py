@@ -97,6 +97,6 @@ def get_user_info(
         user_service: UserService = Depends()
 ):
     """Получение информации и пользователе по логину"""
-    logger.debug(f"Запрос получения информации и пользователе: {login}")
+    logger.debug(f"Запрос получения информации о пользователе: {login}")
 
     return user_service.get_user_info(login=login)

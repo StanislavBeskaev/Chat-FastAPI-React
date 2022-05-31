@@ -1,16 +1,16 @@
 import React from 'react';
 
 import AvatarMini from '../Avatars/AvatarMini'
-import modalsStore from '../../stores/modalsStore'
 import authStore from '../../stores/authStore'
+import addContactModalStore from '../../stores/modals/addContactModalStore'
 
 const TextMessage = ({message, fromMe}) => {
   const {avatar_file: avatarFile, text, time, login} = message
   const {login: ownLogin} = authStore.user
 
   const showAddContactModal = () => {
-    modalsStore.setShowAddContact(true)
-    modalsStore.setAddContactLogin(login)
+    addContactModalStore.setShow(true)
+    addContactModalStore.setLogin(login)
   }
 
   const isMessageFromOther = login !== ownLogin

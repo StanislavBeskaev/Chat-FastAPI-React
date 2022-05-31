@@ -1,16 +1,17 @@
 import React, {useEffect, useState} from 'react'
 import {Button, Modal} from 'react-bootstrap'
 
-import modalsStore from '../../stores/modalsStore'
+import addContactModalStore from '../../stores/modals/addContactModalStore'
+
 import Loader from '../UI/Loader/Loader'
 import Avatar from '../Avatars/Avatar'
 
 const AddContactModal = () => {
   const [loading, setLoading] = useState(true)
-  const {addContactLogin: login} = modalsStore
+  const {login} = addContactModalStore
 
   useEffect(() => {
-    modalsStore.loadUserInfo()
+    addContactModalStore.loadUserInfo()
       .catch(e => console.log(`Не удалось загрузить информацию о пользователе: ${login}`, e))
       .finally(() => setLoading(false))
   }, [] )
@@ -27,11 +28,11 @@ const AddContactModal = () => {
           : <div className="d-flex flex-column">
             <div className="d-flex flex-row justify-content-around">
               <ul className="align-self-start">
-                <li>Имя: {modalsStore.addContactUserInfo.name}</li>
-                <li>Фамилия: {modalsStore.addContactUserInfo.surname}</li>
+                <li>Имя: {addContactModalStore.userInfo.name}</li>
+                <li>Фамилия: {addContactModalStore.userInfo.surname}</li>
               </ul>
               <Avatar
-                fileName={modalsStore.addContactUserInfo.avatar_file}
+                fileName={addContactModalStore.userInfo.avatar_file}
                 size="md"
               />
             </div>
