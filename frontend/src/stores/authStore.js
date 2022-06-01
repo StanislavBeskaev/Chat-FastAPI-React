@@ -6,6 +6,7 @@ import AuthService from '../services/AuthService'
 import axiosInstance from '../axios/axios'
 import UserService from '../services/UserService'
 import messagesStore from './messagesStore'
+import contactStore from './contactStore'
 
 
 const LOCAL_STORAGE_ACCESS_TOKEN_KEY = 'token'
@@ -72,7 +73,9 @@ class AuthStore {
       this.setAuth(true)
       this.setUser(response.data.user)
       await this.getAvatar()
+      //TODO подумать где инициализировать загрузку данных
       await messagesStore.loadMessages()
+      await contactStore.loadContacts()
     } catch (e) {
       const errorText = JSON.stringify(e?.response?.data?.detail)
       console.log(errorText)
@@ -92,7 +95,9 @@ class AuthStore {
       console.log("setAuth = true")
       this.setUser(response.data.user)
       await this.getAvatar()
+      //TODO подумать где инициализировать загрузку данных
       await messagesStore.loadMessages()
+      await contactStore.loadContacts()
     } catch (e) {
       console.log('checkAuth error', e?.response?.data?.detail)
     }

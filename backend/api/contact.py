@@ -31,7 +31,8 @@ def get_contacts(user: models.User = Depends(get_current_user), contact_service:
 # TODO тесты
 @router.post(
     "/",
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
+    response_model=models.Contact
 )
 def create_contact(
     new_contact: models.ContactCreate,
@@ -39,6 +40,4 @@ def create_contact(
     contact_service: ContactService = Depends()
 ):
     """Создание нового контакта"""
-    contact_service.create(user=user, contact_login=new_contact.login)
-
-    return {"message": "Контакт добавлен"}
+    return contact_service.create(user=user, contact_login=new_contact.login)

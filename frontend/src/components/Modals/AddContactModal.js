@@ -1,20 +1,28 @@
 import React, {useEffect, useState} from 'react'
-import {Button, Modal} from 'react-bootstrap'
+import {Alert, Button, Modal} from 'react-bootstrap'
+import {observer} from 'mobx-react-lite'
 
 import addContactModalStore from '../../stores/modals/addContactModalStore'
 
 import Loader from '../UI/Loader/Loader'
 import Avatar from '../Avatars/Avatar'
+import contactStore from '../../stores/contactStore'
+
 
 const AddContactModal = () => {
   const [loading, setLoading] = useState(true)
   const {login} = addContactModalStore
+  const {error} = contactStore
 
   useEffect(() => {
     addContactModalStore.loadUserInfo()
       .catch(e => console.log(`Не удалось загрузить информацию о пользователе: ${login}`, e))
       .finally(() => setLoading(false))
   }, [] )
+
+  const addContact = async () => {
+    await contactStore.addContact(login)
+  }
 
   // TODO нужна проверка, есть ли пользователь уже в контактах
   //  если есть, то не показывать кнопку добавления
@@ -36,7 +44,8 @@ const AddContactModal = () => {
                 size="md"
               />
             </div>
-              <Button className="mt-4 align-self-center">Добавить в контакты</Button>
+              <Button className="mt-4 align-self-center" onClick={addContact}>Добавить в контакты</Button>
+              {error && <Alert key="danger" variant="danger" className="mt-3">{error}</Alert>}
             </div>
         }
       </Modal.Body>
@@ -44,4 +53,4 @@ const AddContactModal = () => {
   )
 }
 
-export default AddContactModal
+export default observer(AddContactModal)

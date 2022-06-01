@@ -6,24 +6,32 @@ import {observer} from 'mobx-react-lite'
 import AvatarMini from '../Avatars/AvatarMini'
 import authStore from '../../stores/authStore'
 import Chats from './Chats'
+import Contacts from './Contacts'
 
 
-const CONVERSATIONS_KEY = 'conversation'
+const CHATS_KEY = 'conversation'
+const CONTACTS_KEY = 'contacts'
 
 function Sidebar({ login }) {
-  const [activeKey, setActiveKey] = useState(CONVERSATIONS_KEY)
+  const [activeKey, setActiveKey] = useState(CHATS_KEY)
 
   return (
     <div style={{width: '290px'}} className="d-flex flex-column">
       <Tab.Container activeKey={activeKey} onSelect={setActiveKey}>
         <Nav variant="tabs" className="justify-content-center">
           <Nav.Item>
-            <Nav.Link eventKey={CONVERSATIONS_KEY} className="btn">Чаты</Nav.Link>
+            <Nav.Link eventKey={CHATS_KEY} className="btn">Чаты</Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey={CONTACTS_KEY} className="btn">Контакты</Nav.Link>
           </Nav.Item>
         </Nav>
         <Tab.Content className="border-end overflow-auto flex-grow-1">
-          <Tab.Pane eventKey={CONVERSATIONS_KEY}>
+          <Tab.Pane eventKey={CHATS_KEY}>
             <Chats/>
+          </Tab.Pane>
+          <Tab.Pane eventKey={CONTACTS_KEY}>
+            <Contacts />
           </Tab.Pane>
         </Tab.Content>
         <div className="p-2 border-top border-end small">
