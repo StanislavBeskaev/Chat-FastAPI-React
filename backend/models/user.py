@@ -27,5 +27,5 @@ class User(UserBase, UserUpdate):
         orm_mode = True
 
 
-class UserInfo(UserUpdate):
+class UserInfo(User):
     avatar_file: str

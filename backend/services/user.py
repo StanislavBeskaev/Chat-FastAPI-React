@@ -61,6 +61,7 @@ class UserService(BaseService):
         user_info = (
             self.session
             .query(
+                tables.User.id,
                 tables.User.name,
                 tables.User.surname,
                 tables.Profile.avatar_file
@@ -77,9 +78,11 @@ class UserService(BaseService):
             )
 
         return models.UserInfo(
-            name=user_info[0],
-            surname=user_info[1],
-            avatar_file=user_info[2]
+            id=user_info[0],
+            login=login,
+            name=user_info[1],
+            surname=user_info[2],
+            avatar_file=user_info[3]
         )
 
     @staticmethod

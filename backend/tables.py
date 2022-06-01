@@ -61,8 +61,6 @@ class ChatMember(Base):
     user_id = Column(Integer, ForeignKey("users.id"), index=True)
 
 
-# TODO подумать над всеми нужными таблицами для чатов: Chat, ChatMembers, Message и может другие
-# TODO тут нужна ссылка на чат сообщения
 class Message(Base):
     __tablename__ = "messages"
 
@@ -75,3 +73,13 @@ class Message(Base):
     online_status = Column(String, nullable=False)  # TODO тут нужно перечисление
 
     user_rel = relationship(User, backref="messages")
+
+
+class Contact(Base):
+    __tablename__ = "contacts"
+
+    id = Column(Integer, primary_key=True)
+    owner_user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    contact_user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    name = Column(String, nullable=True)
+    surname = Column(String, nullable=True)
