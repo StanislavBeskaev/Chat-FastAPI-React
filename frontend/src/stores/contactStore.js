@@ -1,7 +1,6 @@
 import {makeAutoObservable} from "mobx"
 
 import ContactService from '../services/ContactService'
-import addContactModalStore from './modals/addContactModalStore'
 
 
 class ContactStore {
@@ -28,23 +27,16 @@ class ContactStore {
     }
   }
 
-  async addContact(login) {
-    console.log("Пробуем добавить новый контакт:", login)
-    this.setLoading(true)
-    try {
-      const response = await ContactService.createContact(login)
-      console.log("addContact response", response)
-      this.contacts.push(response.data)
-      //TODO перенести ошибку в addContactModalStore и оттуда сделать вызов addContact
-      addContactModalStore.setShow(false)
-    } catch (e) {
-      console.log("Возникла ошибка при добавлении контакта", e)
-      this.setError(e.response.data.detail)
-    } finally {
-      this.setLoading(false)
-    }
+   addContact(contact) {
+    this.contacts.push(contact)
+    console.log("ContactStore, добавлен новый контакт:", contact)
   }
 
+  hasLogin(login) {
+    const loginContact = this.contacts.find(contact => contact.login === login)
+
+    return !!loginContact
+  }
 
   setLoading(bool) {
     this.loading = bool

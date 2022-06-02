@@ -1,44 +1,81 @@
 import {makeAutoObservable} from "mobx"
 
 import UserService from '../../services/UserService'
+import contactStore from '../contactStore'
+import ContactService from '../../services/ContactService'
 
 
 class AddContactModalStore {
   show = false
   login = null
   userInfo = null
-  loadError = false
+  error = null
+  successAdd = false
+  loading = false
 
   constructor() {
     makeAutoObservable(this)
     console.log("Создан MessagesStore")
   }
 
+  async showModalWithLogin(login) {
+    this.login = login
+    this.show = true
+    this.userInfo = null
+    this.error = null
+    this.successAdd = false
+    await this.loadUserInfo()
+  }
+
+  close() {
+    this.show = false
+  }
+
   async loadUserInfo() {
+    this.setLoading(true)
     try {
-      const data = await UserService.getUserInfo(this.login)
-      this.setLoadError(false)
-      this.setUserInfo(data)
+      this.userInfo = await UserService.getUserInfo(this.login)
     } catch (e) {
       console.log(`Ошибка при загрузке данных пользователя: ${this.login}`)
-      this.setLoadError(true)
+    } finally {
+      this.setLoading(false)
     }
   }
 
-  setShow(bool) {
-    this.show = bool
+  async handleAddContact() {
+    if (!this.login) {
+      console.log("Попытка добавить пустой контакт")
+      this.error = "Попытка добавить пустой контакт"
+      return
+    }
+
+    this.error = null
+    console.log("Пробуем добавить новый контакт:", this.login)
+    try {
+      const response = await ContactService.createContact(this.login)
+      console.log("handleAddContact response", response)
+      contactStore.addContact(response.data)
+
+      this.setSuccessAdd(true)
+      setTimeout(() => {
+        this.close()
+      }, 2000)
+    } catch (e) {
+      console.log("Возникла ошибка при добавлении контакта", e)
+      this.error = e.response.data.detail
+    }
   }
 
-  setLogin(login) {
-    this.login = login
+  setError(error) {
+    this.error = error
   }
 
-  setUserInfo(data) {
-    this.userInfo = data
+  setLoading(bool) {
+    this.loading = bool
   }
 
-  setLoadError(bool) {
-    this.loadError = bool
+  setSuccessAdd(bool) {
+    this.successAdd = bool
   }
 }
 

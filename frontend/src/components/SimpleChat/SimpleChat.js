@@ -12,7 +12,6 @@ import Messages from './Messages'
 import TextForm from './TextForm'
 import Loader from '../UI/Loader/Loader'
 import AddContactModal from '../Modals/AddContactModal'
-import contactStore from '../../stores/contactStore'
 
 
 function SimpleChat() {
@@ -39,9 +38,7 @@ function SimpleChat() {
   }
 
   const closeAddContactModal = () => {
-    addContactModalStore.setShow(false)
-    addContactModalStore.setLogin(null)
-    contactStore.setError(null)
+    addContactModalStore.close()
   }
 
   if (loadError) {

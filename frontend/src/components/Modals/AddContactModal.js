@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React from 'react'
 import {Alert, Button, Modal} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
@@ -10,42 +10,48 @@ import contactStore from '../../stores/contactStore'
 
 
 const AddContactModal = () => {
-  const [loading, setLoading] = useState(true)
-  const {login} = addContactModalStore
-  const {error} = contactStore
+  const {loading, login, error, successAdd} = addContactModalStore
 
-  useEffect(() => {
-    addContactModalStore.loadUserInfo()
-      .catch(e => console.log(`Не удалось загрузить информацию о пользователе: ${login}`, e))
-      .finally(() => setLoading(false))
-  }, [] )
+  const loginAlreadyInContacts = contactStore.hasLogin(login)
 
   const addContact = async () => {
-    await contactStore.addContact(login)
+    await addContactModalStore.handleAddContact()
   }
 
-  // TODO нужна проверка, есть ли пользователь уже в контактах
-  //  если есть, то не показывать кнопку добавления
   return (
     <>
       <Modal.Header closeButton>Пользователь {login}</Modal.Header>
       <Modal.Body>
         {
           loading
-          ? <Loader />
-          : <div className="d-flex flex-column">
-            <div className="d-flex flex-row justify-content-around">
-              <ul className="align-self-start">
-                <li>Имя: {addContactModalStore.userInfo.name}</li>
-                <li>Фамилия: {addContactModalStore.userInfo.surname}</li>
-              </ul>
-              <Avatar
-                fileName={addContactModalStore.userInfo.avatar_file}
-                size="md"
-              />
-            </div>
-              <Button className="mt-4 align-self-center" onClick={addContact}>Добавить в контакты</Button>
-              {error && <Alert key="danger" variant="danger" className="mt-3">{error}</Alert>}
+            ? <Loader/>
+            : <div className="d-flex flex-column">
+              <div className="d-flex flex-row justify-content-around">
+                <ul className="align-self-start">
+                  <li>Имя: {addContactModalStore?.userInfo?.name}</li>
+                  <li>Фамилия: {addContactModalStore?.userInfo?.surname}</li>
+                </ul>
+                <Avatar
+                  fileName={addContactModalStore?.userInfo?.avatar_file}
+                  size="md"
+                />
+              </div>
+              <div className="mt-4 align-self-center">
+                {
+                  successAdd
+                    ? <Alert variant="success">Контакт успешно добавлен</Alert>
+                    : <div>
+                        {
+                          loginAlreadyInContacts
+                            ? <Alert variant="info">Пользователь уже есть в контактах</Alert>
+                            : <div>
+                              <Button onClick={addContact}>Добавить в контакты</Button>
+                              {error && <Alert key="danger" variant="danger" className="mt-3">{error}</Alert>}
+                              </div>
+                        }
+                      </div>
+                }
+              </div>
             </div>
         }
       </Modal.Body>

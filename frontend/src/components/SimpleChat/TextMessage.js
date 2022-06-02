@@ -8,9 +8,8 @@ const TextMessage = ({message, fromMe}) => {
   const {avatar_file: avatarFile, text, time, login} = message
   const {login: ownLogin} = authStore.user
 
-  const showAddContactModal = () => {
-    addContactModalStore.setShow(true)
-    addContactModalStore.setLogin(login)
+  const showAddContactModal = async () => {
+    await addContactModalStore.showModalWithLogin(login)
   }
 
   const isMessageFromOther = login !== ownLogin
