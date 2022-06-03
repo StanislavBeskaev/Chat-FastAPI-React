@@ -41,3 +41,20 @@ def create_contact(
 ):
     """Создание нового контакта"""
     return contact_service.create(user=user, contact_login=new_contact.login)
+
+
+# TODO документация
+# TODO тесты
+@router.delete(
+    "/",
+    status_code=status.HTTP_200_OK
+)
+def delete_contact(
+    contact_to_delete: models.ContactDelete,
+    user: models.User = Depends(get_current_user),
+    contact_service: ContactService = Depends()
+):
+    """Удаление контакта"""
+    contact_service.delete(user=user, contact_login=contact_to_delete.login)
+
+    return {"message": f"Контакт {contact_to_delete.login} удалён"}

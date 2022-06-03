@@ -5,6 +5,10 @@ class ContactCreate(BaseModel):
     login: str
 
 
+class ContactDelete(ContactCreate):
+    pass
+
+
 class Contact(ContactCreate):
     login: str
     name: str

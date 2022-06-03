@@ -87,12 +87,29 @@ class ContactService(BaseService):
             avatar_file=contact_user_info.avatar_file
         )
 
+    def delete(self, user: models.User, contact_login: str) -> None:
+        logger.debug(f"Пользователь {user.login} попытка удаления контакта {contact_login}")
+        contact = self._find_contact(user=user, contact_login=contact_login)
+
+        if not contact:
+            logger.warning(f"Пользователь {user.login} попытка удаления "
+                           f"не существующего контакта {contact_login}")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Контакт с логином '{contact_login}' не найден"
+            )
+
+        self.session.delete(contact)
+        self.session.commit()
+
+        logger.info(f"Пользователь {user.login} удалён контакт {contact_login}")
+
     def _find_contact(self, user: models.User, contact_login: str) -> tables.Contact | None:
         contact_user = self._auth_service.find_user_by_login(login=contact_login)
 
         if not contact_user:
-            logger.warning(f"Пользователь {user.login} попытка добавить"
-                           f" в контакты не существующего пользователя {contact_login}")
+            logger.warning(f"Пользователь {user.login} операция"
+                           f" с не существующим пользователем {contact_login}")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Пользователь с логином '{contact_login}' не найден"
