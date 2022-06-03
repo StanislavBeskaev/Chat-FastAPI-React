@@ -32,6 +32,17 @@ class ContactStore {
     console.log("ContactStore, добавлен новый контакт:", contact)
   }
 
+  async deleteContact(login) {
+    console.log("Попытка удалить контакт:", login)
+    try {
+      await ContactService.deleteContact(login)
+      this.setContacts(this.contacts.filter(contact => contact.login !== login))
+      console.log("Удалён контакт ", login)
+    } catch (e) {
+      console.log(`Не удалось удалить контакт ${login}`, e)
+    }
+  }
+
   hasLogin(login) {
     const loginContact = this.contacts.find(contact => contact.login === login)
 

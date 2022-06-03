@@ -12,6 +12,7 @@ class AddContactModalStore {
   error = null
   successAdd = false
   loading = false
+  closeTimeout = null
 
   constructor() {
     makeAutoObservable(this)
@@ -24,6 +25,7 @@ class AddContactModalStore {
     this.userInfo = null
     this.error = null
     this.successAdd = false
+    if (this.closeTimeout) clearTimeout(this.closeTimeout)
     await this.loadUserInfo()
   }
 
@@ -57,7 +59,7 @@ class AddContactModalStore {
       contactStore.addContact(response.data)
 
       this.setSuccessAdd(true)
-      setTimeout(() => {
+      this.closeTimeout = setTimeout(() => {
         this.close()
       }, 2000)
     } catch (e) {

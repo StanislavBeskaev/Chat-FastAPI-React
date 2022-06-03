@@ -9,5 +9,9 @@ export default class ContactService {
   static async createContact(login) {
     return axiosInstance.post('/contacts', {login})
   }
+
+  static async deleteContact(login) {
+    return axiosInstance.delete('/contacts', {data: {login}})
+  }
 }
 
