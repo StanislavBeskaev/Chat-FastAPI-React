@@ -14,6 +14,7 @@ const Contacts = () => {
   }
 
   const handleDelete = async (login) => {
+    //TODO запрашивать подтвереждение на удаление контакта
     await contactStore.deleteContact(login)
   }
 
@@ -25,7 +26,7 @@ const Contacts = () => {
             <div
               onClick={() => contactModalStore.showWithLogin(contact.login)}
               style={{cursor: 'pointer'}}
-            >{contact.login}</div>
+            >{contact.login} {contact.name} {contact.surname}</div>
             <Button style={{fontSize: 12}} variant="danger" size="sm" onClick={() => handleDelete(contact.login)}>X</Button>
           </div>
         </ListGroup.Item>
