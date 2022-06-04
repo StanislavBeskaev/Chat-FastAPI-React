@@ -58,3 +58,34 @@ def delete_contact(
     contact_service.delete(user=user, contact_login=contact_to_delete.login)
 
     return {"message": f"Контакт {contact_to_delete.login} удалён"}
+
+
+# TODO документация
+# TODO тесты
+@router.get(
+    "/info",
+    status_code=status.HTTP_200_OK,
+    response_model=models.Contact
+)
+def get_contact(
+    contact_to_get: models.ContactGet,
+    user: models.User = Depends(get_current_user),
+    contact_service: ContactService = Depends()
+):
+    """Получение данных контакта по логину"""
+    return contact_service.get_by_login(user=user, contact_login=contact_to_get.login)
+
+
+# TODO документация
+# TODO тесты
+@router.put(
+    "/",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+def change_contact(
+    contact_data: models.ContactChange,
+    user: models.User = Depends(get_current_user),
+    contact_service: ContactService = Depends()
+):
+    """Изменение данных контакта"""
+    contact_service.change(user=user, contact_data=contact_data)

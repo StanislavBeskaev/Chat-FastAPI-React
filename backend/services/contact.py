@@ -88,21 +88,53 @@ class ContactService(BaseService):
         )
 
     def delete(self, user: models.User, contact_login: str) -> None:
+        """Удаление контакта по логину"""
         logger.debug(f"Пользователь {user.login} попытка удаления контакта {contact_login}")
         contact = self._find_contact(user=user, contact_login=contact_login)
 
         if not contact:
             logger.warning(f"Пользователь {user.login} попытка удаления "
                            f"не существующего контакта {contact_login}")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Контакт с логином '{contact_login}' не найден"
-            )
+            raise self._get_not_found_contact_exception(contact_login=contact_login)
 
         self.session.delete(contact)
         self.session.commit()
 
         logger.info(f"Пользователь {user.login} удалён контакт {contact_login}")
+
+    def get_by_login(self, user: models.User, contact_login: str):
+        """Получение контакта по логину"""
+        logger.debug(f"Пользователь {user.login} запрос данных контакта {contact_login}")
+        contact = self._find_contact(user=user, contact_login=contact_login)
+
+        if not contact:
+            logger.warning(f"Пользователь {user.login} запрос данных "
+                           f"не существующего контакта {contact_login}")
+            raise self._get_not_found_contact_exception(contact_login=contact_login)
+
+        contact_user_info = self._user_service.get_user_info(login=contact_login)
+
+        return models.Contact(
+            login=contact_login,
+            name=contact.name,
+            surname=contact.surname,
+            avatar_file=contact_user_info.avatar_file
+        )
+
+    def change(self, user: models.User, contact_data: models.ContactChange) -> None:
+        """Изменение данных контакта(имя, фамилия)"""
+        logger.debug(f"Пользователь {user.login} попытка изменения контакта {contact_data}")
+        contact = self._find_contact(user=user, contact_login=contact_data.login)
+
+        if not contact:
+            logger.warning(f"Пользователь {user.login} попытка изменения "
+                           f"не существующего контакта {contact_data.login}")
+            raise self._get_not_found_contact_exception(contact_login=contact_data.login)
+
+        contact.name = contact_data.name
+        contact.surname = contact_data.surname
+        self.session.add(contact)
+        self.session.commit()
 
     def _find_contact(self, user: models.User, contact_login: str) -> tables.Contact | None:
         contact_user = self._auth_service.find_user_by_login(login=contact_login)
@@ -124,3 +156,10 @@ class ContactService(BaseService):
         )
 
         return contact
+
+    @staticmethod
+    def _get_not_found_contact_exception(contact_login: str) -> HTTPException:
+        return HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Контакт с логином '{contact_login}' не найден"
+            )

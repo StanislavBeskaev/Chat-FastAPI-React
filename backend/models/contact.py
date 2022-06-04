@@ -9,8 +9,14 @@ class ContactDelete(ContactCreate):
     pass
 
 
-class Contact(ContactCreate):
-    login: str
+class ContactGet(ContactCreate):
+    pass
+
+
+class ContactChange(ContactCreate):
     name: str
     surname: str
+
+
+class Contact(ContactChange):
     avatar_file: str
