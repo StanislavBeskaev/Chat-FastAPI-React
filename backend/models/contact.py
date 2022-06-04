@@ -9,10 +9,6 @@ class ContactDelete(ContactCreate):
     pass
 
 
-class ContactGet(ContactCreate):
-    pass
-
-
 class ContactChange(ContactCreate):
     name: str
     surname: str

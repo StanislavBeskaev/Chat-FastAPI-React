@@ -63,17 +63,17 @@ def delete_contact(
 # TODO документация
 # TODO тесты
 @router.get(
-    "/info",
+    "/{login}",
     status_code=status.HTTP_200_OK,
     response_model=models.Contact
 )
 def get_contact(
-    contact_to_get: models.ContactGet,
+    login: str,
     user: models.User = Depends(get_current_user),
     contact_service: ContactService = Depends()
 ):
     """Получение данных контакта по логину"""
-    return contact_service.get_by_login(user=user, contact_login=contact_to_get.login)
+    return contact_service.get_by_login(user=user, contact_login=login)
 
 
 # TODO документация

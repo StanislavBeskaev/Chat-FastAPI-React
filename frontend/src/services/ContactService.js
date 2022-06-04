@@ -3,15 +3,18 @@ import axiosInstance from '../axios/axios'
 export default class ContactService {
 
   static async getContacts() {
-    return axiosInstance.get('/contacts')
+    return axiosInstance.get('/contacts/')
   }
 
   static async createContact(login) {
-    return axiosInstance.post('/contacts', {login})
+    return axiosInstance.post('/contacts/', {login})
   }
 
   static async deleteContact(login) {
-    return axiosInstance.delete('/contacts', {data: {login}})
+    return axiosInstance.delete('/contacts/', {data: {login}})
+  }
+
+  static async getOne(login) {
+    return axiosInstance.get(`/contacts/${login}`)
   }
 }
-

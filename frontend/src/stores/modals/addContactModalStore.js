@@ -16,7 +16,7 @@ class AddContactModalStore {
 
   constructor() {
     makeAutoObservable(this)
-    console.log("Создан MessagesStore")
+    console.log("Создан AddContactModalStore")
   }
 
   async showModalWithLogin(login) {

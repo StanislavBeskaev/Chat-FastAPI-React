@@ -1,12 +1,14 @@
 import React, {useState} from 'react'
 import {Link} from 'react-router-dom'
-import {Tab, Nav, Button, Row} from 'react-bootstrap'
+import {Tab, Nav, Button, Row, Modal} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
 import AvatarMini from '../Avatars/AvatarMini'
 import authStore from '../../stores/authStore'
 import Chats from './Chats'
 import Contacts from './Contacts'
+import contactModalStore from '../../stores/modals/contactModalStore'
+import ContactModal from '../Modals/ContactModal'
 
 
 const CHATS_KEY = 'conversation'
@@ -56,6 +58,9 @@ function Sidebar({ login }) {
           </Row>
         </div>
       </Tab.Container>
+      <Modal show={contactModalStore.show} onHide={() => contactModalStore.close()}>
+        <ContactModal/>
+      </Modal>
     </div>
   )
 }
