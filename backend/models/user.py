@@ -28,4 +28,4 @@ class User(UserBase, UserUpdate):
 
 
 class UserInfo(User):
-    avatar_file: str
+    avatar_file: str | None

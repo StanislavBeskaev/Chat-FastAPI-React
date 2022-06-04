@@ -10,9 +10,9 @@ class ContactDelete(ContactCreate):
 
 
 class ContactChange(ContactCreate):
-    name: str
-    surname: str
+    name: str | None
+    surname: str | None
 
 
 class Contact(ContactChange):
-    avatar_file: str
+    avatar_file: str | None

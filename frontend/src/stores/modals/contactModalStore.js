@@ -63,10 +63,12 @@ class ContactModalStore {
 
   setName(name) {
     this.name = name
+    this.changed = false
   }
 
   setSurname(surname) {
     this.surname = surname
+    this.changed = false
   }
 
   setAvatarFile(avatarFile) {
