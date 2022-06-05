@@ -1,15 +1,21 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends
 from loguru import logger
 from passlib.hash import bcrypt
 from pydantic import ValidationError
+from sqlalchemy.orm import Session
 
 from .. import models, tables
+from ..database import get_session
 from . import BaseService
 from .token import TokenService
 
 
 class AuthService(BaseService):
     """Сервис авторизации и регистрации"""
+
+    def __init__(self, session: Session = Depends(get_session)):
+        super().__init__(session=session)
+        self._token_service = TokenService(session=session)
 
     @classmethod
     def hash_password(cls, password: str) -> str:
@@ -30,7 +36,7 @@ class AuthService(BaseService):
             )
 
         new_user = self._create_new_user(user_data=user_data)
-        tokens = TokenService.generate_tokens(user=new_user)
+        tokens = self._token_service.generate_tokens(user=new_user)
 
         return tokens
 
@@ -48,7 +54,7 @@ class AuthService(BaseService):
                            f" переданные данные: {login=} {password=}")
             raise HTTPException(status_code=401, detail="Неверный пароль")
 
-        tokens = TokenService.generate_tokens(user=models.User.from_orm(user))
+        tokens = self._token_service.generate_tokens(user=models.User.from_orm(user))
         logger.info(f"Пользователь {login} успешно авторизован")
         return tokens
 
@@ -59,8 +65,8 @@ class AuthService(BaseService):
             logger.warning(f"refresh токен не передан, обновление не выполняется")
             raise HTTPException(status_code=401, detail="Не валидный refresh_token")
 
-        user_data = TokenService.verify_refresh_token(token=refresh_token)
-        refresh_token_from_db = TokenService.find_refresh_token(token=refresh_token)
+        user_data = self._token_service.verify_refresh_token(token=refresh_token)
+        refresh_token_from_db = self._token_service.find_refresh_token(token=refresh_token)
 
         if not user_data or not refresh_token_from_db:
             logger.debug(f"Не удалось обновить токены, {user_data=}, {refresh_token_from_db=}")
@@ -72,22 +78,21 @@ class AuthService(BaseService):
             logger.warning(f"Не удалось получить пользователя по id={user_data.id}: {str(e)}")
             raise HTTPException(status_code=401, detail="Не удалось обновить токены")
 
-        tokens = TokenService.generate_tokens(user=user)
+        tokens = self._token_service.generate_tokens(user=user)
 
         logger.debug(f"Токены успешно обновлены")
         return tokens
 
-    @staticmethod
-    def logout(refresh_token: str | None) -> None:
+    def logout(self, refresh_token: str | None) -> None:
         """Выход из системы"""
         logger.debug(f"Попытка выхода из системы, refresh_token: {refresh_token} ")
         if not refresh_token:
             logger.warning(f"refresh токен не передан, выход не возможен")
             raise HTTPException(status_code=401, detail="Не валидный refresh_token")
 
-        user_data = TokenService.verify_refresh_token(token=refresh_token)
+        user_data = self._token_service.verify_refresh_token(token=refresh_token)
 
-        TokenService.delete_refresh_token(token=refresh_token)
+        self._token_service.delete_refresh_token(token=refresh_token)
         logger.info(f"Пользователь '{user_data.login}' выполнен выход из системы")
 
     def find_user_by_login(self, login: str) -> tables.User | None:

@@ -16,6 +16,7 @@ python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 bcrypt = "^3.2.2"
 python-multipart = "^0.0.5"
 pytz = "^2022.1"
+requests = "^2.27.1"
 
 [tool.poetry.dev-dependencies]
 

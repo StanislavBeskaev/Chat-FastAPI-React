@@ -6,34 +6,31 @@ from loguru import logger
 from pydantic import ValidationError
 
 from .. import models, tables
-from ..database import get_session
 from ..settings import get_settings, Settings
+from . import BaseService
 
 
-class TokenService:
+class TokenService(BaseService):
     """Сервис для работы с токенами"""
-    session = next(get_session())
 
-    @classmethod
-    def generate_tokens(cls, user: models.User) -> models.Tokens:
+    def generate_tokens(self, user: models.User) -> models.Tokens:
         """Генерация токенов: access и refresh"""
         settings = get_settings()
 
         tokens = models.Tokens(
-            access_token=cls.generate_access_token(user=user, settings=settings),
-            refresh_token=cls.generate_refresh_token(user=user, setting=settings),
+            access_token=self.generate_access_token(user=user, settings=settings),
+            refresh_token=self.generate_refresh_token(user=user, setting=settings),
             user=user
         )
         logger.debug(f"Для пользователя {user}, сгенерированы токены: {tokens.access_token=}, {tokens.refresh_token=}")
-        cls.save_refresh_token_to_db(user_id=user.id, refresh_token=tokens.refresh_token)
+        self.save_refresh_token_to_db(user_id=user.id, refresh_token=tokens.refresh_token)
 
         return tokens
 
-    @classmethod
-    def save_refresh_token_to_db(cls, user_id: int, refresh_token: str) -> tables.RefreshToken:
+    def save_refresh_token_to_db(self, user_id: int, refresh_token: str) -> tables.RefreshToken:
         """Сохранение refresh токена для пользователя с id=user_id в базу данных"""
         logger.debug(f"Пользователь {user_id}, запрос на сохранение refresh токена в базу: '{refresh_token}'")
-        token = cls._find_refresh_token_by_user_id(user_id=user_id)
+        token = self._find_refresh_token_by_user_id(user_id=user_id)
         if token:
             logger.debug(f"Для пользователя {user_id} уже существует refresh_token, обновляем")
             token.refresh_token = refresh_token
@@ -44,15 +41,14 @@ class TokenService:
                 refresh_token=refresh_token
             )
 
-        cls.session.add(token)
-        cls.session.commit()
+        self.session.add(token)
+        self.session.commit()
         logger.info(f"Для пользователя {user_id} в базу сохранён refresh_token: {refresh_token}")
         return token
 
-    @classmethod
-    def _find_refresh_token_by_user_id(cls, user_id: int) -> tables.RefreshToken | None:
+    def _find_refresh_token_by_user_id(self, user_id: int) -> tables.RefreshToken | None:
         refresh_token = (
-            cls.session
+            self.session
             .query(tables.RefreshToken)
             .filter(tables.RefreshToken.user == user_id)
             .first()
@@ -60,10 +56,9 @@ class TokenService:
 
         return refresh_token
 
-    @classmethod
-    def find_refresh_token(cls, token: str) -> tables.RefreshToken | None:
+    def find_refresh_token(self, token: str) -> tables.RefreshToken | None:
         refresh_token = (
-            cls.session
+            self.session
             .query(tables.RefreshToken)
             .filter(tables.RefreshToken.refresh_token == token)
             .first()
@@ -71,10 +66,9 @@ class TokenService:
 
         return refresh_token
 
-    @classmethod
-    def generate_access_token(cls, user: models.User, settings: Settings) -> str:
+    def generate_access_token(self, user: models.User, settings: Settings) -> str:
         """Генерация токена доступа"""
-        return cls._generate_token(
+        return self._generate_token(
             user=user,
             duration=settings.jwt_access_expires_s,
             secret_key=settings.jwt_access_secret,
@@ -82,10 +76,9 @@ class TokenService:
             token_kind="access"
         )
 
-    @classmethod
-    def generate_refresh_token(cls, user: models.User, setting: Settings) -> str:
+    def generate_refresh_token(self, user: models.User, setting: Settings) -> str:
         """Генерация refresh токена"""
-        return cls._generate_token(
+        return self._generate_token(
             user=user,
             duration=setting.jwt_refresh_expires_s,
             secret_key=setting.jwt_refresh_secret,
@@ -94,8 +87,8 @@ class TokenService:
         )
 
     # TODO посмотреть, может нужен общий payload
-    @classmethod
-    def _generate_token(cls, user: models.User, duration: int, secret_key: str, algorithm: str, token_kind: str) -> str:
+    @staticmethod
+    def _generate_token(user: models.User, duration: int, secret_key: str, algorithm: str, token_kind: str) -> str:
         """Генерация токена"""
         now = datetime.utcnow()
         payload = {
@@ -113,8 +106,8 @@ class TokenService:
 
         return token
 
-    @classmethod
-    def verify_access_token(cls, token: str) -> models.User:
+    @staticmethod
+    def verify_access_token(token: str) -> models.User:
         """Проверка токена доступа"""
         logger.debug(f"Проверяем access_token: {token}")
         settings = get_settings()
@@ -145,8 +138,8 @@ class TokenService:
         logger.debug(f"Верный access_token: {token}")
         return user
 
-    @classmethod
-    def verify_refresh_token(cls, token) -> models.User:
+    @staticmethod
+    def verify_refresh_token(token) -> models.User:
         """Проверка refresh токена"""
         logger.debug(f"Проверяем refresh токен: {token}")
         settings = get_settings()
@@ -173,9 +166,8 @@ class TokenService:
         logger.debug(f"Верный refresh_token: {token}")
         return user
 
-    @classmethod
-    def delete_refresh_token(cls, token: str) -> None:
-        refresh_token = cls.find_refresh_token(token=token)
-        cls.session.delete(refresh_token)
-        cls.session.commit()
+    def delete_refresh_token(self, token: str) -> None:
+        refresh_token = self.find_refresh_token(token=token)
+        self.session.delete(refresh_token)
+        self.session.commit()
         logger.debug(f"Из базы удалён refresh_token: {token}")
