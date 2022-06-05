@@ -1,9 +1,9 @@
 import React from 'react'
-import {Button, ListGroup} from 'react-bootstrap'
+import {ListGroup} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
 import contactStore from '../../stores/contactStore'
-import contactModalStore from '../../stores/modals/contactModalStore'
+import Contact from './Contact'
 
 
 const Contacts = () => {
@@ -13,22 +13,15 @@ const Contacts = () => {
     return <div className="m-3">Тут пока пусто</div>
   }
 
-  const handleDelete = async (login) => {
-    //TODO запрашивать подтвереждение на удаление контакта
-    await contactStore.deleteContact(login)
-  }
-
   return (
     <ListGroup variant="flush" className="m-1">
       {contacts.map(contact => (
         <ListGroup.Item key={contact.login}>
-          <div className="d-flex justify-content-between">
-            <div
-              onClick={() => contactModalStore.showWithLogin(contact.login)}
-              style={{cursor: 'pointer'}}
-            >{contact.login} {contact.name} {contact.surname}</div>
-            <Button style={{fontSize: 12}} variant="danger" size="sm" onClick={() => handleDelete(contact.login)}>X</Button>
-          </div>
+          <Contact
+            login={contact.login}
+            name={contact.name}
+            surname={contact.surname}
+          />
         </ListGroup.Item>
       ))}
     </ListGroup>
