@@ -36,7 +36,8 @@ class AddContactModalStore {
   async loadUserInfo() {
     this.setLoading(true)
     try {
-      this.userInfo = await UserService.getUserInfo(this.login)
+      const data = await UserService.getUserInfo(this.login)
+      this.setUserInfo(data)
     } catch (e) {
       console.log(`Ошибка при загрузке данных пользователя: ${this.login}`)
     } finally {
@@ -66,6 +67,10 @@ class AddContactModalStore {
       console.log("Возникла ошибка при добавлении контакта", e)
       this.error = e.response.data.detail
     }
+  }
+
+  setUserInfo(data) {
+    this.userInfo = data
   }
 
   setError(error) {

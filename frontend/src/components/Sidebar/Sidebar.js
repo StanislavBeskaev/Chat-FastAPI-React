@@ -9,9 +9,11 @@ import Chats from './Chats'
 import Contacts from './Contacts'
 import contactModalStore from '../../stores/modals/contactModalStore'
 import ContactModal from '../Modals/ContactModal'
+import ConfirmDeleteContactModal from '../Modals/ConfirmDeleteContactModal'
+import confirmDeleteContactModalStore from '../../stores/modals/confirmDeleteContactModalStore'
 
 
-const CHATS_KEY = 'conversation'
+const CHATS_KEY = 'chats'
 const CONTACTS_KEY = 'contacts'
 
 function Sidebar({ login }) {
@@ -60,6 +62,9 @@ function Sidebar({ login }) {
       </Tab.Container>
       <Modal show={contactModalStore.show} onHide={() => contactModalStore.close()}>
         <ContactModal/>
+      </Modal>
+      <Modal show={confirmDeleteContactModalStore.show} onHide={() => confirmDeleteContactModalStore.close()}>
+        <ConfirmDeleteContactModal />
       </Modal>
     </div>
   )

@@ -3,13 +3,15 @@ import {Button} from 'react-bootstrap'
 
 import contactModalStore from '../../stores/modals/contactModalStore'
 import contactStore from '../../stores/contactStore'
+import confirmDeleteContactModalStore from '../../stores/modals/confirmDeleteContactModalStore'
 
 
 const Contact = ({login}) => {
 
   const handleDelete = async () => {
     //TODO запрашивать подтвереждение на удаление контакта
-    await contactStore.deleteContact(login)
+    confirmDeleteContactModalStore.showWithLogin(login)
+    // await contactStore.deleteContact(login)
   }
 
   return (
