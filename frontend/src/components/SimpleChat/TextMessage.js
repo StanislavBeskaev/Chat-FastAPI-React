@@ -1,8 +1,11 @@
-import React from 'react';
+import React from 'react'
+import {observer} from 'mobx-react-lite'
 
 import AvatarMini from '../Avatars/AvatarMini'
 import authStore from '../../stores/authStore'
 import addContactModalStore from '../../stores/modals/addContactModalStore'
+import contactStore from '../../stores/contactStore'
+
 
 const TextMessage = ({message, fromMe}) => {
   const {avatar_file: avatarFile, text, time, login} = message
@@ -30,10 +33,10 @@ const TextMessage = ({message, fromMe}) => {
         </div>
       </div>
       <div className={`text-muted small ${fromMe ? 'text-end' : ''}`}>
-        {fromMe ? 'Вы' : login}, {time}
+        {fromMe ? 'Вы' : contactStore.getDisplayName(login)}, {time}
       </div>
     </>
   )
 }
 
-export default TextMessage
+export default observer(TextMessage)

@@ -19,8 +19,6 @@ const Contacts = () => {
         <ListGroup.Item key={contact.login}>
           <Contact
             login={contact.login}
-            name={contact.name}
-            surname={contact.surname}
           />
         </ListGroup.Item>
       ))}

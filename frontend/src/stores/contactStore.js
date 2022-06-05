@@ -1,4 +1,4 @@
-import {makeAutoObservable} from "mobx"
+import {makeAutoObservable} from 'mobx'
 
 import ContactService from '../services/ContactService'
 
@@ -44,9 +44,35 @@ class ContactStore {
   }
 
   hasLogin(login) {
-    const loginContact = this.contacts.find(contact => contact.login === login)
+    const loginContact = this.findContactByLogin(login)
 
     return !!loginContact
+  }
+
+  findContactByLogin(login) {
+    return this.contacts.find(contact => contact.login === login)
+  }
+
+  getDisplayName(login) {
+    const loginContact = this.findContactByLogin(login)
+    if (!loginContact) {
+      return login
+    }
+
+    const {name, surname} = loginContact
+    let displayName
+
+    if (name && surname) {
+      displayName = `(${name} ${surname})`
+    } else if (name && !surname) {
+      displayName = `(${name})`
+    } else if (!name && surname) {
+      displayName = `(${surname})`
+    } else {
+      displayName = ''
+    }
+
+    return `${login}${displayName}`
   }
 
   setLoading(bool) {
