@@ -3,16 +3,27 @@ import {Alert, Button, Modal} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
 import addContactModalStore from '../../stores/modals/addContactModalStore'
+import contactStore from '../../stores/contactStore'
 
 import Loader from '../UI/Loader/Loader'
 import Avatar from '../Avatars/Avatar'
-import contactStore from '../../stores/contactStore'
 
 
 const AddContactModal = () => {
   const {loading, login, error, successAdd} = addContactModalStore
 
   const loginAlreadyInContacts = contactStore.hasLogin(login)
+  let name
+  let surname
+
+  if (loginAlreadyInContacts) {
+    const contactLogin = contactStore.findContactByLogin(login)
+    name = contactLogin.name
+    surname = contactLogin.surname
+  } else {
+    name = addContactModalStore?.userInfo?.name
+    surname = addContactModalStore?.userInfo?.surname
+  }
 
   const addContact = async () => {
     await addContactModalStore.handleAddContact()
@@ -27,8 +38,6 @@ const AddContactModal = () => {
     </>
   }
 
-  //TODO если пользователь есть в контактах, то name и surname брать из контакта
-
   return (
     <>
       <Modal.Header closeButton>Пользователь {login}</Modal.Header>
@@ -40,8 +49,8 @@ const AddContactModal = () => {
               size="md"
             />
             <ul className="align-self-start">
-              <li>Имя: {addContactModalStore?.userInfo?.name}</li>
-              <li>Фамилия: {addContactModalStore?.userInfo?.surname}</li>
+              <li>Имя: {name}</li>
+              <li>Фамилия: {surname}</li>
             </ul>
           </div>
           <div className="mt-4 align-self-center">
