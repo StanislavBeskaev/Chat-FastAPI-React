@@ -74,7 +74,7 @@ class UserService(BaseService):
         if not user_info:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=""
+                detail=f"Пользователь с логином '{login}' не найден"
             )
 
         return models.UserInfo(

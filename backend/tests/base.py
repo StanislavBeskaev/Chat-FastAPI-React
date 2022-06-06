@@ -15,6 +15,8 @@ from ..main import app
 
 TEST_DB_NAME = "test.db"
 TEST_SQLALCHEMY_DATABASE_URL = f"sqlite:///./{TEST_DB_NAME}"
+AUTHORIZATION = "Authorization"
+BEARER = "Bearer"
 
 engine = create_engine(
     TEST_SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
@@ -49,3 +51,7 @@ class BaseTestCase(TestCase):
         test_db_file_path = os.path.join(Path(__file__).resolve().parent.parent.parent, TEST_DB_NAME)
         os.remove(test_db_file_path)
         logger.info(f"Удалён файл тестовой базы: {test_db_file_path}")
+
+    @staticmethod
+    def get_authorization_headers(access_token: str) -> dict:
+        return {AUTHORIZATION: f"{BEARER} {access_token}"}
