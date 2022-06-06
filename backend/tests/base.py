@@ -8,7 +8,7 @@ from loguru import logger
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from .. import tables
+from .. import tables, models
 from ..database import get_session
 from ..main import app
 
@@ -55,3 +55,16 @@ class BaseTestCase(TestCase):
     @staticmethod
     def get_authorization_headers(access_token: str) -> dict:
         return {AUTHORIZATION: f"{BEARER} {access_token}"}
+
+    def login(self, username: str, password: str) -> models.Tokens:
+        login_response = self.client.post(
+            "/api/auth/login",
+            data={
+                "username": username,
+                "password": password
+            }
+        )
+
+        self.assertEqual(login_response.status_code, 200)
+        tokens = models.Tokens.parse_obj(login_response.json())
+        return tokens
