@@ -35,8 +35,17 @@ class TestAuth(BaseTestCase):
         )
 
         self.assertEqual(response.status_code, 201)
-        models.Tokens.parse_obj(response.json())
-        # TODO проверка в базе User, Profile, RefreshToken, проверка refreshToken в cookie
+
+        tokens = models.Tokens.parse_obj(response.json())
+        self.assertIn(member=REFRESH_TOKEN_COOKIE_KEY, container=response.cookies)
+
+        refresh_token_in_db = (
+            self.session
+                .query(tables.RefreshToken.refresh_token)
+                .where(tables.RefreshToken.refresh_token == tokens.refresh_token)
+                .first()
+        )
+        self.assertIsNotNone(refresh_token_in_db)
 
     def test_user_already_exist_registration(self):
         response = self.client.post(
@@ -69,8 +78,16 @@ class TestAuth(BaseTestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        models.Tokens.parse_obj(response.json())
-        # TODO проверка в базе RefreshToken, проверка refreshToken в cookie
+        tokens = models.Tokens.parse_obj(response.json())
+        self.assertIn(member=REFRESH_TOKEN_COOKIE_KEY, container=response.cookies)
+
+        refresh_token_in_db = (
+            self.session
+                .query(tables.RefreshToken.refresh_token)
+                .where(tables.RefreshToken.refresh_token == tokens.refresh_token)
+                .first()
+        )
+        self.assertIsNotNone(refresh_token_in_db)
 
     def test_wrong_user_login(self):
         response = self.client.post(
@@ -114,8 +131,17 @@ class TestAuth(BaseTestCase):
         )
 
         self.assertEqual(refresh_response.status_code, 200)
-        models.Tokens.parse_obj(refresh_response.json())
-        # TODO проверка в базе RefreshToken, проверка refreshToken в cookie
+        tokens = models.Tokens.parse_obj(refresh_response.json())
+
+        self.assertIn(member=REFRESH_TOKEN_COOKIE_KEY, container=refresh_response.cookies)
+
+        refresh_token_in_db = (
+            self.session
+            .query(tables.RefreshToken.refresh_token)
+            .where(tables.RefreshToken.refresh_token == tokens.refresh_token)
+            .first()
+        )
+        self.assertIsNotNone(refresh_token_in_db)
 
     def test_refresh_without_cookie(self):
         refresh_response = self.client.get(
@@ -146,9 +172,33 @@ class TestAuth(BaseTestCase):
         tokens = models.Tokens.parse_obj(response.json())
 
         # Имитация, что из базы пропал refresh_token
-        test_session = next(override_get_session())
-        test_session.query(tables.RefreshToken).delete()
-        test_session.commit()
+        self.session.query(tables.RefreshToken).delete()
+        self.session.commit()
+
+        refresh_response = self.client.get(
+            f"{self.auth_url}/refresh",
+            cookies={REFRESH_TOKEN_COOKIE_KEY: tokens.refresh_token}
+        )
+
+        self.assertEqual(refresh_response.status_code, 401)
+        self.assertEqual(refresh_response.json(), {"detail": "Не удалось обновить токены"})
+
+    def test_refresh_wrong_user(self):
+        response = self.client.post(
+            f"{self.auth_url}/login",
+            data={
+                "username": "user",
+                "password": "password"
+            }
+        )
+
+        self.assertEqual(response.status_code, 200)
+        tokens = models.Tokens.parse_obj(response.json())
+
+        # Имитация, что из базы был удалён пользователь, для которого у нас есть refresh_token
+        user_to_delete = self.session.query(tables.User).where(tables.User.login == "user").first()
+        self.session.delete(user_to_delete)
+        self.session.commit()
 
         refresh_response = self.client.get(
             f"{self.auth_url}/refresh",

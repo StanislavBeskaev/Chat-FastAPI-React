@@ -1,7 +1,10 @@
-from typing import Generator, Any
+import os
+from pathlib import Path
+from typing import Generator
 from unittest import TestCase
 
 from fastapi.testclient import TestClient
+from loguru import logger
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -10,7 +13,8 @@ from ..database import get_session
 from ..main import app
 
 
-TEST_SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+TEST_DB_NAME = "test.db"
+TEST_SQLALCHEMY_DATABASE_URL = f"sqlite:///./{TEST_DB_NAME}"
 
 engine = create_engine(
     TEST_SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
@@ -28,9 +32,11 @@ def override_get_session() -> Generator[Session, None, None]:
 
 class BaseTestCase(TestCase):
     client = TestClient(app)
+    session = next(override_get_session())
 
     @classmethod
     def setUpClass(cls) -> None:
+        cls._drop_test_db()
         app.dependency_overrides[get_session] = override_get_session
         tables.Base.metadata.create_all(bind=engine)
 
@@ -39,5 +45,7 @@ class BaseTestCase(TestCase):
         app.dependency_overrides = {}
 
     @staticmethod
-    def with_id_sort(elements: list[Any]) -> list[Any]:
-        return sorted(elements, key=lambda element: element.id, reverse=True)
+    def _drop_test_db():
+        test_db_file_path = os.path.join(Path(__file__).resolve().parent.parent.parent, TEST_DB_NAME)
+        os.remove(test_db_file_path)
+        logger.info(f"Удалён файл тестовой базы: {test_db_file_path}")
