@@ -1,3 +1,5 @@
+from requests.cookies import RequestsCookieJar
+
 from .. import models, tables
 from ..api.auth import REFRESH_TOKEN_COOKIE_KEY
 from ..services.auth import AuthService
@@ -142,11 +144,14 @@ class TestAuth(BaseTestCase):
         self.assertIsNotNone(refresh_token_in_db)
 
     def test_refresh_without_cookie(self):
+        # Очистка cookie в клиенте, что бы не подхватился refresh token из другого запроса
+        self.client.cookies = RequestsCookieJar()
         refresh_response = self.client.get(
             f"{self.auth_url}/refresh"
         )
 
         self.assertEqual(refresh_response.status_code, 401)
+        self.assertEqual(refresh_response.json(), {"detail": "Не валидный refresh_token"})
 
     def test_refresh_bad_cookie(self):
         refresh_response = self.client.get(
