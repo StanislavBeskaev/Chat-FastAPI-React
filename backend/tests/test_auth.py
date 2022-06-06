@@ -1,7 +1,7 @@
 from .. import models, tables
 from ..api.auth import REFRESH_TOKEN_COOKIE_KEY
 from ..services.auth import AuthService
-from .base import BaseTestCase, override_get_session
+from .base import BaseTestCase
 
 test_users = [
     tables.User(login="user", name="user", surname="", password_hash=AuthService.hash_password("password")),
@@ -13,15 +13,13 @@ class TestAuth(BaseTestCase):
     auth_url = "/api/auth"
 
     def setUp(self) -> None:
-        test_session = next(override_get_session())
-        test_session.bulk_save_objects(test_users)
-        test_session.commit()
+        self.session.bulk_save_objects(test_users)
+        self.session.commit()
 
     def tearDown(self) -> None:
-        test_session = next(override_get_session())
-        test_session.query(tables.User).delete()
-        test_session.query(tables.RefreshToken).delete()
-        test_session.commit()
+        self.session.query(tables.User).delete()
+        self.session.query(tables.RefreshToken).delete()
+        self.session.commit()
 
     def test_success_registration(self):
         response = self.client.post(
@@ -208,4 +206,39 @@ class TestAuth(BaseTestCase):
         self.assertEqual(refresh_response.status_code, 401)
         self.assertEqual(refresh_response.json(), {"detail": "Не удалось обновить токены"})
 
-    # TODO тест logout
+    def test_logout_without_login(self):
+        response = self.client.post(
+            f"{self.auth_url}/logout"
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(), {"detail": "Не валидный refresh_token"})
+
+    def test_logout_wrong_refresh_token(self):
+        response = self.client.post(
+            f"{self.auth_url}/logout",
+            cookies={REFRESH_TOKEN_COOKIE_KEY: "bad refresh token"}
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(), {"detail": "Не валидный refresh_token"})
+
+    def test_success_logout(self):
+        login_response = self.client.post(
+            f"{self.auth_url}/login",
+            data={
+                "username": "user",
+                "password": "password"
+            }
+        )
+
+        self.assertEqual(login_response.status_code, 200)
+        tokens = models.Tokens.parse_obj(login_response.json())
+
+        logout_response = self.client.post(
+            f"{self.auth_url}/logout",
+            cookies={REFRESH_TOKEN_COOKIE_KEY: tokens.refresh_token}
+        )
+
+        self.assertEqual(logout_response.status_code, 200)
+        self.assertEqual(logout_response.json(), {"message": "Выход из системы выполнен"})

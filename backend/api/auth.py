@@ -14,8 +14,8 @@ router = APIRouter(
 
 REFRESH_TOKEN_COOKIE_KEY = "refreshToken"
 
+
 # TODO документация
-# TODO тесты
 @router.post(
     "/registration",
     response_model=models.Tokens,
@@ -39,7 +39,6 @@ def registration(
 
 
 # TODO документация
-# TODO тесты
 @router.post(
     "/login",
     response_model=models.Tokens,
@@ -63,7 +62,6 @@ def login(
 
 
 # TODO документация
-# TODO тесты
 @router.get(
     "/refresh",
     response_model=models.Tokens,
@@ -90,7 +88,6 @@ def refresh_tokens(
 
 
 # TODO документация
-# TODO тесты
 @router.post(
     "/logout",
     status_code=status.HTTP_200_OK
