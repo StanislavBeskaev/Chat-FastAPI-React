@@ -56,7 +56,7 @@ class BaseTestCase(TestCase):
     def get_authorization_headers(access_token: str) -> dict:
         return {AUTHORIZATION: f"{BEARER} {access_token}"}
 
-    def login(self, username: str, password: str) -> models.Tokens:
+    def login(self, username: str = "user", password: str = "password") -> models.Tokens:
         login_response = self.client.post(
             "/api/auth/login",
             data={
@@ -68,3 +68,14 @@ class BaseTestCase(TestCase):
         self.assertEqual(login_response.status_code, 200)
         tokens = models.Tokens.parse_obj(login_response.json())
         return tokens
+
+    def find_user_by_login(self, login: str) -> tables.User | None:
+        """Поиск пользователя по login"""
+        user = (
+            self.session
+            .query(tables.User)
+            .filter(tables.User.login == login)
+            .first()
+        )
+
+        return user

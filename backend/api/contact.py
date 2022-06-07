@@ -16,7 +16,6 @@ router = APIRouter(
 
 
 # TODO документация
-# TODO тесты
 @router.get(
     "/",
     status_code=status.HTTP_200_OK,
@@ -28,7 +27,6 @@ def get_contacts(user: models.User = Depends(get_current_user), contact_service:
 
 
 # TODO документация
-# TODO тесты
 @router.post(
     "/",
     status_code=status.HTTP_201_CREATED,
@@ -44,7 +42,6 @@ def create_contact(
 
 
 # TODO документация
-# TODO тесты
 @router.delete(
     "/",
     status_code=status.HTTP_200_OK
@@ -61,7 +58,6 @@ def delete_contact(
 
 
 # TODO документация
-# TODO тесты
 @router.get(
     "/{login}",
     status_code=status.HTTP_200_OK,
@@ -77,7 +73,6 @@ def get_contact(
 
 
 # TODO документация
-# TODO тесты
 @router.put(
     "/",
     status_code=status.HTTP_204_NO_CONTENT
