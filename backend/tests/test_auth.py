@@ -47,6 +47,21 @@ class TestAuth(BaseTestCase):
         )
         self.assertIsNotNone(refresh_token_in_db)
 
+        new_user = self.find_user_by_login("admin")
+        self.assertIsNotNone(new_user)
+        self.assertEqual(new_user.name, "Админ")
+        self.assertEqual(new_user.surname, "Админский")
+        self.assertIsNotNone(new_user.password_hash)
+
+        profile = (
+            self.session
+            .query(tables.Profile)
+            .where(tables.Profile.user == new_user.id)
+            .first()
+        )
+        self.assertIsNotNone(profile)
+        self.assertIsNone(profile.avatar_file)
+
     def test_user_already_exist_registration(self):
         response = self.client.post(
             f"{self.auth_url}/registration",

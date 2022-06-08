@@ -48,7 +48,6 @@ def upload_avatar(
 
 
 # TODO документация
-# TODO тесты
 @router.get(
     "/avatar",
     status_code=status.HTTP_200_OK
@@ -66,7 +65,6 @@ def get_avatar(
 
 
 # TODO документация
-# TODO тесты
 @router.get(
     "/avatar/{login}",
     status_code=status.HTTP_200_OK,
@@ -85,7 +83,6 @@ def get_login_avatar(
 
 
 # TODO документация
-# TODO тесты
 @router.get(
     "/info/{login}",
     status_code=status.HTTP_200_OK,
@@ -96,7 +93,7 @@ def get_user_info(
         login: str,
         user_service: UserService = Depends()
 ):
-    """Получение информации и пользователе по логину"""
+    """Получение информации о пользователе по логину"""
     logger.debug(f"Запрос получения информации о пользователе: {login}")
 
     return user_service.get_user_info(login=login)

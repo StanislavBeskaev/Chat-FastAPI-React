@@ -117,7 +117,7 @@ class UserService(BaseService):
         )
 
         if not user:
-            raise HTTPException(status_code=404, detail=f"User with login: '{login}' not found")
+            raise HTTPException(status_code=404, detail=f"Пользователь с логином '{login}' не найден")
 
         profile = (
             self.session

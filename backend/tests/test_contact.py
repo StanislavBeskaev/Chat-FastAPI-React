@@ -54,7 +54,7 @@ class TestContact(BaseTestCase):
         )
 
         self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json(), {"detail": "Не валидный токен доступа"})
+        self.assertEqual(response.json(), self.BAD_TOKEN_RESPONSE)
 
     def test_add_myself_to_contact(self):
         tokens = self.login()
@@ -140,7 +140,7 @@ class TestContact(BaseTestCase):
         )
 
         self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json(), {"detail": 'Not authenticated'})
+        self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
 
     def test_get_many_success(self):
         tokens = self.login()
@@ -181,7 +181,7 @@ class TestContact(BaseTestCase):
         )
 
         self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json(), {"detail": 'Not authenticated'})
+        self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
 
     def test_delete_miss_contact(self):
         tokens = self.login()
@@ -243,7 +243,7 @@ class TestContact(BaseTestCase):
         )
 
         self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json(), {"detail": 'Not authenticated'})
+        self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
 
     def test_get_one_not_exist_contact(self):
         tokens = self.login()

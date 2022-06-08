@@ -35,6 +35,8 @@ def override_get_session() -> Generator[Session, None, None]:
 class BaseTestCase(TestCase):
     client = TestClient(app)
     session = next(override_get_session())
+    NOT_AUTH_RESPONSE = {"detail": 'Not authenticated'}
+    BAD_TOKEN_RESPONSE = {"detail": "Не валидный токен доступа"}
 
     @classmethod
     def setUpClass(cls) -> None:
