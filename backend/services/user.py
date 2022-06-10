@@ -108,22 +108,15 @@ class UserService(BaseService):
 
     def _find_profile_by_login(self, login: str) -> tables.Profile:
         """Нахождение профайла пользователя по логину пользователя"""
-        # TODO сделать один запрос
-        user = (
-            self.session
-            .query(tables.User)
-            .filter(tables.User.login == login)
-            .first()
-        )
-
-        if not user:
-            raise HTTPException(status_code=404, detail=f"Пользователь с логином '{login}' не найден")
-
         profile = (
             self.session
             .query(tables.Profile)
-            .filter(tables.Profile.user == user.id)
+            .where(tables.Profile.user == tables.User.id)
+            .where(tables.User.login == login)
             .first()
         )
+
+        if not profile:
+            raise HTTPException(status_code=404, detail=f"Пользователь с логином '{login}' не найден")
 
         return profile
