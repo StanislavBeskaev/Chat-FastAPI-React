@@ -177,6 +177,15 @@ class TestAuth(BaseTestCase):
         self.assertEqual(refresh_response.status_code, 401)
         self.assertEqual(refresh_response.json(), {"detail": "Не валидный refresh_token"})
 
+    def test_refresh_bad_payload_cookie(self):
+        refresh_response = self.client.get(
+            f"{self.auth_url}/refresh",
+            cookies={REFRESH_TOKEN_COOKIE_KEY: self.BAD_PAYLOAD_REFRESH_TOKEN}
+        )
+
+        self.assertEqual(refresh_response.status_code, 401)
+        self.assertEqual(refresh_response.json(), {"detail": "Не валидный refresh_token"})
+
     def test_refresh_bad_miss_refresh_token_in_bd(self):
         response = self.client.post(
             f"{self.auth_url}/login",

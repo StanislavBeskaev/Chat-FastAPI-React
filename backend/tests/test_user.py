@@ -189,7 +189,7 @@ class TestUser(BaseTestCase):
     def test_change_user_data_wrong_access_token(self):
         response = self.client.put(
             f"{self.user_url}/change",
-            headers=self.get_authorization_headers(access_token="bad.access.token"),
+            headers=self.get_authorization_headers(access_token=self.BAD_PAYLOAD_ACCESS_TOKEN),
             json={
                 "name": "new_name",
                 "surname": "new_surname"

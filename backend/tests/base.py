@@ -37,6 +37,8 @@ class BaseTestCase(TestCase):
     session = next(override_get_session())
     NOT_AUTH_RESPONSE = {"detail": 'Not authenticated'}
     BAD_TOKEN_RESPONSE = {"detail": "Не валидный токен доступа"}
+    BAD_PAYLOAD_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NTQ3MDUwMDAsIm5iZiI6MTY1NDcwNTAwMCwiZXhwIjoyNzU0ODgwNTAwLCJraW5kIjoiYWNjZXNzIiwidXNlcjEiOnsibmFtZSI6ItCQ0LTQvNC40L0iLCJzdXJuYW1lIjoi0JDQtNC80LjQvdGB0LrQuNC5IiwibG9naW4iOiJhZG1pbiIsImlkIjoxfX0.D5PqBrHBVUeyvAWg7159sPxhQd2YS3-KTQZnF4tVlts"
+    BAD_PAYLOAD_REFRESH_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NTQ3MDUwMDAsIm5iZiI6MTY1NDcwNTAwMCwiZXhwIjoyNjU0ODgwNTAwLCJraW5kIjoicmVmcmVzaCIsInVzZXIxIjp7Im5hbWUiOiLQkNC00LzQuNC9Iiwic3VybmFtZSI6ItCQ0LTQvNC40L3RgdC60LjQuSIsImxvZ2luIjoiYWRtaW4iLCJpZCI6MX19.OCxmfkyFUUvXab0Z6_fMLJFUGn7EG0LS3PmNGF-Dg2I"
 
     @classmethod
     def setUpClass(cls) -> None:
