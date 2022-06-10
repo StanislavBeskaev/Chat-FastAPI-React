@@ -10,7 +10,7 @@ test_users = [
 ]
 
 
-class TestContact(BaseTestCase):
+class TestUser(BaseTestCase):
     user_url = "/api/user"
 
     def setUp(self) -> None:
@@ -143,4 +143,60 @@ class TestContact(BaseTestCase):
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.json(), self.BAD_TOKEN_RESPONSE)
 
-    # TODO тесты change_user_data, upload_avatar
+    def test_success_change_user_data(self):
+        tokens = self.login()
+
+        new_name = "new_username"
+        new_surname = "Иванов"
+
+        response = self.client.put(
+            f"{self.user_url}/change",
+            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            json={
+                "name": new_name,
+                "surname": new_surname
+            }
+        )
+
+        self.assertEqual(response.status_code, 200)
+        our_user = self.find_user_by_login(login="user")
+
+        self.assertEqual(
+            response.json(),
+            {
+                "id": our_user.id,
+                "login": "user",
+                "name": new_name,
+                "surname": new_surname
+            }
+        )
+
+        self.assertEqual(our_user.name, new_name)
+        self.assertEqual(our_user.surname, new_surname)
+
+    def test_change_user_date_without_auth(self):
+        response = self.client.put(
+            f"{self.user_url}/change",
+            json={
+                "name": "new_name",
+                "surname": "new_surname"
+            }
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
+
+    def test_change_user_data_wrong_access_token(self):
+        response = self.client.put(
+            f"{self.user_url}/change",
+            headers=self.get_authorization_headers(access_token="bad.access.token"),
+            json={
+                "name": "new_name",
+                "surname": "new_surname"
+            }
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(), self.BAD_TOKEN_RESPONSE)
+
+    # TODO тесты upload_avatar

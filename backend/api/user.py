@@ -12,7 +12,6 @@ router = APIRouter(
 
 
 # TODO документация
-# TODO тесты
 @router.put(
     "/change",
     response_model=models.User,
