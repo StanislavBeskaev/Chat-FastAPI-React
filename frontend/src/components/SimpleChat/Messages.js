@@ -1,8 +1,7 @@
 import React, {useCallback} from 'react'
+import {observer} from 'mobx-react-lite'
 
 import TextMessage from './TextMessage'
-import StatusMessage from './StatusMessage'
-import {observer} from 'mobx-react-lite'
 
 
 const Messages = ({messages, login}) => {
@@ -12,24 +11,18 @@ const Messages = ({messages, login}) => {
     }
   }, [])
 
-  const messageTypeMap = {
-    "TEXT": TextMessage,
-    "STATUS": StatusMessage
-  }
-
   return (
     <>
       {messages.map((message, index) => {
         const lastMessage = index === messages.length - 1
         const fromMe = message.login === login
-        const MessageTypeComponent = messageTypeMap[message.type]
         return (
           <div
             ref={lastMessage ? setRef : null}
             key={message.id}
             className={`w-50 my-1 d-flex flex-column ${fromMe ? 'align-self-end align-items-end' : 'align-items-start'}`}
           >
-            <MessageTypeComponent fromMe={fromMe} message={message} />
+            <TextMessage fromMe={fromMe} message={message} />
           </div>
         )
       })}

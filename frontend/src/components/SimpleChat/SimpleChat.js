@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react'
+import React from 'react'
 import {observer} from 'mobx-react-lite'
 import {Modal} from 'react-bootstrap'
 
@@ -19,17 +19,6 @@ function SimpleChat() {
 
   const {loading, messages, selectedChatId, isLoadMessages, loadError} = messagesStore
   const {login} = authStore.user
-
-  useEffect(() => {
-    if (socket == null) return
-
-    socket.onmessage = async (e) => {
-      const msg = JSON.parse(e.data)
-      console.log('Сообщение из ws: ', msg)
-      messagesStore.addMessage(msg)
-    }
-  }, [socket])
-
 
   const sendText = (text) => {
     console.log(`Отправка сообщения:`, text)
