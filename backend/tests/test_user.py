@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 from .. import tables
 from ..services.auth import AuthService
 from .base import BaseTestCase
@@ -199,4 +202,44 @@ class TestUser(BaseTestCase):
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.json(), self.BAD_TOKEN_RESPONSE)
 
-    # TODO тесты upload_avatar
+    def test_success_upload_avatar(self):
+        tokens = self.login()
+        with open(os.path.join(Path(__file__).resolve().parent, "files", "avatar_1.jpeg"), mode="rb") as file:
+            response = self.client.post(
+                f"{self.user_url}/avatar",
+                headers=self.get_authorization_headers(access_token=tokens.access_token),
+                files={"file": file}
+            )
+
+        self.assertEqual(response.status_code, 201)
+        avatar_file = response.json()["avatar_file"]
+
+        our_user = self.find_user_by_login(login="user")
+        our_user_profile: tables.Profile = (
+            self.session
+            .query(tables.Profile)
+            .where(tables.Profile.user == our_user.id)
+            .first()
+        )
+        self.assertEqual(our_user_profile.avatar_file, avatar_file)
+
+    def test_upload_avatar_without_auth(self):
+        with open(os.path.join(Path(__file__).resolve().parent, "files", "avatar_1.jpeg"), mode="rb") as file:
+            response = self.client.post(
+                f"{self.user_url}/avatar",
+                files={"file": file}
+            )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
+
+    def test_upload_avatar_bad_access_token(self):
+        with open(os.path.join(Path(__file__).resolve().parent, "files", "avatar_1.jpeg"), mode="rb") as file:
+            response = self.client.post(
+                f"{self.user_url}/avatar",
+                headers=self.get_authorization_headers(access_token="bad.access.token"),
+                files={"file": file}
+            )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(), self.BAD_TOKEN_RESPONSE)
