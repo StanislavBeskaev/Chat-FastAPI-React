@@ -39,7 +39,7 @@ async def websocket_endpoint(websocket: WebSocket, login: str, user_service: Use
     manager = WSConnectionManager()
     await manager.connect(websocket)
     logger.debug(f"Новое ws соединение от пользователя {login} {websocket.__dict__}")
-    online_message = OnlineMessage(login=login, user_service=user_service)
+    online_message = OnlineMessage(login=login)
     # TODO позже сделать рассылку по комнатам
     await online_message.send_all()
     try:
@@ -47,6 +47,7 @@ async def websocket_endpoint(websocket: WebSocket, login: str, user_service: Use
             data = await websocket.receive_text()
             logger.debug(f"Message from {login}: {data}")
 
+            # TODO расширение, ввести тип и для входящего сообщения, например typing_start, typing_end
             new_message = InMessage.parse_raw(data)
             text_message = TextMessage(
                 login=login,
@@ -59,5 +60,5 @@ async def websocket_endpoint(websocket: WebSocket, login: str, user_service: Use
         manager.disconnect(websocket)
         logger.debug(f"disconnect ws: {login}")
 
-        offline_message = OfflineMessage(login=login, user_service=user_service)
+        offline_message = OfflineMessage(login=login)
         await offline_message.send_all()

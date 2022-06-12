@@ -69,8 +69,6 @@ class Message(Base):
     text = Column(String, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), index=True)
     time = Column(DateTime(timezone=True), server_default=func.now())
-    type = Column(String, nullable=False)  # TODO тут нужно перечисление
-    online_status = Column(String, nullable=False)  # TODO тут нужно перечисление
 
     user_rel = relationship(User, backref="messages")
 

@@ -5,7 +5,7 @@ from fastapi import (
 )
 
 from ..dependencies import get_current_user
-from ..services.messages import MessageService, MessageData
+from ..services.messages import MessageService
 
 
 router = APIRouter(
@@ -16,7 +16,6 @@ router = APIRouter(
 
 @router.get(
     "/",
-    # response_model=list[MessageData],
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(get_current_user)]
 )

@@ -11,6 +11,10 @@ const Messages = ({messages, login}) => {
     }
   }, [])
 
+  if (!messages) {
+    return null
+  }
+
   return (
     <>
       {messages.map((message, index) => {

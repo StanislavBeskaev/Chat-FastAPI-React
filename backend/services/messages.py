@@ -1,10 +1,9 @@
-from collections import defaultdict
-
-import pytz
-import random
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from datetime import datetime
 from enum import Enum
+import pytz
+import random
 from uuid import uuid4
 
 from loguru import logger
@@ -46,16 +45,12 @@ class InMessage(BaseModel):
     chat_id: str = Field(alias="chatId")
 
 
-class MessageData(BaseModel):
-    """Данные сообщения"""
-    id: str
-    chat_id: str
+class WSMessageData(BaseModel):
+    """Данные WS сообщения"""
     type: MessageType
-    online_status: OnlineStatus | None = None
-    time: str | datetime
     login: str
     text: str | None
-    avatar_file: str | None
+    time: str | datetime
 
     @validator("time")
     def convert_from_datetime(cls, value):
@@ -65,37 +60,25 @@ class MessageData(BaseModel):
         return value
 
 
+class TextMessageData(WSMessageData):
+    """Данные текстового сообщения"""
+    id: str
+    chat_id: str
+    avatar_file: str | None  # TODO подумать как доставлять файл аватара на frontend
+
+
+class StatusMessageData(WSMessageData):
+    """Данные статусного сообщения"""
+    online_status: OnlineStatus
+
+
 class BaseMessage(ABC):
     """Базовый класс для работы с сообщением WS"""
     message_type = None
-    online_status = None
 
-    def __init__(
-            self,
-            login: str,
-            user_service: UserService,
-            text: str = "",
-            chat_id: str = get_settings().main_chat_id
-    ):
+    def __init__(self, login: str):
         self._login = login
-        self._text = text
-        self._chat_id = chat_id
-        self._user_service = user_service
-
-        db_message = self._create_db_message()
-
-        self._data = MessageData(
-            id=db_message.id,
-            type=self.message_type,
-            online_status=self.online_status,
-            time=get_formatted_time(db_message.time),
-            login=login,
-            text=text,
-            chat_id=chat_id,
-            avatar_file=user_service.get_avatar_by_login(login)
-        )
-
-        logger.info(f"В базу сохранено сообщение: {self._data} ")
+        self._data = self._get_data()
 
     # TODO позже принимать id чата, куда посылать сообщение
     async def send_all(self) -> None:
@@ -104,7 +87,43 @@ class BaseMessage(ABC):
 
         await manager.broadcast(self._data.json())
 
-    # TODO статусные сообщения хранить в другой таблице?
+    @abstractmethod
+    def _get_data(self) -> WSMessageData:
+        pass
+
+
+class TextMessage(BaseMessage):
+    """Текстовое сообщение"""
+    message_type = MessageType.TEXT
+
+    def __init__(
+            self,
+            login: str,
+            user_service: UserService,
+            text: str = "",
+            chat_id: str = get_settings().main_chat_id
+    ):
+        self._chat_id = chat_id
+        self._user_service = user_service
+        self._text = text
+        super().__init__(login=login)
+
+    def _get_data(self) -> TextMessageData:
+        db_message = self._create_db_message()
+
+        data = TextMessageData(
+            id=db_message.id,
+            type=self.message_type,
+            login=self._login,
+            time=get_formatted_time(db_message.time),
+            text=self._text,
+            chat_id=self._chat_id,
+            avatar_file=self._user_service.get_avatar_by_login(self._login)
+        )
+
+        logger.info(f"В базу сохранено сообщение: {data} ")
+        return data
+
     def _create_db_message(self) -> tables.Message:
         session = next(get_session())
 
@@ -114,9 +133,7 @@ class BaseMessage(ABC):
             text=self._text,
             user_id=auth_service.find_user_by_login(login=self._login).id,
             time=get_current_time(),
-            type=self.message_type,
             chat_id=self._chat_id,
-            online_status=self.online_status
         )
 
         session.add(message)
@@ -126,20 +143,24 @@ class BaseMessage(ABC):
         return message
 
 
-class TextMessage(BaseMessage):
-    """Текстовое сообщение"""
-    message_type = MessageType.TEXT
-    online_status = OnlineStatus.ONLINE
-
-
 class StatusMessage(BaseMessage, ABC):
     """Базовый класс статусного сообщения"""
     message_type = MessageType.STATUS
+    online_status = None
 
-    def __init__(self, login: str, user_service: UserService):
-        super().__init__(login=login, user_service=user_service)
-        self._data.type = MessageType.STATUS
-        self._data.text = self._get_status_message_text()
+    def __init__(self, login: str):
+        super().__init__(login=login)
+
+    def _get_data(self) -> StatusMessageData:
+        data = StatusMessageData(
+            type=self.message_type,
+            login=self._login,
+            text=self._get_status_message_text(),
+            time=get_formatted_time(get_current_time()),
+            online_status=self.online_status
+        )
+
+        return data
 
     def _get_status_message_text(self) -> str:
         return random.choice(self._get_text_templates()).format(login=self._login)
@@ -162,7 +183,8 @@ class OnlineMessage(StatusMessage):
             "Пользователь {login} уже онлайн",
             "А вот и {login}",
             "Хорошо, что ты пришёл {login}",
-            "Пользователь {login} ворвался в чат"
+            "Пользователь {login} ворвался в чат",
+            "{login} уже тут",
         ]
 
         return online_text_templates
@@ -189,14 +211,12 @@ class OfflineMessage(StatusMessage):
 class MessageService(BaseService):
     """Сервис для работы с сообщениями"""
 
-    def get_many(self) -> dict[str, list[MessageData]]:
+    def get_many(self) -> dict[str, list[TextMessageData]]:
         """Получение всех сообщений"""
         messages = (
             self.session
             .query(
                 tables.Message.id,
-                tables.Message.type,
-                tables.Message.online_status,
                 tables.Message.time,
                 tables.User.login,
                 tables.Message.text,
@@ -205,21 +225,19 @@ class MessageService(BaseService):
             )
             .where(tables.Message.user_id == tables.User.id)
             .where(tables.Profile.user == tables.User.id)
-            .where(tables.Message.type == MessageType.TEXT)
             .order_by(tables.Message.time)
             .all()
         )
 
         # TODO посмотреть способ получше
-        columns = ("id", "type", "online_status", "time", "login", "text", "chat_id", "avatar_file")
+        columns = ("id", "time", "login", "text", "chat_id", "avatar_file")
 
-        messages = [MessageData(**dict(zip(columns, data))) for data in messages]
+        messages = [TextMessageData(type=MessageType.TEXT, **dict(zip(columns, data))) for data in messages]
 
         return self._convert_messages_to_chats(messages=messages)
 
-    # TODO возвращаемое значение
     @staticmethod
-    def _convert_messages_to_chats(messages: list[MessageData]) -> dict[str, list[MessageData]]:
+    def _convert_messages_to_chats(messages: list[TextMessageData]) -> dict[str, list[TextMessageData]]:
         chats = defaultdict(list)
 
         for message_data in messages:
