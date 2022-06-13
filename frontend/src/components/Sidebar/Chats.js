@@ -9,14 +9,14 @@ const Chats = () => {
   const {chats, selectedChatId} = messagesStore
   return (
     <ListGroup variant="flush">
-      {chats.map(chatId => (
+      {Object.keys(chats).map(chatId => (
         <ListGroup.Item
           key={chatId}
           action
           onClick={() => messagesStore.setSelectedChatId(chatId)}
           active={selectedChatId === chatId}
         >
-          {chatId}
+          {chats[chatId].chat_name}
         </ListGroup.Item>
       ))}
     </ListGroup>

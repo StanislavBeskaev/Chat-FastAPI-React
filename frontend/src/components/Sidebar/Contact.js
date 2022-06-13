@@ -9,9 +9,7 @@ import confirmDeleteContactModalStore from '../../stores/modals/confirmDeleteCon
 const Contact = ({login}) => {
 
   const handleDelete = async () => {
-    //TODO запрашивать подтвереждение на удаление контакта
     confirmDeleteContactModalStore.showWithLogin(login)
-    // await contactStore.deleteContact(login)
   }
 
   return (

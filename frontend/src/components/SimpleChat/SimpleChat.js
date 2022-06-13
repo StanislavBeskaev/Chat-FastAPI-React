@@ -17,7 +17,7 @@ import AddContactModal from '../Modals/AddContactModal'
 function SimpleChat() {
   const socket = useSocket()
 
-  const {loading, messages, selectedChatId, isLoadMessages, loadError} = messagesStore
+  const {loading, selectedChatId, isLoadMessages, loadError} = messagesStore
   const {login} = authStore.user
 
   const sendText = (text) => {
@@ -42,7 +42,7 @@ function SimpleChat() {
     <div className="d-flex flex-column flex-grow-1">
       <div className="flex-grow-1 overflow-auto">
         <div className="d-flex flex-column align-items-start justify-content-end px-3">
-          <Messages messages={messages[selectedChatId]} login={login}/>
+          <Messages messages={messagesStore.selectedChatMessages()} login={login}/>
         </div>
       </div>
       <TextForm sendText={sendText}/>

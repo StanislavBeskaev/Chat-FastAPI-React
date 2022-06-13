@@ -11,8 +11,8 @@ const Messages = ({messages, login}) => {
     }
   }, [])
 
-  if (!messages) {
-    return null
+  if (messages.length === 0) {
+    return <div className="m-3">Сообщений пока нет</div>
   }
 
   return (
@@ -23,7 +23,7 @@ const Messages = ({messages, login}) => {
         return (
           <div
             ref={lastMessage ? setRef : null}
-            key={message.id}
+            key={message.message_id}
             className={`w-50 my-1 d-flex flex-column ${fromMe ? 'align-self-end align-items-end' : 'align-items-start'}`}
           >
             <TextMessage fromMe={fromMe} message={message} />

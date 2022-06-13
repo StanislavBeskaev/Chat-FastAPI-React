@@ -5,8 +5,7 @@ import axiosInstance from '../axios/axios'
 
 //TODO ChatsStore
 class MessagesStore {
-  messages = {}
-  chats = []
+  chats = {}
   selectedChatId = 'MAIN'
   isLoadMessages = false
   loading = false
@@ -23,8 +22,7 @@ class MessagesStore {
     try{
       const response = await axiosInstance.get("/messages/")
       console.log("success load, response:", response)
-      this.setMessages(response.data)
-      this.setChats(Object.keys(response.data))
+      this.setChats(response.data)
       this.setLoadError(false)
       this.setIsLoadMessages(true)
     } catch (e) {
@@ -40,13 +38,13 @@ class MessagesStore {
 
     const {chat_id: chatId} = message
     console.log(`MessagesStore add message to chatId "${chatId}":`, message)
-    this.messages[chatId].push(message)
+    this.chats[chatId].messages.push(message)
   }
 
-  setMessages(data) {
-    this.messages = data
+  selectedChatMessages() {
+    return this.chats[this.selectedChatId].messages
   }
-
+  
   setChats(chats) {
     this.chats = chats
   }

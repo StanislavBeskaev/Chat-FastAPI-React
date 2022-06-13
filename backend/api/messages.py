@@ -5,7 +5,7 @@ from fastapi import (
 )
 
 from ..dependencies import get_current_user
-from ..services.messages import MessageService
+from ..services.messages import MessageService, Chat
 
 
 router = APIRouter(
@@ -17,7 +17,8 @@ router = APIRouter(
 @router.get(
     "/",
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(get_current_user)]
+    dependencies=[Depends(get_current_user)],
+    response_model=dict[str, Chat]
 )
 def get_all_messages(message_service: MessageService = Depends()):
     """Получение всех сообщений"""

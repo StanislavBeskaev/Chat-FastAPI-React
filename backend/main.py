@@ -4,9 +4,14 @@ from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
 from . import api
-from .services.messages import TextMessage, OnlineMessage, OfflineMessage, InMessage
 from .services.user import UserService
-from .services.ws import WSConnectionManager
+from .services.ws import (
+    WSConnectionManager,
+    TextMessage,
+    OnlineMessage,
+    OfflineMessage,
+    InMessage,
+)
 
 
 app = FastAPI(
