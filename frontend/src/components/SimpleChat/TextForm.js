@@ -1,7 +1,7 @@
 import React, {useState} from 'react'
 import {Button, Form, InputGroup} from 'react-bootstrap'
 
-const TextForm = ({sendText}) => {
+const TextForm = ({sendText, sendTypingStart}) => {
   const [text, setText] = useState('')
 
   const handleSubmit = (e) => {
@@ -10,6 +10,7 @@ const TextForm = ({sendText}) => {
   }
 
   function handleKeyPress(e) {
+    sendTypingStart()
     if (e.key !== 'Enter') return
 
     e.preventDefault()

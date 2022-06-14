@@ -23,10 +23,10 @@ export function SocketProvider({ login, children }) {
       // TODO какие ещё нужны типы?
       switch (msg.type) {
         case 'TEXT':
-          messagesStore.addMessage(msg)
+          messagesStore.addMessage(msg.data)
           break
         case 'STATUS':
-          addNotification(msg)
+          addStatusNotification(msg.data)
           break
       }
     }
@@ -34,18 +34,15 @@ export function SocketProvider({ login, children }) {
     return () => ws.close()
   }, [login])
 
-  const addNotification = msg => {
-    const {login: msgLogin, text, type, online_status: onlineStatus} = msg
+  const addStatusNotification = data => {
+    const {login: msgLogin, text, online_status: onlineStatus} = data
 
     if (login === msgLogin) return
 
-    // TODO обновить формат сообщения
-    if (type === 'STATUS') {
-      if (onlineStatus === "ONLINE") {
-        toast.success(text)
-      } else {
-        toast.error(text)
-      }
+    if (onlineStatus === "ONLINE") {
+      toast.success(text)
+    } else {
+      toast.error(text)
     }
   }
 

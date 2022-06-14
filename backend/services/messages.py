@@ -1,29 +1,18 @@
 from collections import OrderedDict
-from datetime import datetime
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel
 
 from .. import tables
 from . import BaseService
-from .ws import get_formatted_time
+from .ws import WSMessageData
 
 
-class MessageData(BaseModel):
-    message_id: str | None  # TODO надо синхронизировать эту модель и ws.TextMessageData
-    time: str | datetime | None
-    text: str | None
-    login: str | None
+class MessageData(WSMessageData):
+    message_id: str | None
     avatar_file: str | None
 
     class Config:
         orm_mode = True
-
-    @validator("time")
-    def convert_from_datetime(cls, value):
-        if isinstance(value, datetime):
-            return get_formatted_time(value)
-
-        return value
 
 
 class ChatData(MessageData):

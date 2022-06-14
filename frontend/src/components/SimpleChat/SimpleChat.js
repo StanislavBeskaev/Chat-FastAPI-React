@@ -22,8 +22,25 @@ function SimpleChat() {
 
   const sendText = (text) => {
     console.log(`Отправка сообщения:`, text)
-    const message = JSON.stringify({text, chatId: selectedChatId})
-    socket.send(message)
+    const textMessage = JSON.stringify(
+      {
+        type: "TEXT",
+        data: {text, chatId: selectedChatId}
+      }
+    )
+    socket.send(textMessage)
+  }
+
+  const sendTypingStart = () => {
+    // TODO использовать debounce, посылать одно сообщение при старте и при окончании
+    const typingStartMessage = JSON.stringify(
+      {
+        type: "START_TYPING",
+        data: {chatId: selectedChatId}
+      }
+    )
+
+    socket.send(typingStartMessage)
   }
 
   const closeAddContactModal = () => {
@@ -45,7 +62,7 @@ function SimpleChat() {
           <Messages messages={messagesStore.selectedChatMessages()} login={login}/>
         </div>
       </div>
-      <TextForm sendText={sendText}/>
+      <TextForm sendText={sendText} sendTypingStart={sendTypingStart}/>
       <Modal show={addContactModalStore.show} onHide={closeAddContactModal}>
         <AddContactModal />
       </Modal>

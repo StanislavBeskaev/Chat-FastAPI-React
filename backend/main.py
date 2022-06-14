@@ -1,16 +1,18 @@
-from fastapi import FastAPI, WebSocketDisconnect, WebSocket, Depends
+import json
+
+from fastapi import FastAPI, WebSocketDisconnect, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
 from . import api
-from .services.user import UserService
 from .services.ws import (
     WSConnectionManager,
-    TextMessage,
+    WSMessage,
     OnlineMessage,
     OfflineMessage,
-    InMessage,
+    MESSAGE_TYPE_KEY,
+    MESSAGE_DATA_KEY
 )
 
 
@@ -40,7 +42,7 @@ app.mount("/api/static", StaticFiles(directory="files"), name="static")
 
 
 @app.websocket("/ws/{login}")
-async def websocket_endpoint(websocket: WebSocket, login: str, user_service: UserService = Depends()):
+async def websocket_endpoint(websocket: WebSocket, login: str):
     manager = WSConnectionManager()
     await manager.connect(websocket)
     logger.debug(f"Новое ws соединение от пользователя {login} {websocket.__dict__}")
@@ -49,18 +51,18 @@ async def websocket_endpoint(websocket: WebSocket, login: str, user_service: Use
     await online_message.send_all()
     try:
         while True:
-            data = await websocket.receive_text()
-            logger.debug(f"Message from {login}: {data}")
+            message = await websocket.receive_text()
+            logger.debug(f"Message from {login}: {message}")
 
             # TODO расширение, ввести тип и для входящего сообщения, например typing_start, typing_end
-            new_message = InMessage.parse_raw(data)
-            text_message = TextMessage(
+            message_dict = json.loads(message)
+            new_message = WSMessage.create_message_by_type(
+                message_type=message_dict[MESSAGE_TYPE_KEY],
                 login=login,
-                user_service=user_service,
-                text=new_message.text,
-                chat_id=new_message.chat_id
+                in_data=message_dict[MESSAGE_DATA_KEY]
             )
-            await text_message.send_all()
+
+            await new_message.send_all()
     except WebSocketDisconnect:
         manager.disconnect(websocket)
         logger.debug(f"disconnect ws: {login}")

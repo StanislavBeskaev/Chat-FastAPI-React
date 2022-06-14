@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
+import json
 import pytz
 import random
 from uuid import uuid4
@@ -16,10 +17,15 @@ from .auth import AuthService
 from .user import UserService
 
 
+MESSAGE_TYPE_KEY = "type"
+MESSAGE_DATA_KEY = "data"
+
+
 class MessageType(str, Enum):
     """Типы сообщений"""
     TEXT = "TEXT"
     STATUS = "STATUS"
+    START_TYPING = "START_TYPING"
 
 
 class OnlineStatus(str, Enum):
@@ -73,18 +79,11 @@ def get_formatted_time(value: datetime) -> str:
     return value.strftime("%d.%m.%y %H:%M")  # TODO подумать над отображением даты
 
 
-class InMessage(BaseModel):
-    """Входное сообщение"""
-    text: str
-    chat_id: str = Field(alias="chatId")
-
-
 class WSMessageData(BaseModel):
     """Данные WS сообщения"""
-    type: MessageType
     login: str
     text: str | None
-    time: str | datetime
+    time: str | datetime | None
 
     @validator("time")
     def convert_from_datetime(cls, value):
@@ -101,50 +100,99 @@ class TextMessageData(WSMessageData):
     avatar_file: str | None  # TODO подумать как доставлять файл аватара на frontend
 
 
+class TypingMessageData(WSMessageData):
+    """Данные сообщения о печатании"""
+    chat_id: str
+
+
 class StatusMessageData(WSMessageData):
     """Данные статусного сообщения"""
     online_status: OnlineStatus
 
 
-class BaseMessage(ABC):
+class WSMessage(ABC):
     """Базовый класс для работы с сообщением WS"""
     message_type = None
 
-    def __init__(self, login: str):
+    def __init__(self, login: str, **kwargs):
         self._login = login
-        self._data = self._get_data()
+        self._content = {
+            "type": self.message_type,
+            "data": self._get_data().dict()
+        }
+
+    @classmethod
+    def create_message_by_type(cls, message_type: MessageType, login: str, in_data: dict) -> 'WSMessage':
+        type_class_mapping = {
+            MessageType.TEXT: TextMessage,
+            MessageType.START_TYPING: StartTypingMessage
+        }
+
+        message_class = type_class_mapping.get(message_type)
+
+        if not message_class:
+            raise ValueError(f"Неизвестный тип сообщения: {message_type}")
+
+        return message_class(login=login, **in_data)
 
     # TODO позже принимать id чата, куда посылать сообщение
     async def send_all(self) -> None:
         manager = WSConnectionManager()
-        logger.debug(f"Отправка сообщения: {self._data}")
+        logger.debug(f"Отправка сообщения: {self._content}")
 
-        await manager.broadcast(self._data.json())
+        await manager.broadcast(json.dumps(self._content))
 
     @abstractmethod
     def _get_data(self) -> WSMessageData:
         pass
 
 
-class TextMessage(BaseMessage):
+class InTypingMessageData(BaseModel):
+    """Данные входящего сообщения о начале печатания"""
+    chat_id: str = Field(alias="chatId")
+
+
+class InTextMessageData(InTypingMessageData):
+    """Данные входящего текстового сообщения"""
+    text: str | None
+
+
+class StartTypingMessage(WSMessage):
+    """Сообщение о начале печатания"""
+    message_type = MessageType.START_TYPING
+
+    def __init__(self, login: str, **kwargs):
+        in_typing_message_data: InTypingMessageData = InTextMessageData.parse_obj(kwargs)
+        self._chat_id = in_typing_message_data.chat_id
+
+        super().__init__(login=login)
+
+    def _get_data(self) -> TypingMessageData:
+        return TypingMessageData(
+            login=self._login,
+            text="",
+            time=get_formatted_time(get_current_time()),
+            chat_id=self._chat_id
+        )
+
+
+class TextMessage(WSMessage):
     """Текстовое сообщение"""
     message_type = MessageType.TEXT
 
-    def __init__(
-            self,
-            login: str,
-            user_service: UserService,
-            text: str = "",
-            chat_id: str = get_settings().main_chat_id
-    ):
-        self._chat_id = chat_id
-        self._user_service = user_service
-        self._text = text
+    def __init__(self, login: str, **kwargs):
+        self._session = next(get_session())
+
+        in_text_message_data: InTextMessageData = InTextMessageData.parse_obj(kwargs)
+        self._text = in_text_message_data.text
+        self._chat_id = in_text_message_data.chat_id
+
         super().__init__(login=login)
 
     def _get_data(self) -> TextMessageData:
         db_message = self._create_db_message()
 
+        user_service = UserService(session=self._session)
         data = TextMessageData(
             message_id=db_message.id,
             type=self.message_type,
@@ -152,16 +200,14 @@ class TextMessage(BaseMessage):
             time=get_formatted_time(db_message.time),
             text=self._text,
             chat_id=self._chat_id,
-            avatar_file=self._user_service.get_avatar_by_login(self._login)
+            avatar_file=user_service.get_avatar_by_login(self._login)
         )
 
-        logger.info(f"В базу сохранено сообщение: {data} ")
+        logger.info(f"В базу сохранено текстовое сообщение: {data} ")
         return data
 
     def _create_db_message(self) -> tables.Message:
-        session = next(get_session())
-
-        auth_service = AuthService(session=session)
+        auth_service = AuthService(session=self._session)
         message = tables.Message(
             id=str(uuid4()),
             text=self._text,
@@ -170,20 +216,17 @@ class TextMessage(BaseMessage):
             chat_id=self._chat_id,
         )
 
-        session.add(message)
-        session.commit()
-        session.refresh(message)
+        self._session.add(message)
+        self._session.commit()
+        self._session.refresh(message)
 
         return message
 
 
-class StatusMessage(BaseMessage, ABC):
+class StatusMessage(WSMessage, ABC):
     """Базовый класс статусного сообщения"""
     message_type = MessageType.STATUS
     online_status = None
-
-    def __init__(self, login: str):
-        super().__init__(login=login)
 
     def _get_data(self) -> StatusMessageData:
         data = StatusMessageData(
