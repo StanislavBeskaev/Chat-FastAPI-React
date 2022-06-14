@@ -1,6 +1,7 @@
 import {makeAutoObservable} from "mobx"
 
 import axiosInstance from '../axios/axios'
+import authStore from './authStore'
 
 
 //TODO ChatsStore
@@ -41,12 +42,31 @@ class MessagesStore {
     this.chats[chatId].messages.push(message)
   }
 
+  addTypingLogin(chatId, login) {
+    if (login === authStore.user.login) return
+
+    this.chats[chatId].typingLogins = Array.from(new Set([...this.chats[chatId].typingLogins, login]))
+  }
+
+  deleteTypingLogin(chatId, login) {
+    if (login === authStore.user.login) return
+
+    this.chats[chatId].typingLogins = this.chats[chatId].typingLogins.filter(typingLogin => typingLogin !== login)
+  }
+
   selectedChatMessages() {
     return this.chats[this.selectedChatId].messages
+  }
+
+  selectedChatTypingLogins() {
+    return this.chats[this.selectedChatId].typingLogins
   }
   
   setChats(chats) {
     this.chats = chats
+    for (let chatId of Object.keys(this.chats)) {
+      this.chats[chatId].typingLogins = []
+    }
   }
 
   setSelectedChatId(chatId) {

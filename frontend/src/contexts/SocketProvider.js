@@ -28,6 +28,12 @@ export function SocketProvider({ login, children }) {
         case 'STATUS':
           addStatusNotification(msg.data)
           break
+        case 'START_TYPING':
+          messagesStore.addTypingLogin(msg.data.chat_id, msg.data.login)
+          break
+        case 'STOP_TYPING':
+          messagesStore.deleteTypingLogin(msg.data.chat_id, msg.data.login)
+          break
       }
     }
 

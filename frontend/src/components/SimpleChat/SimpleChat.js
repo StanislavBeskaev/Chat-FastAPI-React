@@ -12,6 +12,7 @@ import Messages from './Messages'
 import TextForm from './TextForm'
 import Loader from '../UI/Loader/Loader'
 import AddContactModal from '../Modals/AddContactModal'
+import TypingInfo from './TypingInfo'
 
 
 function SimpleChat() {
@@ -31,11 +32,21 @@ function SimpleChat() {
     socket.send(textMessage)
   }
 
-  const sendTypingStart = () => {
-    // TODO использовать debounce, посылать одно сообщение при старте и при окончании
+  const sendStartTyping = () => {
     const typingStartMessage = JSON.stringify(
       {
         type: "START_TYPING",
+        data: {chatId: selectedChatId}
+      }
+    )
+
+    socket.send(typingStartMessage)
+  }
+
+  const sendStopTyping = () => {
+    const typingStartMessage = JSON.stringify(
+      {
+        type: "STOP_TYPING",
         data: {chatId: selectedChatId}
       }
     )
@@ -62,7 +73,14 @@ function SimpleChat() {
           <Messages messages={messagesStore.selectedChatMessages()} login={login}/>
         </div>
       </div>
-      <TextForm sendText={sendText} sendTypingStart={sendTypingStart}/>
+      <div className="mt-2">
+        <TypingInfo logins={messagesStore.selectedChatTypingLogins()}/>
+      </div>
+      <TextForm
+        sendText={sendText}
+        sendStartTyping={sendStartTyping}
+        sendStopTyping={sendStopTyping}
+      />
       <Modal show={addContactModalStore.show} onHide={closeAddContactModal}>
         <AddContactModal />
       </Modal>

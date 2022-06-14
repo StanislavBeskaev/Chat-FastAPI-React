@@ -13,7 +13,7 @@ const Chats = () => {
         <ListGroup.Item
           key={chatId}
           action
-          onClick={() => messagesStore.setSelectedChatId(chatId)}
+          onClick={() => messagesStore.setSelectedChatId(chatId)}  // TODO при переключении между чатами останавливать typing
           active={selectedChatId === chatId}
         >
           {chats[chatId].chat_name}

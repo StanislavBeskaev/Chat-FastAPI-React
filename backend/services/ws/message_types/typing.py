@@ -32,3 +32,8 @@ class StartTypingMessage(BaseWSMessage):
             time=get_formatted_time(),
             chat_id=self._chat_id
         )
+
+
+class StopTypingMessage(StartTypingMessage):
+    """Сообщение об окончании печатании"""
+    message_type = MessageType.STOP_TYPING
