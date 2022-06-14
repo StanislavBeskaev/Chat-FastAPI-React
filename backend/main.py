@@ -8,11 +8,11 @@ from loguru import logger
 from . import api
 from .services.ws import (
     WSConnectionManager,
-    WSMessage,
     OnlineMessage,
     OfflineMessage,
     MESSAGE_TYPE_KEY,
-    MESSAGE_DATA_KEY
+    MESSAGE_DATA_KEY,
+    create_message_by_type,
 )
 
 
@@ -51,12 +51,11 @@ async def websocket_endpoint(websocket: WebSocket, login: str):
     await online_message.send_all()
     try:
         while True:
-            message = await websocket.receive_text()
-            logger.debug(f"Message from {login}: {message}")
+            raw_message = await websocket.receive_text()
+            logger.debug(f"Message from {login}: {raw_message}")
 
-            # TODO расширение, ввести тип и для входящего сообщения, например typing_start, typing_end
-            message_dict = json.loads(message)
-            new_message = WSMessage.create_message_by_type(
+            message_dict = json.loads(raw_message)
+            new_message = create_message_by_type(
                 message_type=message_dict[MESSAGE_TYPE_KEY],
                 login=login,
                 in_data=message_dict[MESSAGE_DATA_KEY]
@@ -69,3 +68,5 @@ async def websocket_endpoint(websocket: WebSocket, login: str):
 
         offline_message = OfflineMessage(login=login)
         await offline_message.send_all()
+    except Exception as e:
+        logger.error(f"Возникла ошибка в ходе работы с ws: {str(e)}")
