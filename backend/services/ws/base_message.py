@@ -11,7 +11,7 @@ from .time import get_formatted_time
 
 class WSMessageData(BaseModel):
     """Данные WS сообщения"""
-    login: str
+    login: str | None
     text: str | None
     time: str | datetime | None
 

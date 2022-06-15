@@ -3,17 +3,29 @@ import { ListGroup } from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
 import messagesStore from '../../stores/messagesStore'
+import {useSocket} from '../../contexts/SocketProvider'
 
 
 const Chats = () => {
-  const {chats, selectedChatId} = messagesStore
+  const {sendStopTyping} = useSocket()
+  const {chats, selectedChatId, selectedChatTyping} = messagesStore
+
+  const changeChat = (chatId) => {
+    if (selectedChatTyping) {
+      sendStopTyping(selectedChatId)
+    }
+
+    messagesStore.setSelectedChatId(chatId)
+  }
+
+
   return (
     <ListGroup variant="flush">
       {Object.keys(chats).map(chatId => (
         <ListGroup.Item
           key={chatId}
           action
-          onClick={() => messagesStore.setSelectedChatId(chatId)}  // TODO при переключении между чатами останавливать typing
+          onClick={() => changeChat(chatId)}
           active={selectedChatId === chatId}
         >
           {chats[chatId].chat_name}

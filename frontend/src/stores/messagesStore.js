@@ -11,6 +11,8 @@ class MessagesStore {
   isLoadMessages = false
   loading = false
   loadError = false
+  selectedChatText = ''
+  selectedChatTyping = false
 
   constructor() {
     makeAutoObservable(this)
@@ -61,16 +63,28 @@ class MessagesStore {
   selectedChatTypingLogins() {
     return this.chats[this.selectedChatId].typingLogins
   }
+
+  setSelectedChatText(text) {
+    this.chats[this.selectedChatId].text = text
+    this.selectedChatText = text
+  }
+
+  setSelectedChatTyping(bool) {
+    this.selectedChatTyping = bool
+  }
   
   setChats(chats) {
     this.chats = chats
     for (let chatId of Object.keys(this.chats)) {
       this.chats[chatId].typingLogins = []
+      this.chats[chatId].text = ''
     }
   }
 
   setSelectedChatId(chatId) {
     this.selectedChatId = chatId
+    this.selectedChatText = this.chats[chatId].text
+    this.selectedChatTyping = false
   }
 
   setIsLoadMessages(bool) {

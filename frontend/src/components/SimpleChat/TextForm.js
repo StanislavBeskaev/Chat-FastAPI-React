@@ -1,23 +1,25 @@
-import React, {useState, useEffect} from 'react'
+import React, {useEffect} from 'react'
 import {Button, Form, InputGroup} from 'react-bootstrap'
+import {observer} from 'mobx-react-lite'
+
+import messagesStore from '../../stores/messagesStore'
+
 
 const STOP_TYPING_DELAY = 5000
 
 const TextForm = ({sendTextMessage, sendStartTyping, sendStopTyping}) => {
-  // TODO нужно сохранять текст в store, что бы менялся при переключении чатов
-  const [text, setText] = useState('')
-  const [typing, setTyping] = useState(false)
+  const {selectedChatText, selectedChatTyping} = messagesStore
 
   useEffect(() => {
     const stopTypingTimeout = setTimeout(()=> {
-      if (typing) {
-        setTyping(false)
+      if (selectedChatTyping) {
+        messagesStore.setSelectedChatTyping(false)
         sendStopTyping()
       }
     }, STOP_TYPING_DELAY)
 
     return () => clearTimeout(stopTypingTimeout)
-  }, [text])
+  }, [selectedChatText])
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -25,8 +27,8 @@ const TextForm = ({sendTextMessage, sendStartTyping, sendStopTyping}) => {
   }
 
   function handleKeyPress(e) {
-    if (!typing) {
-      setTyping(true)
+    if (!selectedChatTyping) {
+      messagesStore.setSelectedChatTyping(true)
       sendStartTyping()
     }
     if (e.key !== 'Enter') return
@@ -34,13 +36,13 @@ const TextForm = ({sendTextMessage, sendStartTyping, sendStopTyping}) => {
     e.preventDefault()
     send()
     sendStopTyping()
-    setTyping(false)
+    messagesStore.setSelectedChatTyping(false)
   }
 
   const send = () => {
-    if (!text) return
-    sendTextMessage(text)
-    setText('')
+    if (!selectedChatText) return
+    sendTextMessage(selectedChatText)
+    messagesStore.setSelectedChatText('')
   }
 
   return (
@@ -50,8 +52,8 @@ const TextForm = ({sendTextMessage, sendStartTyping, sendStopTyping}) => {
           <Form.Control
             as="textarea"
             required
-            value={text}
-            onChange={e => setText(e.target.value)}
+            value={selectedChatText}
+            onChange={e => messagesStore.setSelectedChatText(e.target.value)}
             onKeyPress={handleKeyPress}
             style={{height: '30px', resize: 'none'}}
           />
@@ -62,4 +64,4 @@ const TextForm = ({sendTextMessage, sendStartTyping, sendStopTyping}) => {
   )
 }
 
-export default TextForm
+export default observer(TextForm)
