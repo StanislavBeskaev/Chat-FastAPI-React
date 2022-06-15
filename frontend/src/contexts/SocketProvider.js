@@ -40,6 +40,39 @@ export function SocketProvider({ login, children }) {
     return () => ws.close()
   }, [login])
 
+  const sendText = (text, chatId) => {
+    console.log(`Отправка сообщения:`, text)
+    const textMessage = JSON.stringify(
+      {
+        type: "TEXT",
+        data: {text, chatId}
+      }
+    )
+    socket.send(textMessage)
+  }
+
+  const sendStartTyping = (chatId) => {
+    const typingStartMessage = JSON.stringify(
+      {
+        type: "START_TYPING",
+        data: {chatId}
+      }
+    )
+
+    socket.send(typingStartMessage)
+  }
+
+  const sendStopTyping = (chatId) => {
+    const typingStartMessage = JSON.stringify(
+      {
+        type: "STOP_TYPING",
+        data: {chatId}
+      }
+    )
+
+    socket.send(typingStartMessage)
+  }
+
   const addStatusNotification = data => {
     const {login: msgLogin, text, online_status: onlineStatus} = data
 
@@ -52,8 +85,15 @@ export function SocketProvider({ login, children }) {
     }
   }
 
+  const value = {
+    socket,
+    sendStartTyping,
+    sendStopTyping,
+    sendText,
+  }
+
   return (
-    <SocketContext.Provider value={socket}>
+    <SocketContext.Provider value={value}>
       {children}
     </SocketContext.Provider>
   )

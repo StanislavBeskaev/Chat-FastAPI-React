@@ -16,42 +16,13 @@ import TypingInfo from './TypingInfo'
 
 
 function SimpleChat() {
-  const socket = useSocket()
+  const {sendStartTyping, sendStopTyping, sendText} = useSocket()
 
   const {loading, selectedChatId, isLoadMessages, loadError} = messagesStore
   const {login} = authStore.user
 
-  const sendText = (text) => {
-    console.log(`Отправка сообщения:`, text)
-    const textMessage = JSON.stringify(
-      {
-        type: "TEXT",
-        data: {text, chatId: selectedChatId}
-      }
-    )
-    socket.send(textMessage)
-  }
-
-  const sendStartTyping = () => {
-    const typingStartMessage = JSON.stringify(
-      {
-        type: "START_TYPING",
-        data: {chatId: selectedChatId}
-      }
-    )
-
-    socket.send(typingStartMessage)
-  }
-
-  const sendStopTyping = () => {
-    const typingStartMessage = JSON.stringify(
-      {
-        type: "STOP_TYPING",
-        data: {chatId: selectedChatId}
-      }
-    )
-
-    socket.send(typingStartMessage)
+  const sendTextMessage = (text) => {
+   sendText(text, selectedChatId)
   }
 
   const closeAddContactModal = () => {
@@ -77,9 +48,9 @@ function SimpleChat() {
         <TypingInfo logins={messagesStore.selectedChatTypingLogins()}/>
       </div>
       <TextForm
-        sendText={sendText}
-        sendStartTyping={sendStartTyping}
-        sendStopTyping={sendStopTyping}
+        sendTextMessage={sendTextMessage}
+        sendStartTyping={() => sendStartTyping(selectedChatId)}
+        sendStopTyping={() => sendStopTyping(selectedChatId)}
       />
       <Modal show={addContactModalStore.show} onHide={closeAddContactModal}>
         <AddContactModal />

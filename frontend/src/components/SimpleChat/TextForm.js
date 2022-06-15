@@ -1,9 +1,9 @@
 import React, {useState, useEffect} from 'react'
 import {Button, Form, InputGroup} from 'react-bootstrap'
 
-const STOP_TYPING_DELAY = 10000
+const STOP_TYPING_DELAY = 5000
 
-const TextForm = ({sendText, sendStartTyping, sendStopTyping}) => {
+const TextForm = ({sendTextMessage, sendStartTyping, sendStopTyping}) => {
   // TODO нужно сохранять текст в store, что бы менялся при переключении чатов
   const [text, setText] = useState('')
   const [typing, setTyping] = useState(false)
@@ -39,7 +39,7 @@ const TextForm = ({sendText, sendStartTyping, sendStopTyping}) => {
 
   const send = () => {
     if (!text) return
-    sendText(text)
+    sendTextMessage(text)
     setText('')
   }
 
