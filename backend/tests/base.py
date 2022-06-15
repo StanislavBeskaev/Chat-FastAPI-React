@@ -53,8 +53,9 @@ class BaseTestCase(TestCase):
     @staticmethod
     def _drop_test_db():
         test_db_file_path = os.path.join(Path(__file__).resolve().parent.parent.parent, TEST_DB_NAME)
-        os.remove(test_db_file_path)
-        logger.info(f"Удалён файл тестовой базы: {test_db_file_path}")
+        if os.path.exists(test_db_file_path):
+            os.remove(test_db_file_path)
+            logger.info(f"Удалён файл тестовой базы: {test_db_file_path}")
 
     @staticmethod
     def get_authorization_headers(access_token: str) -> dict:
