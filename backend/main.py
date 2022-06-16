@@ -55,6 +55,7 @@ async def websocket_endpoint(websocket: WebSocket, login: str):
             logger.debug(f"Message from {login}: {raw_message}")
 
             message_dict = json.loads(raw_message)
+            # TODO посылать сообщение только тем пользователям, которые есть в том же чате
             new_message = create_message_by_type(
                 message_type=message_dict[MESSAGE_TYPE_KEY],
                 login=login,

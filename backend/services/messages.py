@@ -1,8 +1,11 @@
 from collections import OrderedDict
 
+from sqlalchemy import or_, and_
 from pydantic import BaseModel
 
+from .. import models
 from .. import tables
+from ..settings import get_settings
 from . import BaseService
 from .ws import WSMessageData
 
@@ -26,11 +29,12 @@ class Chat(BaseModel):
 
 
 class MessageService(BaseService):
-    """Сервис для работы с сообщениями"""
+    """Сервис для работы с сообщениями и чатами"""
 
-    # TODO получение сообщений по указанному пользователю
-    def get_many(self) -> dict[str, Chat]:
-        """Получение всех сообщений по чатам"""
+    # TODO подумать как обойти MAIN, возможно имеет смысл добавлять к нему пользователей при регистрации
+    def get_many(self, user: models.User) -> dict[str, Chat]:
+        """Получение всех сообщений пользователя по чатам"""
+        settings = get_settings()
         messages = (
             self.session
             .query(
@@ -42,9 +46,19 @@ class MessageService(BaseService):
                 tables.User.login.label("login"),
                 tables.Profile.avatar_file.label("avatar_file")
             )
+            .distinct()
             .join(tables.Message, tables.Chat.id == tables.Message.chat_id, isouter=True)
             .join(tables.User, tables.Message.user_id == tables.User.id, isouter=True)
             .join(tables.Profile, tables.User.id == tables.Profile.user, isouter=True)
+            .where(
+                or_(
+                    tables.Chat.id == settings.main_chat_id,
+                    and_(
+                        tables.Chat.id == tables.ChatMember.chat_id,
+                        tables.ChatMember.user_id == user.id
+                    )
+                )
+            )
             .order_by(tables.Message.time)
             .all()
         )
