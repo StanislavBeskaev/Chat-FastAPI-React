@@ -9,10 +9,10 @@ from backend.core.time import get_formatted_time, get_current_time
 from backend.services.auth import AuthService
 from backend.services.user import UserService
 from backend.services.ws.constants import MessageType
-from backend.services.ws.base_message import BaseWSMessage
+from backend.services.ws.base_messages import BaseChatWSMessage
 
 
-class TextMessage(BaseWSMessage):
+class TextMessage(BaseChatWSMessage):
     """Текстовое сообщение"""
     message_type = MessageType.TEXT
 

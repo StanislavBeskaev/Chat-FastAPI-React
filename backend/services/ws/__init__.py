@@ -1,4 +1,4 @@
-from .base_message import BaseWSMessage
+from .base_messages import BaseWSMessage
 from .connection_manager import WSConnectionManager, WebsocketClient
 from .constants import MESSAGE_TYPE_KEY, MESSAGE_DATA_KEY, MessageType
 from .message_types import (

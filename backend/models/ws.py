@@ -19,10 +19,14 @@ class WSMessageData(BaseModel):
         return value
 
 
-class TextMessageData(WSMessageData):
+class ChatMessageData(WSMessageData):
+    """Данные сообщения с чатом"""
+    chat_id: str
+
+
+class TextMessageData(ChatMessageData):
     """Данные текстового сообщения"""
     message_id: str
-    chat_id: str
     avatar_file: str | None  # TODO подумать как доставлять файл аватара на frontend
 
 
@@ -37,6 +41,6 @@ class InTypingMessageData(BaseModel):
     chat_id: str = Field(alias="chatId")
 
 
-class TypingMessageData(WSMessageData):
+class TypingMessageData(ChatMessageData):
     """Данные сообщения о печатании"""
-    chat_id: str
+    pass

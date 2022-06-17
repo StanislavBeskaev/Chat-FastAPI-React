@@ -10,8 +10,13 @@ from backend.services import BaseService
 class MessageService(BaseService):
     """Сервис для работы с сообщениями и чатами"""
 
-    def add_user_to_chat(self, user: models.User, chat_id) -> None:
-        """Добавление пользователя к чату"""
+    def add_user_to_chat(self, user: models.User, chat_id: str) -> None:
+        """Добавление пользователя к чату. Если пользователь уже есть в чате, то ничего не происходит"""
+        logger.debug(f"Попытка добавить к чату {chat_id} пользователя {user}")
+        if self.is_user_in_chat(user=user, chat_id=chat_id):
+            logger.warning(f"В чате {chat_id} уже есть пользователь {user}")
+            return
+
         new_chat_member = tables.ChatMember(
             chat_id=chat_id,
             user_id=user.id
@@ -21,6 +26,39 @@ class MessageService(BaseService):
         self.session.commit()
 
         logger.info(f"К чату {chat_id} добавлен пользователь {user}")
+
+    def is_user_in_chat(self, user: models.User, chat_id: str) -> bool:
+        """Есть ли пользователь в чате"""
+        candidate = (
+            self.session
+            .query(tables.ChatMember)
+            .where(
+                and_(
+                    tables.ChatMember.chat_id == chat_id,
+                    tables.ChatMember.user_id == user.id
+                )
+            )
+            .first()
+        )
+
+        return candidate is not None
+
+    def get_chat_members(self, chat_id: str) -> list[models.User]:
+        users_in_chat = (
+            self.session
+            .query(tables.User)
+            .where(
+                and_(
+                    tables.User.id == tables.ChatMember.user_id,
+                    tables.ChatMember.chat_id == chat_id
+                )
+            )
+            .all()
+        )
+
+        users = [models.User.from_orm(user) for user in users_in_chat]
+        logger.debug(f"Участники чата {chat_id}: {users}")
+        return users
 
     def get_many(self, user: models.User) -> dict[str, models.Chat]:
         """Получение всех сообщений пользователя по чатам"""

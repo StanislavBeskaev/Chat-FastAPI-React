@@ -31,7 +31,7 @@ class WSConnectionManager:
     async def connect(self, ws_client: WebsocketClient):
         await ws_client.websocket.accept()
         self.active_clients.append(ws_client)
-        logger.debug(f"{self.__class__.__name__} новое ws соединение {ws_client.login},"
+        logger.debug(f"{self.__class__.__name__} новое ws соединение"
                      f" в списке уже {len(self.active_clients)} соединений")
 
     def disconnect(self, ws_client: WebsocketClient):
@@ -42,12 +42,15 @@ class WSConnectionManager:
         await ws_client.websocket.send_text(message)
 
     async def broadcast(self, message: str):
-        logger.debug(f"{self.__class__.__name__} broadcast на {len(self.active_clients)} соединений")
+        logger.debug(f"{self.__class__.__name__} broadcast на {len(self.active_clients)} соединений:"
+                     f" {', '.join([client.login for client in self.active_clients])}")
         for ws_client in self.active_clients:
             await ws_client.websocket.send_text(message)
 
     async def send_message_to_logins(self, logins: list[str], message: str):
         ws_clients_to_send = [ws_client for ws_client in self.active_clients if ws_client.login in logins]
-        logger.debug(f"{self.__class__.__name__}, рассылка на клиентов: {ws_clients_to_send} сообщения {message}")
+        logins_to_send = [client.login for client in ws_clients_to_send]
+        logger.debug(f"{self.__class__.__name__}, рассылка на клиентов: {logins_to_send} сообщения {message}")
+
         for ws_client in ws_clients_to_send:
             await ws_client.websocket.send_text(message)

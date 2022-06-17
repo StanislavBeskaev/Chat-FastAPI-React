@@ -1,10 +1,10 @@
 from backend import models
 from backend.core.time import get_formatted_time
-from backend.services.ws.base_message import BaseWSMessage
+from backend.services.ws.base_messages import BaseChatWSMessage
 from backend.services.ws.constants import MessageType
 
 
-class StartTypingMessage(BaseWSMessage):
+class StartTypingMessage(BaseChatWSMessage):
     """Сообщение о начале печатания"""
     message_type = MessageType.START_TYPING
 
