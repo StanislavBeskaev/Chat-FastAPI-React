@@ -1,26 +1,10 @@
 from abc import ABC, abstractmethod
 import json
-from datetime import datetime
 
 from loguru import logger
-from pydantic import BaseModel, validator
 
+from backend.models import WSMessageData
 from .connection_manager import WSConnectionManager
-from .time import get_formatted_time
-
-
-class WSMessageData(BaseModel):
-    """Данные WS сообщения"""
-    login: str | None
-    text: str | None
-    time: str | datetime | None
-
-    @validator("time")
-    def convert_from_datetime(cls, value):
-        if isinstance(value, datetime):
-            return get_formatted_time(value)
-
-        return value
 
 
 class BaseWSMessage(ABC):

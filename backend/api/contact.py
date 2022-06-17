@@ -4,9 +4,9 @@ from fastapi import (
     status,
 )
 
-from .. import models
-from ..dependencies import get_current_user
-from ..services.contact import ContactService
+from backend import models
+from backend.dependencies import get_current_user
+from backend.services.contact import ContactService
 
 
 router = APIRouter(

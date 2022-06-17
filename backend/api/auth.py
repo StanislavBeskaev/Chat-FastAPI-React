@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, Response, status, Cookie, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
 
-from .. import models
-from ..services.auth import AuthService
-from ..settings import get_settings, Settings
+from backend import models
+from backend.services.auth import AuthService
+from backend.settings import get_settings, Settings
 
 
 router = APIRouter(

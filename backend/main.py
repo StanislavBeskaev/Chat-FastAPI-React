@@ -8,6 +8,7 @@ from loguru import logger
 from . import api
 from .services.ws import (
     WSConnectionManager,
+    WebsocketClient,
     OnlineMessage,
     OfflineMessage,
     MESSAGE_TYPE_KEY,
@@ -44,7 +45,8 @@ app.mount("/api/static", StaticFiles(directory="files"), name="static")
 @app.websocket("/ws/{login}")
 async def websocket_endpoint(websocket: WebSocket, login: str):
     manager = WSConnectionManager()
-    await manager.connect(websocket)
+    ws_client = WebsocketClient(login=login, websocket=websocket)
+    await manager.connect(ws_client)
     logger.debug(f"Новое ws соединение от пользователя {login} {websocket.__dict__}")
     online_message = OnlineMessage(login=login)
     # TODO позже сделать рассылку по комнатам
@@ -64,7 +66,7 @@ async def websocket_endpoint(websocket: WebSocket, login: str):
 
             await new_message.send_all()
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
+        manager.disconnect(ws_client)
         logger.debug(f"disconnect ws: {login}")
 
         offline_message = OfflineMessage(login=login)

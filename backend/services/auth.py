@@ -4,10 +4,12 @@ from passlib.hash import bcrypt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from .. import models, tables
-from ..database import get_session
-from . import BaseService
-from .token import TokenService
+from backend import models, tables
+from backend.database import get_session
+from backend.settings import get_settings
+from backend.services import BaseService
+from backend.services.messages import MessageService
+from backend.services.token import TokenService
 
 
 class AuthService(BaseService):
@@ -16,6 +18,7 @@ class AuthService(BaseService):
     def __init__(self, session: Session = Depends(get_session)):
         super().__init__(session=session)
         self._token_service = TokenService(session=session)
+        self._message_service = MessageService(session=session)
 
     @classmethod
     def hash_password(cls, password: str) -> str:
@@ -132,6 +135,12 @@ class AuthService(BaseService):
         self._create_user_profile(user_id=new_user.id)
         new_user = models.User.from_orm(new_user)
         logger.info(f"Создан новый пользователь: {new_user}")
+
+        settings = get_settings()
+        self._message_service.add_user_to_chat(
+            user=new_user,
+            chat_id=settings.main_chat_id
+        )
 
         return new_user
 

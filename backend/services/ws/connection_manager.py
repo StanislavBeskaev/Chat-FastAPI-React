@@ -1,5 +1,14 @@
+from dataclasses import dataclass
+
 from loguru import logger
 from fastapi import WebSocket
+
+
+@dataclass
+class WebsocketClient:
+    """Клиент ws соединения"""
+    login: str
+    websocket: WebSocket
 
 
 class WSConnectionManager:
@@ -16,23 +25,29 @@ class WSConnectionManager:
         return cls.__instance
 
     def __init__(self):
-        if not hasattr(self, "active_connections"):
-            self.active_connections: list[WebSocket] = []
+        if not hasattr(self, "active_clients"):
+            self.active_clients: list[WebsocketClient] = []
 
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-        logger.debug(f"{self.__class__.__name__} новое ws соединение,"
-                     f" в списке уже {len(self.active_connections)} соединений")
+    async def connect(self, ws_client: WebsocketClient):
+        await ws_client.websocket.accept()
+        self.active_clients.append(ws_client)
+        logger.debug(f"{self.__class__.__name__} новое ws соединение {ws_client.login},"
+                     f" в списке уже {len(self.active_clients)} соединений")
 
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+    def disconnect(self, ws_client: WebsocketClient):
+        self.active_clients.remove(ws_client)
 
     @staticmethod
-    async def send_personal_message(message: str, websocket: WebSocket):
-        await websocket.send_text(message)
+    async def send_personal_message(message: str, ws_client: WebsocketClient):
+        await ws_client.websocket.send_text(message)
 
     async def broadcast(self, message: str):
-        logger.debug(f"{self.__class__.__name__} broadcast на {len(self.active_connections)} соединений")
-        for connection in self.active_connections:
-            await connection.send_text(message)
+        logger.debug(f"{self.__class__.__name__} broadcast на {len(self.active_clients)} соединений")
+        for ws_client in self.active_clients:
+            await ws_client.websocket.send_text(message)
+
+    async def send_message_to_logins(self, logins: list[str], message: str):
+        ws_clients_to_send = [ws_client for ws_client in self.active_clients if ws_client.login in logins]
+        logger.debug(f"{self.__class__.__name__}, рассылка на клиентов: {ws_clients_to_send} сообщения {message}")
+        for ws_client in ws_clients_to_send:
+            await ws_client.websocket.send_text(message)

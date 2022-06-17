@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, status, UploadFile
 from loguru import logger
 
-from .. import models
-from ..services.user import UserService
-from ..dependencies import get_current_user
+from backend import models
+from backend.services.user import UserService
+from backend.dependencies import get_current_user
 
 router = APIRouter(
     prefix='/user',

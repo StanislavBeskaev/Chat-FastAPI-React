@@ -1,5 +1,5 @@
-from .base_message import BaseWSMessage, WSMessageData
-from .connection_manager import WSConnectionManager
+from .base_message import BaseWSMessage
+from .connection_manager import WSConnectionManager, WebsocketClient
 from .constants import MESSAGE_TYPE_KEY, MESSAGE_DATA_KEY, MessageType
 from .message_types import (
     OnlineMessage,

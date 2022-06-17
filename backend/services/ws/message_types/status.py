@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 import random
 
-from ..constants import OnlineStatus, MessageType
-from ..time import get_formatted_time
-from ..base_message import WSMessageData, BaseWSMessage
+from backend.core.time import get_formatted_time
+from backend.services.ws.base_message import WSMessageData, BaseWSMessage
+from backend.services.ws.constants import OnlineStatus, MessageType
 
 
 class StatusMessageData(WSMessageData):
@@ -11,7 +11,7 @@ class StatusMessageData(WSMessageData):
     online_status: OnlineStatus
 
 
-class StatusMessageBase(BaseWSMessage, ABC):
+class BaseStatusMessage(BaseWSMessage, ABC):
     """Базовый класс статусного сообщения"""
     message_type = MessageType.STATUS
     online_status = None
@@ -35,7 +35,7 @@ class StatusMessageBase(BaseWSMessage, ABC):
         pass
 
 
-class OnlineMessage(StatusMessageBase):
+class OnlineMessage(BaseStatusMessage):
     """Сообщение при подключении пользователя"""
     online_status = OnlineStatus.ONLINE
 
@@ -55,7 +55,7 @@ class OnlineMessage(StatusMessageBase):
         return online_text_templates
 
 
-class OfflineMessage(StatusMessageBase):
+class OfflineMessage(BaseStatusMessage):
     """Сообщение об отключении пользователя"""
     online_status = OnlineStatus.OFFLINE
 
