@@ -34,6 +34,10 @@ export function SocketProvider({ login, children }) {
         case 'STOP_TYPING':
           messagesStore.deleteTypingLogin(msg.data.chat_id, msg.data.login)
           break
+        case 'NEW_CHAT':
+          messagesStore.addNewChat(msg.data)
+          addNewChatNotification(msg.data)
+          break
       }
     }
 
@@ -83,6 +87,11 @@ export function SocketProvider({ login, children }) {
     } else {
       toast.error(text)
     }
+  }
+
+  const addNewChatNotification = data => {
+    const {chat_name: chatName} = data
+    toast.info(`Вы добавлены к чату: ${chatName}`)
   }
 
   const value = {

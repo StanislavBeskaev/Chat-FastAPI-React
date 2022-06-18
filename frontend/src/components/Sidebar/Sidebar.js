@@ -11,6 +11,9 @@ import contactModalStore from '../../stores/modals/contactModalStore'
 import ContactModal from '../Modals/ContactModal'
 import ConfirmDeleteContactModal from '../Modals/ConfirmDeleteContactModal'
 import confirmDeleteContactModalStore from '../../stores/modals/confirmDeleteContactModalStore'
+import messagesStore from '../../stores/messagesStore'
+import NewChatModal from '../Modals/NewChatModal'
+import newChatModalStore from '../../stores/modals/newChatModalStore'
 
 
 const CHATS_KEY = 'chats'
@@ -46,14 +49,23 @@ function Sidebar({ login }) {
                 Ваш логин: <span className="text-muted">{login}</span>
               </span>
             </div>
-            <Button
+            <div className="mt-3 d-flex justify-content-end gap-3">
+              <Button
+                size="sm"
+                variant="primary"
+                onClick={() => newChatModalStore.open()}
+              >
+                Новый чат
+              </Button>
+              <Button
                 onClick={() => authStore.logout()}
                 size="sm"
                 variant="danger"
-                className="ms-3 align-self-end"
-            >
-              Выход
-            </Button>
+              >
+                Выход
+              </Button>
+            </div>
+
           </div>
           <Row className="mt-3">
             <Link to="/user-data/">Данные пользователя</Link>
@@ -65,6 +77,9 @@ function Sidebar({ login }) {
       </Modal>
       <Modal show={confirmDeleteContactModalStore.show} onHide={() => confirmDeleteContactModalStore.close()}>
         <ConfirmDeleteContactModal />
+      </Modal>
+      <Modal show={newChatModalStore.show} onHide={() => newChatModalStore.close()}>
+        <NewChatModal />
       </Modal>
     </div>
   )

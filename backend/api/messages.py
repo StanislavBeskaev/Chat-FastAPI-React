@@ -36,7 +36,7 @@ def create_new_chat(
     """Создание нового чата"""
     # TODO получение данных от пользователя
     new_chat_data = models.ChatCreate(
-        chat_name="Новый чат",
+        chat_name="Супер чат!",
         members=["admin", "test", "new"]
     )
 

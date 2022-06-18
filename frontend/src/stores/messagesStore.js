@@ -1,7 +1,7 @@
-import {makeAutoObservable} from "mobx"
+import {makeAutoObservable} from 'mobx'
 
-import axiosInstance from '../axios/axios'
 import authStore from './authStore'
+import MessageService from '../services/MessageService'
 
 
 //TODO ChatsStore
@@ -19,11 +19,27 @@ class MessagesStore {
     console.log("Создан MessagesStore")
   }
 
+  async sendNewChatRequest() {
+    console.log("Попытка создания нового чата")
+    await MessageService.createNewChat()
+  }
+
+  addNewChat(data) {
+    const {chat_id: chatId, chat_name: chatName} = data
+    this.chats[chatId] = {
+      "chat_name": chatName,
+      messages: [],
+      typingLogins: [],
+      text: ''
+    }
+    console.log(`Добавлен новый чат: ${chatName}`)
+  }
+
   async loadMessages() {
     console.log("load messages")
     this.setLoading(true)
     try{
-      const response = await axiosInstance.get("/messages/")
+      const response = await MessageService.getMessages()
       console.log("success load, response:", response)
       this.setChats(response.data)
       this.setLoadError(false)
