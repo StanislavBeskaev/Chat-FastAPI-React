@@ -14,7 +14,7 @@ router = APIRouter(
 @router.get(
     "/",
     status_code=status.HTTP_200_OK,
-    response_model=dict[str, models.Chat]
+    response_model=dict[str, models.ChatMessages]
 )
 def get_all_messages(
         user: models.User = Depends(get_current_user),

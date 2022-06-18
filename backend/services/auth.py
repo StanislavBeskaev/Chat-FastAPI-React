@@ -10,6 +10,7 @@ from backend.settings import get_settings
 from backend.services import BaseService
 from backend.services.messages import MessageService
 from backend.services.token import TokenService
+from backend.services.user import UserService
 
 
 class AuthService(BaseService):
@@ -19,6 +20,7 @@ class AuthService(BaseService):
         super().__init__(session=session)
         self._token_service = TokenService(session=session)
         self._message_service = MessageService(session=session)
+        self._user_service = UserService(session=session)
 
     @classmethod
     def hash_password(cls, password: str) -> str:
@@ -31,7 +33,7 @@ class AuthService(BaseService):
     def register_new_user(self, user_data: models.UserCreate) -> models.Tokens:
         """Регистрация нового пользователя"""
         logger.debug(f"Попытка регистрации нового пользователя по данным: {user_data}")
-        if self.find_user_by_login(login=user_data.login):
+        if self._user_service.find_user_by_login(login=user_data.login):
             logger.warning(f"Пользователь с логином '{user_data.login}' уже существует")
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -46,7 +48,7 @@ class AuthService(BaseService):
     def login_user(self, login: str, password: str) -> models.Tokens:
         """Авторизация пользователя"""
         logger.debug(f"Попытка авторизации с данными: {login=} {password=}")
-        user = self.find_user_by_login(login)
+        user = self._user_service.find_user_by_login(login)
         if not user:
             message = "Пользователь с таким логином не найден"
             logger.warning(message)
@@ -76,7 +78,7 @@ class AuthService(BaseService):
             raise HTTPException(status_code=401, detail="Не удалось обновить токены")
 
         try:
-            user = models.User.from_orm(self._find_user_by_id(user_id=user_data.id))
+            user = models.User.from_orm(self._user_service.find_user_by_id(user_id=user_data.id))
         except ValidationError as e:
             logger.warning(f"Не удалось получить пользователя по id={user_data.id}: {str(e)}")
             raise HTTPException(status_code=401, detail="Не удалось обновить токены")
@@ -97,28 +99,6 @@ class AuthService(BaseService):
 
         self._token_service.delete_refresh_token(token=refresh_token)
         logger.info(f"Пользователь '{user_data.login}' выполнен выход из системы")
-
-    def find_user_by_login(self, login: str) -> tables.User | None:
-        """Поиск пользователя по login"""
-        user = (
-            self.session
-            .query(tables.User)
-            .filter(tables.User.login == login)
-            .first()
-        )
-
-        return user
-
-    def _find_user_by_id(self, user_id: int) -> tables.User | None:
-        """Поиск пользователя по id"""
-        user = (
-            self.session
-            .query(tables.User)
-            .filter(tables.User.id == user_id)
-            .first()
-        )
-
-        return user
 
     def _create_new_user(self, user_data: models.UserCreate) -> models.User:
         """Создание нового пользователя"""

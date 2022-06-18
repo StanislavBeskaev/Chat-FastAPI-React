@@ -16,6 +16,11 @@ class ChatData(MessageData):
     chat_name: str
 
 
-class Chat(BaseModel):
+class ChatMessages(BaseModel):
     chat_name: str
     messages: list[MessageData]
+
+
+class ChatCreate(BaseModel):
+    chat_name: str
+    members: list[str]

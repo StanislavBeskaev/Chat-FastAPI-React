@@ -6,17 +6,37 @@ from loguru import logger
 from .. import models
 from .. import tables
 from . import BaseService
-from .auth import AuthService
 from .files import FilesService
 
 
 class UserService(BaseService):
     """Сервис для управления пользователями"""
 
+    def find_user_by_login(self, login: str) -> tables.User | None:
+        """Поиск пользователя по login"""
+        user = (
+            self.session
+            .query(tables.User)
+            .filter(tables.User.login == login)
+            .first()
+        )
+
+        return user
+
+    def find_user_by_id(self, user_id: int) -> tables.User | None:
+        """Поиск пользователя по id"""
+        user = (
+            self.session
+            .query(tables.User)
+            .filter(tables.User.id == user_id)
+            .first()
+        )
+
+        return user
+
     def change_user_data(self, user_login: str, user_data: models.UserUpdate) -> models.User:
         """Изменение данных пользователя"""
-        auth_service = AuthService(session=self.session)
-        user = auth_service.find_user_by_login(login=user_login)
+        user = self.find_user_by_login(login=user_login)
 
         user.name = user_data.name
         user.surname = user_data.surname

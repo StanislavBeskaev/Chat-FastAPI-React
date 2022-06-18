@@ -6,7 +6,6 @@ from .. import models
 from .. import tables
 from ..database import get_session
 from . import BaseService
-from .auth import AuthService
 from .user import UserService
 
 
@@ -15,7 +14,6 @@ class ContactService(BaseService):
 
     def __init__(self, session: Session = Depends(get_session)):
         super().__init__(session=session)
-        self._auth_service = AuthService(session=session)
         self._user_service = UserService(session=session)
 
     def get_many(self, user: models.User) -> list[models.Contact]:
@@ -137,7 +135,7 @@ class ContactService(BaseService):
         self.session.commit()
 
     def _find_contact(self, user: models.User, contact_login: str) -> tables.Contact | None:
-        contact_user = self._auth_service.find_user_by_login(login=contact_login)
+        contact_user = self._user_service.find_user_by_login(login=contact_login)
 
         if not contact_user:
             logger.warning(f"Пользователь {user.login} операция"
