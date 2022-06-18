@@ -51,8 +51,8 @@ class MessageService(BaseService):
             raise HTTPException(status_code=400, detail="Не указаны участники чата")
 
         if len(chat_data.members) < 2:
-            logger.error("Передано мало участников для чата")
-            raise HTTPException(status_code=400, detail="Передано мало участников для чата")
+            logger.error("Необходимо добавить хотя бы ещё одного участника")
+            raise HTTPException(status_code=400, detail="Необходимо добавить хотя бы ещё одного участника")
 
         chat_users = [self._user_service.find_user_by_login(login) for login in chat_data.members]
         if not all(chat_users):

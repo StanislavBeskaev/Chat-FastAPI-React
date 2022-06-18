@@ -19,11 +19,6 @@ class MessagesStore {
     console.log("Создан MessagesStore")
   }
 
-  async sendNewChatRequest() {
-    console.log("Попытка создания нового чата")
-    await MessageService.createNewChat()
-  }
-
   addNewChat(data) {
     const {chat_id: chatId, chat_name: chatName} = data
     this.chats[chatId] = {
