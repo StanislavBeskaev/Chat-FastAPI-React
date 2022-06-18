@@ -23,3 +23,21 @@ def get_all_messages(
     """Получение сообщений текущего пользователя"""
 
     return message_service.get_many(user=user)
+
+
+@router.post(
+    "/chats/",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(get_current_user)]
+)
+def create_new_chat(
+    message_service: MessageService = Depends(),
+):
+    """Создание нового чата"""
+    # TODO получение данных от пользователя
+    new_chat_data = models.ChatCreate(
+        chat_name="Новый чат",
+        members=["admin", "test", "new"]
+    )
+
+    message_service.create_chat(chat_data=new_chat_data)

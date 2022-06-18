@@ -11,9 +11,13 @@ class MessageData(WSMessageData):
         orm_mode = True
 
 
-class ChatData(MessageData):
+class NewChatData(BaseModel):
     chat_id: str
     chat_name: str
+
+
+class ChatData(MessageData, NewChatData):
+    pass
 
 
 class ChatMessages(BaseModel):

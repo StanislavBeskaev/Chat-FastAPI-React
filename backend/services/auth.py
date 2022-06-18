@@ -8,7 +8,7 @@ from backend import models, tables
 from backend.database import get_session
 from backend.settings import get_settings
 from backend.services import BaseService
-from backend.services.messages import MessageService
+from backend.services.chat_members import ChatMembersService
 from backend.services.token import TokenService
 from backend.services.user import UserService
 
@@ -19,7 +19,7 @@ class AuthService(BaseService):
     def __init__(self, session: Session = Depends(get_session)):
         super().__init__(session=session)
         self._token_service = TokenService(session=session)
-        self._message_service = MessageService(session=session)
+        self._chat_members_service = ChatMembersService(session=session)
         self._user_service = UserService(session=session)
 
     @classmethod
@@ -116,8 +116,9 @@ class AuthService(BaseService):
         new_user = models.User.from_orm(new_user)
         logger.info(f"Создан новый пользователь: {new_user}")
 
+        # TODO тесты на это
         settings = get_settings()
-        self._message_service.add_user_to_chat(
+        self._chat_members_service.add_user_to_chat(
             user=new_user,
             chat_id=settings.main_chat_id
         )

@@ -1,3 +1,4 @@
+import asyncio
 from collections import OrderedDict
 from uuid import uuid4
 
@@ -9,7 +10,9 @@ from loguru import logger
 from backend import models, tables
 from backend.database import get_session
 from backend.services import BaseService
+from backend.services.chat_members import ChatMembersService
 from backend.services.user import UserService
+from backend.services.ws import NewChatMessage
 
 
 class MessageService(BaseService):
@@ -18,6 +21,7 @@ class MessageService(BaseService):
     def __init__(self, session: Session = Depends(get_session)):
         super().__init__(session=session)
         self._user_service = UserService(session=session)
+        self._chat_members_service = ChatMembersService(session=session)
 
     def create_chat(self, chat_data: models.ChatCreate) -> None:
         """Создание чата"""
@@ -31,11 +35,10 @@ class MessageService(BaseService):
         self.session.add(new_chat)
         self.session.commit()
         for user in chat_users:
-            self.add_user_to_chat(user=user, chat_id=new_chat.id)
+            self._chat_members_service.add_user_to_chat(user=user, chat_id=new_chat.id)
 
         logger.info(f"Создан новый чат {new_chat.name} с id {new_chat.id}")
-
-        # TODO WS сообщение о новом чате всем участникам
+        self._notify_about_new_chat(new_chat=new_chat)
 
     def _validate_new_chat_data(self, chat_data: models.ChatCreate) -> list[models.User]:
         """Проверка данных для создания нового чата"""
@@ -56,55 +59,11 @@ class MessageService(BaseService):
         logger.debug(f"{chat_users=}")
         return chat_users
 
-    def add_user_to_chat(self, user: models.User, chat_id: str) -> None:
-        """Добавление пользователя к чату. Если пользователь уже есть в чате, то ничего не происходит"""
-        logger.debug(f"Попытка добавить к чату {chat_id} пользователя {user}")
-        if self.is_user_in_chat(user=user, chat_id=chat_id):
-            logger.warning(f"В чате {chat_id} уже есть пользователь {user}")
-            return
-
-        new_chat_member = tables.ChatMember(
-            chat_id=chat_id,
-            user_id=user.id
-        )
-
-        self.session.add(new_chat_member)
-        self.session.commit()
-
-        logger.info(f"К чату {chat_id} добавлен пользователь {user}")
-
-    def is_user_in_chat(self, user: models.User, chat_id: str) -> bool:
-        """Есть ли пользователь в чате"""
-        candidate = (
-            self.session
-            .query(tables.ChatMember)
-            .where(
-                and_(
-                    tables.ChatMember.chat_id == chat_id,
-                    tables.ChatMember.user_id == user.id
-                )
-            )
-            .first()
-        )
-
-        return candidate is not None
-
-    def get_chat_members(self, chat_id: str) -> list[models.User]:
-        users_in_chat = (
-            self.session
-            .query(tables.User)
-            .where(
-                and_(
-                    tables.User.id == tables.ChatMember.user_id,
-                    tables.ChatMember.chat_id == chat_id
-                )
-            )
-            .all()
-        )
-
-        users = [models.User.from_orm(user) for user in users_in_chat]
-        logger.debug(f"Участники чата {chat_id}: {users}")
-        return users
+    @staticmethod
+    def _notify_about_new_chat(new_chat: tables.Chat) -> None:
+        """ws уведомление участников чата о создании нового чата"""
+        new_chat_message = NewChatMessage(chat_id=new_chat.id, chat_name=new_chat.name)
+        asyncio.run(new_chat_message.send_all())
 
     def get_many(self, user: models.User) -> dict[str, models.ChatMessages]:
         """Получение всех сообщений пользователя по чатам"""

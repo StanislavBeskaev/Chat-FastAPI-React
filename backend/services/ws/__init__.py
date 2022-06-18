@@ -6,7 +6,8 @@ from .message_types import (
     OfflineMessage,
     StartTypingMessage,
     TextMessage,
-    StopTypingMessage
+    StopTypingMessage,
+    NewChatMessage,
 )
 
 
