@@ -77,7 +77,7 @@ class AuthStore {
       await messagesStore.loadMessages()
       await contactStore.loadContacts()
     } catch (e) {
-      const errorText = JSON.stringify(e?.response?.data?.detail)
+      const errorText = e?.response?.data?.detail
       console.log(errorText)
       this.setError(errorText)
       this.setAuth(false)
@@ -111,7 +111,7 @@ class AuthStore {
       this.setAuth(false)
       localStorage.removeItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY);
     } catch (e) {
-      const errorText = JSON.stringify(e?.response?.data?.detail)
+      const errorText = e?.response?.data?.detail
       console.log(errorText)
       this.setError(errorText)
     } finally {
@@ -125,7 +125,7 @@ class AuthStore {
       const response = UserService.changeData(name, surname)
       this.setUser((await response).data)
     } catch (e) {
-      const errorText = JSON.stringify(e?.response?.data?.detail)
+      const errorText = e?.response?.data?.detail
       console.log(errorText)
       this.setError(errorText)
     } finally {

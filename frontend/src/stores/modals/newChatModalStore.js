@@ -28,10 +28,10 @@ class NewChatModalStore {
         this.close()
       }, 2000)
     } catch (e) {
-      const errorText = JSON.stringify(e?.response?.data?.detail)
-      console.log(errorText)
-      // TODO убрать двойные ковычки вокруг текста ошибки везде где подобное
-      this.setError(errorText)
+      const error = e
+      console.log('Ошибка при создании нового чата')
+      console.log(error.response)
+      this.setError(error.response.data.detail)
     }
   }
 
