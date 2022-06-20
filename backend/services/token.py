@@ -13,7 +13,7 @@ from . import BaseService
 class TokenService(BaseService):
     """Сервис для работы с токенами"""
 
-    def generate_tokens(self, user: models.User) -> models.Tokens:
+    def generate_tokens(self, user: models.User, user_agent: str) -> models.Tokens:
         """Генерация токенов: access и refresh"""
         settings = get_settings()
 
@@ -22,15 +22,16 @@ class TokenService(BaseService):
             refresh_token=self.generate_refresh_token(user=user, setting=settings),
             user=user
         )
-        logger.debug(f"Для пользователя {user}, сгенерированы токены: {tokens.access_token=}, {tokens.refresh_token=}")
-        self.save_refresh_token_to_db(user_id=user.id, refresh_token=tokens.refresh_token)
+        logger.debug(f"Для пользователя {user}, {user_agent=},"
+                     f" сгенерированы токены: {tokens.access_token=}, {tokens.refresh_token=}")
+        self.save_refresh_token_to_db(user_id=user.id, refresh_token=tokens.refresh_token, user_agent=user_agent)
 
         return tokens
 
-    def save_refresh_token_to_db(self, user_id: int, refresh_token: str) -> tables.RefreshToken:
-        """Сохранение refresh токена для пользователя с id=user_id в базу данных"""
+    def save_refresh_token_to_db(self, user_id: int, refresh_token: str, user_agent: str) -> tables.RefreshToken:
+        """Сохранение refresh токена для пользователя с id=user_id и приложением=user_agent в базу данных"""
         logger.debug(f"Пользователь {user_id}, запрос на сохранение refresh токена в базу: '{refresh_token}'")
-        token = self._find_refresh_token_by_user_id(user_id=user_id)
+        token = self._find_refresh_token_by_user(user_id=user_id, user_agent=user_agent)
         if token:
             logger.debug(f"Для пользователя {user_id} уже существует refresh_token, обновляем")
             token.refresh_token = refresh_token
@@ -38,29 +39,33 @@ class TokenService(BaseService):
             logger.debug(f"Для пользователя {user_id} не было refresh_token в базе, создаём новый")
             token = tables.RefreshToken(
                 user=user_id,
-                refresh_token=refresh_token
+                refresh_token=refresh_token,
+                user_agent=user_agent
             )
 
         self.session.add(token)
         self.session.commit()
-        logger.info(f"Для пользователя {user_id} в базу сохранён refresh_token: {refresh_token}")
+        logger.info(f"Для пользователя {user_id} {user_agent=} в базу сохранён refresh_token: {refresh_token}")
         return token
 
-    def _find_refresh_token_by_user_id(self, user_id: int) -> tables.RefreshToken | None:
+    def _find_refresh_token_by_user(self, user_id: int, user_agent: str) -> tables.RefreshToken | None:
         refresh_token = (
             self.session
             .query(tables.RefreshToken)
             .filter(tables.RefreshToken.user == user_id)
+            .filter(tables.RefreshToken.user_agent == user_agent)
             .first()
         )
 
         return refresh_token
 
-    def find_refresh_token(self, token: str) -> tables.RefreshToken | None:
+    def find_refresh_token(self, token: str, user_agent: str) -> tables.RefreshToken | None:
+        """Поиск refresh токена по токену и user_agent"""
         refresh_token = (
             self.session
             .query(tables.RefreshToken)
             .filter(tables.RefreshToken.refresh_token == token)
+            .filter(tables.RefreshToken.user_agent == user_agent)
             .first()
         )
 
@@ -166,8 +171,8 @@ class TokenService(BaseService):
         logger.debug(f"Верный refresh_token: {token}")
         return user
 
-    def delete_refresh_token(self, token: str) -> None:
-        refresh_token = self.find_refresh_token(token=token)
+    def delete_refresh_token(self, token: str, user_agent: str) -> None:
+        refresh_token = self.find_refresh_token(token=token, user_agent=user_agent)
         self.session.delete(refresh_token)
         self.session.commit()
         logger.debug(f"Из базы удалён refresh_token: {token}")

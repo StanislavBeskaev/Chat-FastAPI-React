@@ -22,13 +22,18 @@ REFRESH_TOKEN_COOKIE_KEY = "refreshToken"
     status_code=status.HTTP_201_CREATED
 )
 def registration(
+        request: Request,
         response: Response,
         user_data: models.UserCreate,
         auth_service: AuthService = Depends(),
         settings: Settings = Depends(get_settings)
 ) -> models.Tokens:
     """Регистрация нового пользователя"""
-    tokens = auth_service.register_new_user(user_data=user_data)
+    # TODO тесты на user_agent
+    tokens = auth_service.register_new_user(
+        user_data=user_data,
+        user_agent=request.headers.get('user-agent')
+    )
     response.set_cookie(
         key=REFRESH_TOKEN_COOKIE_KEY,
         value=tokens.refresh_token,
@@ -45,13 +50,19 @@ def registration(
     status_code=status.HTTP_200_OK
 )
 def login(
+        request: Request,
         response: Response,
         user_data: OAuth2PasswordRequestForm = Depends(),
         auth_service: AuthService = Depends(),
         settings: Settings = Depends(get_settings)
 ) -> models.Tokens:
     """Авторизация пользователя"""
-    tokens = auth_service.login_user(login=user_data.username, password=user_data.password)
+    # TODO тесты на user_agent
+    tokens = auth_service.login_user(
+        login=user_data.username,
+        password=user_data.password,
+        user_agent=request.headers.get('user-agent')
+    )
     response.set_cookie(
         key=REFRESH_TOKEN_COOKIE_KEY,
         value=tokens.refresh_token,
@@ -75,9 +86,11 @@ def refresh_tokens(
         settings: Settings = Depends(get_settings)
 ) -> models.Tokens:
     """Обновление токенов"""
-    logger.debug(f"{request.__dict__}")
-
-    tokens = auth_service.refresh_tokens(refresh_token=refresh_token)
+    # TODO тесты на user_agent
+    tokens = auth_service.refresh_tokens(
+        refresh_token=refresh_token,
+        user_agent=request.headers.get('user-agent')
+    )
     response.set_cookie(
         key=REFRESH_TOKEN_COOKIE_KEY,
         value=tokens.refresh_token,
@@ -93,12 +106,17 @@ def refresh_tokens(
     status_code=status.HTTP_200_OK
 )
 def logout(
+        request: Request,
         response: Response,
         auth_service: AuthService = Depends(),
         refresh_token: str = Cookie(None, alias=REFRESH_TOKEN_COOKIE_KEY),
 ):
     """Выход из системы"""
-    auth_service.logout(refresh_token=refresh_token)
+    # TODO тесты на user_agent
+    auth_service.logout(
+        refresh_token=refresh_token,
+        user_agent=request.headers.get('user-agent')
+    )
     response.delete_cookie(
         key=REFRESH_TOKEN_COOKIE_KEY
     )

@@ -31,6 +31,7 @@ class RefreshToken(Base):
     id = Column(Integer, primary_key=True)
     user = Column(Integer, ForeignKey("users.id"), index=True)
     refresh_token = Column(String, nullable=False)
+    user_agent = Column(String, nullable=False)
 
     user_rel = relationship(User, backref="tokens")
 
