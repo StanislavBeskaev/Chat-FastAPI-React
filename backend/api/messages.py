@@ -28,12 +28,12 @@ def get_all_messages(
 @router.post(
     "/chats/",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(get_current_user)]
 )
 def create_new_chat(
-    new_chat_data: models.ChatCreate,
-    message_service: MessageService = Depends(),
+        new_chat_data: models.ChatCreate,
+        user: models.User = Depends(get_current_user),
+        message_service: MessageService = Depends(),
 ):
     """Создание нового чата"""
 
-    message_service.create_chat(chat_data=new_chat_data)
+    message_service.create_chat(chat_data=new_chat_data, user=user)

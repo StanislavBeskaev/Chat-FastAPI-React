@@ -52,6 +52,7 @@ class Chat(Base):
     id = Column(String, primary_key=True, autoincrement=False)
     name = Column(String)
     is_public = Column(Boolean, default=False)
+    creator_id = Column(Integer, ForeignKey("users.id"), index=True)
 
 
 class ChatMember(Base):

@@ -20,12 +20,13 @@ class MessagesStore {
   }
 
   addNewChat(data) {
-    const {chat_id: chatId, chat_name: chatName} = data
+    const {chat_id: chatId, chat_name: chatName, creator} = data
     this.chats[chatId] = {
       "chat_name": chatName,
       messages: [],
       typingLogins: [],
-      text: ''
+      text: '',
+      creator
     }
     console.log(`Добавлен новый чат: ${chatName}`)
   }

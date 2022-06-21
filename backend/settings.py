@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     timezone = 'Europe/Moscow'
 
     main_chat_id = "MAIN"
+    admin_password = "admin"
 
 
 def get_settings() -> Settings:

@@ -14,6 +14,7 @@ class MessageData(WSMessageData):
 class NewChatData(BaseModel):
     chat_id: str
     chat_name: str
+    creator: str
 
 
 class ChatData(MessageData, NewChatData):
@@ -22,6 +23,7 @@ class ChatData(MessageData, NewChatData):
 
 class ChatMessages(BaseModel):
     chat_name: str
+    creator: str
     messages: list[MessageData]
 
 

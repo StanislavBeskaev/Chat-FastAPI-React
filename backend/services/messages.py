@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from fastapi import Depends, HTTPException
 from sqlalchemy import and_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 from loguru import logger
 
 from backend import models, tables
@@ -23,22 +23,23 @@ class MessageService(BaseService):
         self._user_service = UserService(session=session)
         self._chat_members_service = ChatMembersService(session=session)
 
-    def create_chat(self, chat_data: models.ChatCreate) -> None:
+    def create_chat(self, chat_data: models.ChatCreate, user: models.User) -> None:
         """Создание чата"""
-        logger.debug(f"Попытка создания нового чата, {chat_data=}")
+        logger.debug(f"Попытка создания нового чата, {chat_data=} {user=}")
         chat_users = self._validate_new_chat_data(chat_data=chat_data)
 
         new_chat = tables.Chat(
             id=str(uuid4()),
-            name=chat_data.chat_name
+            name=chat_data.chat_name,
+            creator_id=user.id
         )
         self.session.add(new_chat)
         self.session.commit()
-        for user in chat_users:
-            self._chat_members_service.add_user_to_chat(user=user, chat_id=new_chat.id)
+        for chat_user in chat_users:
+            self._chat_members_service.add_user_to_chat(user=chat_user, chat_id=new_chat.id)
 
-        logger.info(f"Создан новый чат {new_chat.name} с id {new_chat.id}")
-        self._notify_about_new_chat(new_chat=new_chat)
+        logger.info(f"Пользователь {user.login} создал новый чат {new_chat.name} с id {new_chat.id}")
+        self._notify_about_new_chat(new_chat=new_chat, creator=user.login)
 
     def _validate_new_chat_data(self, chat_data: models.ChatCreate) -> list[models.User]:
         """Проверка данных для создания нового чата"""
@@ -64,13 +65,15 @@ class MessageService(BaseService):
         return chat_users
 
     @staticmethod
-    def _notify_about_new_chat(new_chat: tables.Chat) -> None:
+    def _notify_about_new_chat(new_chat: tables.Chat, creator: str) -> None:
         """ws уведомление участников чата о создании нового чата"""
-        new_chat_message = NewChatMessage(chat_id=new_chat.id, chat_name=new_chat.name)
+        new_chat_message = NewChatMessage(chat_id=new_chat.id, chat_name=new_chat.name, creator=creator)
         asyncio.run(new_chat_message.send_all())
 
     def get_many(self, user: models.User) -> dict[str, models.ChatMessages]:
         """Получение всех сообщений пользователя по чатам"""
+        chat_creator = aliased(tables.User)
+
         messages = (
             self.session
             .query(
@@ -80,12 +83,14 @@ class MessageService(BaseService):
                 tables.Message.time.label("time"),
                 tables.Message.text.label("text"),
                 tables.User.login.label("login"),
-                tables.Profile.avatar_file.label("avatar_file")
+                tables.Profile.avatar_file.label("avatar_file"),
+                chat_creator.login.label("creator")
             )
             .distinct()
             .join(tables.Message, tables.Chat.id == tables.Message.chat_id, isouter=True)
             .join(tables.User, tables.Message.user_id == tables.User.id, isouter=True)
             .join(tables.Profile, tables.User.id == tables.Profile.user, isouter=True)
+            .join(chat_creator, tables.Chat.creator_id == chat_creator.id)
             .where(
                 and_(
                     tables.Chat.id == tables.ChatMember.chat_id,
@@ -106,7 +111,11 @@ class MessageService(BaseService):
 
         for chat_data in chats_data:
             if chat_data.chat_id not in chats:
-                chats[chat_data.chat_id] = models.ChatMessages(chat_name=chat_data.chat_name, messages=[])
+                chats[chat_data.chat_id] = models.ChatMessages(
+                    chat_name=chat_data.chat_name,
+                    creator=chat_data.creator,
+                    messages=[]
+                )
 
             if chat_data.message_id:
                 chats[chat_data.chat_id].messages.append(models.MessageData.from_orm(chat_data))
