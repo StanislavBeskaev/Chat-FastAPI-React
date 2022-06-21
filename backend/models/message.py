@@ -11,9 +11,12 @@ class MessageData(WSMessageData):
         orm_mode = True
 
 
-class NewChatData(BaseModel):
+class ChatChangeNameData(BaseModel):
     chat_id: str
     chat_name: str
+
+
+class NewChatData(ChatChangeNameData):
     creator: str
 
 
@@ -27,6 +30,10 @@ class ChatMessages(BaseModel):
     messages: list[MessageData]
 
 
-class ChatCreate(BaseModel):
+class ChatUpdateName(BaseModel):
     chat_name: str
+
+
+class ChatCreate(ChatUpdateName):
     members: list[str]
+

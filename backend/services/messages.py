@@ -12,7 +12,7 @@ from backend.database import get_session
 from backend.services import BaseService
 from backend.services.chat_members import ChatMembersService
 from backend.services.user import UserService
-from backend.services.ws import NewChatMessage
+from backend.services.ws import NewChatMessage, ChangeChatNameMessage
 
 
 class MessageService(BaseService):
@@ -121,3 +121,52 @@ class MessageService(BaseService):
                 chats[chat_data.chat_id].messages.append(models.MessageData.from_orm(chat_data))
 
         return chats
+
+    def change_chat_name(self, chat_id: str, new_name: str, user: models.User) -> None:
+        """Изменение названия чата"""
+        logger.debug(f"Попытка изменить название чата: {chat_id=} {new_name=} {user=}")
+        if not self._is_user_chat_creator(chat_id=chat_id, user=user):
+            logger.warning("Пользователь не является создателем чата, изменение названия не выполнятся")
+            raise HTTPException(
+                status_code=403,
+                detail="Изменить название чата может только создатель"
+            )
+
+        if not new_name:
+            logger.warning("Передано пустое новое название, изменение названия не выполнятся")
+            raise HTTPException(status_code=400, detail="Укажите название чата")
+
+        chat = self._get_chat_by_id(chat_id=chat_id)
+        chat.name = new_name
+        self.session.add(chat)
+        self.session.commit()
+
+        logger.info(f"Для чата {chat_id} установлено название: {new_name}")
+        self._notify_about_change_chat_name(changed_chat=chat)
+
+    def _is_user_chat_creator(self, chat_id: str, user: models.User) -> bool:
+        """Является ли пользователь создателем чата"""
+        chat = self._get_chat_by_id(chat_id=chat_id)
+
+        return chat.creator_id == user.id
+
+    def _get_chat_by_id(self, chat_id: str) -> tables.Chat:
+        """Получение чата по id"""
+        chat = (
+            self.session
+            .query(tables.Chat)
+            .where(tables.Chat.id == chat_id)
+            .first()
+        )
+
+        if not chat:
+            logger.warning(f"Чата с id {chat_id} не существует")
+            raise HTTPException(status_code=404, detail="Чата с таким id не существует")
+
+        return chat
+
+    @staticmethod
+    def _notify_about_change_chat_name(changed_chat: tables.Chat) -> None:
+        """ws уведомление участников чата об изменении названия чата"""
+        new_chat_message = ChangeChatNameMessage(chat_id=changed_chat.id, chat_name=changed_chat.name)
+        asyncio.run(new_chat_message.send_all())

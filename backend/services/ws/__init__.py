@@ -8,6 +8,7 @@ from .message_types import (
     TextMessage,
     StopTypingMessage,
     NewChatMessage,
+    ChangeChatNameMessage,
 )
 
 

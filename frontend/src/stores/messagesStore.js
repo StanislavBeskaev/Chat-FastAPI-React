@@ -31,6 +31,16 @@ class MessagesStore {
     console.log(`Добавлен новый чат: ${chatName}`)
   }
 
+  changeChatName(data) {
+    const {chat_id: chatId, chat_name: chatName} = data
+    this.chats[chatId]["chat_name"] = chatName
+    console.log(`Изменено название чата ${chatId} на ${chatName}`)
+  }
+
+  getChatNameById(chatId) {
+    return this.chats[chatId]["chat_name"]
+  }
+
   async loadMessages() {
     console.log("load messages")
     this.setLoading(true)
