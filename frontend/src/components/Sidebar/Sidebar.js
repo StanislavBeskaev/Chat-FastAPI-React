@@ -11,9 +11,10 @@ import contactModalStore from '../../stores/modals/contactModalStore'
 import ContactModal from '../Modals/ContactModal'
 import ConfirmDeleteContactModal from '../Modals/ConfirmDeleteContactModal'
 import confirmDeleteContactModalStore from '../../stores/modals/confirmDeleteContactModalStore'
-import messagesStore from '../../stores/messagesStore'
 import NewChatModal from '../Modals/NewChatModal'
 import newChatModalStore from '../../stores/modals/newChatModalStore'
+import changeChatNameModalStore from '../../stores/modals/changeChatNameModalStore'
+import ChangeChatNameModal from '../Modals/ChangeChatNameModal'
 
 
 const CHATS_KEY = 'chats'
@@ -80,6 +81,9 @@ function Sidebar({ login }) {
       </Modal>
       <Modal show={newChatModalStore.show} onHide={() => newChatModalStore.close()}>
         <NewChatModal />
+      </Modal>
+      <Modal show={changeChatNameModalStore.show} onHide={() => changeChatNameModalStore.close()}>
+        <ChangeChatNameModal />
       </Modal>
     </div>
   )

@@ -1,10 +1,13 @@
 import React from 'react'
-import {Button, ListGroup} from 'react-bootstrap'
+import {Image, ListGroup} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
+
+import pencil from "../../img/pencil.ico"
 
 import messagesStore from '../../stores/messagesStore'
 import {useSocket} from '../../contexts/SocketProvider'
 import authStore from '../../stores/authStore'
+import changeChatNameModalStore from '../../stores/modals/changeChatNameModalStore'
 
 
 const Chats = () => {
@@ -19,7 +22,6 @@ const Chats = () => {
 
     messagesStore.setSelectedChatId(chatId)
   }
-
 
   return (
     <ListGroup variant="flush">
@@ -37,15 +39,14 @@ const Chats = () => {
             {chatName}
             {
               isOwner
-                ? <Button
-                  variant="success"
-                  size="sm"
+                ? <Image
+                  src={pencil}
+                  height={20}
                   onClick={e => {
                     e.stopPropagation()
-                    alert(`Тут будет изменение чата ${chatName}`)
-                  }
-                  }
-                >Изменить</Button>
+                    changeChatNameModalStore.openWithChatId(chatId)
+                  }}
+                />
                 : null
             }
           </div>
