@@ -41,6 +41,14 @@ class MessagesStore {
     return this.chats[chatId]["chat_name"]
   }
 
+  getSelectedChatName() {
+    return this.getChatNameById(this.selectedChatId)
+  }
+
+  getSelectedChatCreator() {
+    return this.chats[this.selectedChatId].creator
+  }
+
   async loadMessages() {
     console.log("load messages")
     this.setLoading(true)

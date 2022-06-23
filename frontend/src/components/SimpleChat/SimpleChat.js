@@ -13,6 +13,7 @@ import TextForm from './TextForm'
 import Loader from '../UI/Loader/Loader'
 import AddContactModal from '../Modals/AddContactModal'
 import TypingInfo from './TypingInfo'
+import ChatHeader from './ChatHeader'
 
 
 function SimpleChat() {
@@ -39,6 +40,7 @@ function SimpleChat() {
 
   return (
     <div className="d-flex flex-column flex-grow-1">
+      <ChatHeader />
       <div className="flex-grow-1 overflow-auto">
         <div className="d-flex flex-column align-items-start justify-content-end px-3">
           <Messages messages={messagesStore.selectedChatMessages()} login={login}/>
