@@ -5,16 +5,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
-from . import api
-from .services.ws import (
-    WSConnectionManager,
-    WebsocketClient,
+from backend import api
+from backend.services.ws import (
     OnlineMessage,
     OfflineMessage,
     MESSAGE_TYPE_KEY,
     MESSAGE_DATA_KEY,
     create_message_by_type,
 )
+from backend.services.ws_connection_manager import WSConnectionManager, WebsocketClient
 
 
 app = FastAPI(

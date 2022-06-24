@@ -54,3 +54,7 @@ class WSConnectionManager:
 
         for ws_client in ws_clients_to_send:
             await ws_client.websocket.send_text(message)
+
+    def get_active_logins(self) -> list[str]:
+        """Получение списка активных логинов"""
+        return [client.login for client in self.active_clients]

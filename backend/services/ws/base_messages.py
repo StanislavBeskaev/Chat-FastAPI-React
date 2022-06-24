@@ -6,7 +6,7 @@ from loguru import logger
 from backend import models
 from backend.database import get_session
 from backend.services.chat_members import ChatMembersService
-from backend.services.ws.connection_manager import WSConnectionManager
+from backend.services.ws_connection_manager import WSConnectionManager
 
 
 class BaseWSMessage(ABC):

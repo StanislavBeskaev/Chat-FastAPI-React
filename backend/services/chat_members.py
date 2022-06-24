@@ -7,6 +7,7 @@ from backend import models, tables
 from backend.database import get_session
 from backend.services import BaseService
 from backend.services.user import UserService
+from backend.services.ws_connection_manager import WSConnectionManager
 
 
 class ChatMembersService(BaseService):
@@ -66,3 +67,18 @@ class ChatMembersService(BaseService):
         users = [models.User.from_orm(user) for user in users_in_chat]
         logger.debug(f"Участники чата {chat_id}: {users}")
         return users
+
+    def get_chat_members_with_online_status(self, chat_id: str) -> list[models.ChatMemberWithOnlineStatus]:
+        """Получение информации об участниках чата и их онлайн статусе"""
+        chat_members = self.get_chat_members(chat_id=chat_id)
+        active_logins = WSConnectionManager().get_active_logins()
+
+        chat_members_with_online_status = [
+            models.ChatMemberWithOnlineStatus(
+                login=member.login,
+                is_online=member.login in active_logins
+            )
+            for member in chat_members
+        ]
+
+        return chat_members_with_online_status
