@@ -13,8 +13,6 @@ import ConfirmDeleteContactModal from '../Modals/ConfirmDeleteContactModal'
 import confirmDeleteContactModalStore from '../../stores/modals/confirmDeleteContactModalStore'
 import NewChatModal from '../Modals/NewChatModal'
 import newChatModalStore from '../../stores/modals/newChatModalStore'
-import changeChatNameModalStore from '../../stores/modals/changeChatNameModalStore'
-import ChangeChatNameModal from '../Modals/ChangeChatNameModal'
 
 
 const CHATS_KEY = 'chats'
@@ -81,9 +79,6 @@ function Sidebar({ login }) {
       </Modal>
       <Modal show={newChatModalStore.show} onHide={() => newChatModalStore.close()}>
         <NewChatModal />
-      </Modal>
-      <Modal show={changeChatNameModalStore.show} onHide={() => changeChatNameModalStore.close()}>
-        <ChangeChatNameModal />
       </Modal>
     </div>
   )

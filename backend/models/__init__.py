@@ -1,4 +1,4 @@
-from .chat_members import ChatMemberWithOnlineStatus
+from .chat_members import ChatMemberWithOnlineStatus, ChatMember
 from .contact import Contact, ContactCreate, ContactDelete, ContactChange
 from .message import MessageData, ChatData, ChatMessages, ChatCreate, NewChatData, ChatUpdateName, ChatChangeNameData
 from .token import Tokens

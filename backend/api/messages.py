@@ -60,6 +60,7 @@ def change_chat_name(
     return {"message": "Название чата успешно изменено"}
 
 
+# TODO условие что бы текущий пользователь был участником чата?
 @router.get(
     "/chat_members/{chat_id}",
     status_code=status.HTTP_200_OK,
@@ -72,3 +73,20 @@ def get_chat_members(
 ):
     """Получение списка участников чата с онлайн статусом"""
     return chat_members_service.get_chat_members_with_online_status(chat_id=chat_id)
+
+
+# TODO условие что бы текущий пользователь был участником чата?
+@router.post(
+    "/chat_members/{chat_id}",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(get_current_user)]
+)
+def add_chat_member(
+        chat_id: str,
+        chat_member: models.ChatMember,
+        chat_members_service: ChatMembersService = Depends()
+):
+    """Добавление участника к чату"""
+    chat_members_service.add_login_to_chat(login=chat_member.login, chat_id=chat_id)
+
+    return {"message": f"Пользователь {chat_member.login} добавлен к чату: {chat_id}"}

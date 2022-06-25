@@ -5,15 +5,19 @@ import {Modal} from 'react-bootstrap'
 import {useSocket} from '../../contexts/SocketProvider'
 
 import authStore from '../../stores/authStore'
-import messagesStore from '../../stores/messagesStore'
 import addContactModalStore from '../../stores/modals/addContactModalStore'
+import AddContactModal from '../Modals/AddContactModal'
+import changeChatNameModalStore from '../../stores/modals/changeChatNameModalStore'
+import ChangeChatNameModal from '../Modals/ChangeChatNameModal'
+import messagesStore from '../../stores/messagesStore'
 
 import Messages from './Messages'
 import TextForm from './TextForm'
 import Loader from '../UI/Loader/Loader'
-import AddContactModal from '../Modals/AddContactModal'
 import TypingInfo from './TypingInfo'
 import ChatHeader from './ChatHeader'
+import ChatMembersModal from '../Modals/ChatMembersModal/ChatMembersModal'
+import chatMembersModalStore from '../../stores/modals/chatMembersModalStore'
 
 
 function SimpleChat() {
@@ -56,6 +60,12 @@ function SimpleChat() {
       />
       <Modal show={addContactModalStore.show} onHide={closeAddContactModal}>
         <AddContactModal />
+      </Modal>
+      <Modal show={changeChatNameModalStore.show} onHide={() => changeChatNameModalStore.close()}>
+        <ChangeChatNameModal />
+      </Modal>
+      <Modal show={chatMembersModalStore.show} onHide={() => chatMembersModalStore.close()}>
+        <ChatMembersModal />
       </Modal>
     </div>
   )

@@ -17,6 +17,12 @@ class ChatMembersService(BaseService):
         super().__init__(session=session)
         self._user_service = UserService(session=session)
 
+    def add_login_to_chat(self, login: str, chat_id: str) -> None:
+        """Добавление пользователя по логину к чату. Если пользователь уже есть в чате, то ничего не происходит"""
+        user = self._user_service.find_user_by_login(login=login)
+        self.add_user_to_chat(user=user, chat_id=chat_id)
+        # TODO ws сообщение о добавлении пользователя к чату
+
     def add_user_to_chat(self, user: models.User, chat_id: str) -> None:
         """Добавление пользователя к чату. Если пользователь уже есть в чате, то ничего не происходит"""
         logger.debug(f"Попытка добавить к чату {chat_id} пользователя {user}")

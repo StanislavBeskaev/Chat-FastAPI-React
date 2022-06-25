@@ -72,7 +72,7 @@ class ContactStore {
       displayName = ''
     }
 
-    return `${login}${displayName}`
+    return `${login} ${displayName}`
   }
 
   setLoading(bool) {
