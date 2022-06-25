@@ -1,6 +1,6 @@
 import React from 'react'
 import {observer} from 'mobx-react-lite'
-import {Modal} from 'react-bootstrap'
+import {Modal, Alert} from 'react-bootstrap'
 
 import chatMembersModalStore from '../../../stores/modals/chatMembersModalStore'
 import messagesStore from '../../../stores/messagesStore'
@@ -9,7 +9,7 @@ import ContactsOutsideChat from './ContactsOutsideChat'
 
 
 const ChatMembersModal = () => {
-  const {chatId} = chatMembersModalStore
+  const {chatId, message} = chatMembersModalStore
 
   return (
     <>
@@ -18,6 +18,11 @@ const ChatMembersModal = () => {
         <div className="d-flex flex-column flex-grow-1 gap-3">
           <ChatMembers />
           <ContactsOutsideChat />
+          {
+            message
+              ? <Alert variant="info" className="mt-3">{message}</Alert>
+              : null
+          }
         </div>
       </Modal.Body>
     </>

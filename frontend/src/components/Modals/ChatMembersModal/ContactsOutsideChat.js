@@ -24,7 +24,7 @@ const ContactsOutsideChat = () => {
       </div>
       <ListGroup
         className="flex-grow-1 overflow-auto"
-        style={{maxHeight: 250}}
+        style={{maxHeight: 220}}
       >
         {contactsOutside.map(contact =>
           <ListGroup.Item
@@ -39,7 +39,7 @@ const ContactsOutsideChat = () => {
               variant="success"
               onClick={async () => chatMembersModalStore.addChatMember(contact.login)}
             >
-              Добавить к чату
+              +
             </Button>
           </ListGroup.Item>
         )}

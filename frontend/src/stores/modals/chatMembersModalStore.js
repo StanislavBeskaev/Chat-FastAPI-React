@@ -8,7 +8,8 @@ class ChatMembersModalStore {
   chatId = null
   error = ''
   members = []
-  closeTimeout = null
+  message = ''
+  messageCloseTimeout = null
 
   constructor() {
     makeAutoObservable(this)
@@ -18,7 +19,7 @@ class ChatMembersModalStore {
   async openWithChatId(chatId) {
     this.chatId = chatId
     this.error = ''
-    if (this.closeTimeout) clearTimeout(this.closeTimeout)
+    if (this.messageCloseTimeout) clearTimeout(this.messageCloseTimeout)
     await this.loadChatMembers()
     this.setShow(true)
   }
@@ -39,13 +40,34 @@ class ChatMembersModalStore {
     try {
       console.log(`Попытка добавить пользователя ${login} к чату ${this.chatId}`)
       await MessageService.addChatMember(this.chatId, login)
-      // TODO оповещение о добавлении пользователя к чату
-      console.log("Пользователь добавлен к чату")
+      console.log('Пользователь добавлен к чату')
       await this.loadChatMembers()
+      this.addMessage(`Пользователь ${login} добавлен к чату`)
     } catch (e) {
       console.log('Ошибка при добавлении пользователя к чату')
       console.log(e.response)
     }
+  }
+
+  async deleteChatMember(login) {
+    try {
+      console.log(`Попытка удалить пользователя ${login} из чата:${this.chatId}`)
+      await MessageService.deleteChatMember(this.chatId, login)
+      console.log('Пользователь удалён из чата')
+      await this.loadChatMembers()
+      this.addMessage(`Пользователь ${login} удалён из чата`)
+    } catch (e) {
+      console.log('Ошибка при удалении пользователя из чата')
+      console.log(e.response)
+    }
+  }
+
+  addMessage(message) {
+    this.setMessage(message)
+    if (this.messageCloseTimeout) clearTimeout(this.messageCloseTimeout)
+    this.messageCloseTimeout = setTimeout(() => {
+      this.setMessage('')
+    }, 2000)
   }
 
   close() {
@@ -62,6 +84,10 @@ class ChatMembersModalStore {
 
   setMembers(data) {
     this.members = data
+  }
+
+  setMessage(text) {
+    this.message = text
   }
 }
 

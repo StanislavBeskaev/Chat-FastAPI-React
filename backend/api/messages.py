@@ -90,3 +90,20 @@ def add_chat_member(
     chat_members_service.add_login_to_chat(login=chat_member.login, chat_id=chat_id)
 
     return {"message": f"Пользователь {chat_member.login} добавлен к чату: {chat_id}"}
+
+
+# TODO условие что бы текущий пользователь был участником чата?
+@router.delete(
+    "/chat_members/{chat_id}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_current_user)]
+)
+def delete_chat_member(
+        chat_id: str,
+        chat_member: models.ChatMember,
+        chat_members_service: ChatMembersService = Depends()
+):
+    """Удаление участника из чата"""
+    chat_members_service.delete_login_from_chat(login=chat_member.login, chat_id=chat_id)
+
+    return {"message": f"Пользователь {chat_member.login} удалён из чата: {chat_id}"}

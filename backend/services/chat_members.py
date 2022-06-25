@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from loguru import logger
@@ -23,6 +23,18 @@ class ChatMembersService(BaseService):
         self.add_user_to_chat(user=user, chat_id=chat_id)
         # TODO ws сообщение о добавлении пользователя к чату
 
+    def delete_login_from_chat(self, login: str, chat_id: str) -> None:
+        """Удаление пользователя по логину из чата"""
+        user = self._user_service.find_user_by_login(login=login)
+        chat_member = self.find_chat_member(user_id=user.id, chat_id=chat_id)
+
+        if not chat_member:
+            raise HTTPException(status_code=404, detail=f"Пользователя {login} нет в чате")
+
+        self.session.delete(chat_member)
+        self.session.commit()
+        # TODO ws сообщение об удалении пользователя из чата
+
     def add_user_to_chat(self, user: models.User, chat_id: str) -> None:
         """Добавление пользователя к чату. Если пользователь уже есть в чате, то ничего не происходит"""
         logger.debug(f"Попытка добавить к чату {chat_id} пользователя {user}")
@@ -40,21 +52,25 @@ class ChatMembersService(BaseService):
 
         logger.info(f"К чату {chat_id} добавлен пользователь {user}")
 
-    def is_user_in_chat(self, user: models.User, chat_id: str) -> bool:
-        """Есть ли пользователь в чате"""
+    def find_chat_member(self, user_id: int, chat_id: str) -> tables.ChatMember | None:
         candidate = (
             self.session
             .query(tables.ChatMember)
             .where(
                 and_(
                     tables.ChatMember.chat_id == chat_id,
-                    tables.ChatMember.user_id == user.id
+                    tables.ChatMember.user_id == user_id
                 )
             )
             .first()
         )
 
-        return candidate is not None
+        return candidate
+
+    def is_user_in_chat(self, user: models.User, chat_id: str) -> bool:
+        """Есть ли пользователь в чате"""
+
+        return self.find_chat_member(user_id=user.id, chat_id=chat_id) is not None
 
     def get_chat_members(self, chat_id: str) -> list[models.User]:
         """Получение пользователей - участников чата"""

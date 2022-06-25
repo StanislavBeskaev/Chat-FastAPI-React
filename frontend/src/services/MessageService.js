@@ -20,4 +20,8 @@ export default class MessageService {
   static async addChatMember(chatId, login) {
     return axiosInstance.post(`/messages/chat_members/${chatId}`, {login})
   }
+
+  static async deleteChatMember(chatId, login) {
+    return axiosInstance.delete(`/messages/chat_members/${chatId}`, {data: {login}})
+  }
 }
