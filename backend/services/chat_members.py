@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import Depends, HTTPException
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
@@ -6,7 +8,9 @@ from loguru import logger
 from backend import models, tables
 from backend.database import get_session
 from backend.services import BaseService
+from backend.services.get_chat_members import get_chat_members
 from backend.services.user import UserService
+from backend.services.ws import AddToChatMessage
 from backend.services.ws_connection_manager import WSConnectionManager
 
 
@@ -22,6 +26,9 @@ class ChatMembersService(BaseService):
         user = self._user_service.find_user_by_login(login=login)
         self.add_user_to_chat(user=user, chat_id=chat_id)
         # TODO ws сообщение о добавлении пользователя к чату
+        chat = self.get_chat_by_id(chat_id=chat_id)
+        add_to_chat_message = AddToChatMessage(chat_id=chat_id, chat_name=chat.name, login=login)
+        asyncio.run(add_to_chat_message.send_all())
 
     def delete_login_from_chat(self, login: str, chat_id: str) -> None:
         """Удаление пользователя по логину из чата"""
@@ -72,27 +79,25 @@ class ChatMembersService(BaseService):
 
         return self.find_chat_member(user_id=user.id, chat_id=chat_id) is not None
 
-    def get_chat_members(self, chat_id: str) -> list[models.User]:
-        """Получение пользователей - участников чата"""
-        users_in_chat = (
+    def get_chat_by_id(self, chat_id: str) -> tables.Chat:
+        """Получение чата по id"""
+        chat = (
             self.session
-            .query(tables.User)
-            .where(
-                and_(
-                    tables.User.id == tables.ChatMember.user_id,
-                    tables.ChatMember.chat_id == chat_id
-                )
-            )
-            .all()
+            .query(tables.Chat)
+            .where(tables.Chat.id == chat_id)
+            .first()
         )
 
-        users = [models.User.from_orm(user) for user in users_in_chat]
-        logger.debug(f"Участники чата {chat_id}: {users}")
-        return users
+        if not chat:
+            logger.warning(f"Чата с id {chat_id} не существует")
+            raise HTTPException(status_code=404, detail="Чата с таким id не существует")
 
-    def get_chat_members_with_online_status(self, chat_id: str) -> list[models.ChatMemberWithOnlineStatus]:
+        return chat
+
+    @staticmethod
+    def get_chat_members_with_online_status(chat_id: str) -> list[models.ChatMemberWithOnlineStatus]:
         """Получение информации об участниках чата и их онлайн статусе"""
-        chat_members = self.get_chat_members(chat_id=chat_id)
+        chat_members = get_chat_members(chat_id=chat_id)
         active_logins = WSConnectionManager().get_active_logins()
 
         chat_members_with_online_status = [

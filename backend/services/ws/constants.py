@@ -13,6 +13,7 @@ class MessageType(str, Enum):
     STOP_TYPING = "STOP_TYPING"
     NEW_CHAT = "NEW_CHAT"
     CHANGE_CHAT_NAME = "CHANGE_CHAT_NAME"
+    ADD_TO_CHAT = "ADD_TO_CHAT"
 
 
 class OnlineStatus(str, Enum):

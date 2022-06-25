@@ -4,8 +4,7 @@ import json
 from loguru import logger
 
 from backend import models
-from backend.database import get_session
-from backend.services.chat_members import ChatMembersService
+from backend.services.get_chat_members import get_chat_members
 from backend.services.ws_connection_manager import WSConnectionManager
 
 
@@ -39,8 +38,7 @@ class BaseChatWSMessage(BaseWSMessage, ABC):
     """Базовый класс для работы с сообщениями в привязке к чатам"""
 
     async def send_all(self) -> None:
-        chat_members_service = ChatMembersService(session=next(get_session()))
-        chat_members = chat_members_service.get_chat_members(chat_id=self._data.chat_id)  # noqa
+        chat_members = get_chat_members(chat_id=self._data.chat_id)  # noqa
         logins_to_send = [member.login for member in chat_members]
         manager = WSConnectionManager()
         logger.debug(f"Отправка сообщения: {self._content}")

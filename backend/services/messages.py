@@ -136,7 +136,7 @@ class MessageService(BaseService):
             logger.warning("Передано пустое новое название, изменение названия не выполнятся")
             raise HTTPException(status_code=400, detail="Укажите название чата")
 
-        chat = self._get_chat_by_id(chat_id=chat_id)
+        chat = self._chat_members_service.get_chat_by_id(chat_id=chat_id)
         chat.name = new_name
         self.session.add(chat)
         self.session.commit()
@@ -146,24 +146,10 @@ class MessageService(BaseService):
 
     def _is_user_chat_creator(self, chat_id: str, user: models.User) -> bool:
         """Является ли пользователь создателем чата"""
-        chat = self._get_chat_by_id(chat_id=chat_id)
+        chat = self._chat_members_service.get_chat_by_id(chat_id=chat_id)
 
         return chat.creator_id == user.id
 
-    def _get_chat_by_id(self, chat_id: str) -> tables.Chat:
-        """Получение чата по id"""
-        chat = (
-            self.session
-            .query(tables.Chat)
-            .where(tables.Chat.id == chat_id)
-            .first()
-        )
-
-        if not chat:
-            logger.warning(f"Чата с id {chat_id} не существует")
-            raise HTTPException(status_code=404, detail="Чата с таким id не существует")
-
-        return chat
 
     @staticmethod
     def _notify_about_change_chat_name(changed_chat: tables.Chat) -> None:

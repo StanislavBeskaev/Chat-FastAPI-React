@@ -44,6 +44,12 @@ export function SocketProvider({ login, children }) {
           messagesStore.changeChatName(msg.data)
           const currentChatName = messagesStore.getChatNameById(chatId)
           changeChatNameNotification(previousChatName, currentChatName)
+          break
+        case 'ADD_TO_CHAT':
+          // TODO загружать данные только одного нового чата, а не перегружать полностью
+          AddToChatNotification(msg.data)
+          await messagesStore.loadMessages()
+          break
       }
     }
 
@@ -93,6 +99,10 @@ export function SocketProvider({ login, children }) {
     } else {
       toast.error(text)
     }
+  }
+
+  const AddToChatNotification = data => {
+    addNewChatNotification(data)
   }
 
   const addNewChatNotification = data => {

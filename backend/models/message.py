@@ -16,6 +16,10 @@ class ChatChangeNameData(BaseModel):
     chat_name: str
 
 
+class AddToChatData(ChatChangeNameData):
+    pass
+
+
 class NewChatData(ChatChangeNameData):
     creator: str
 
