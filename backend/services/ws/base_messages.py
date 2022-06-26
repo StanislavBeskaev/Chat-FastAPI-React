@@ -48,3 +48,24 @@ class BaseChatWSMessage(BaseWSMessage, ABC):
     @abstractmethod
     def _get_data(self) -> models.ChatMessageData:
         pass
+
+
+class SingleLoginChatMessage(BaseWSMessage, ABC):
+    """Базовый класс для отправки сообщения о чате одному пользователю"""
+
+    def __init__(self, chat_id: str, chat_name: str, login: str):
+        self._chat_name_data = models.ChatNameData(chat_id=chat_id, chat_name=chat_name)
+        super().__init__(login=login)
+
+    def _get_data(self) -> models.ChatNameData:
+        return self._chat_name_data
+
+    async def send_all(self) -> None:
+        raise RuntimeError("send_all не применимо для сообщения конкретному пользователю")
+
+    async def send(self) -> None:
+        """Отправка сообщения пользователю"""
+        manager = WSConnectionManager()
+        logger.debug(f"Отправка пользователю {self._login} сообщения : {self._content}")
+
+        await manager.send_message_to_logins(logins=[self._login], message=self._get_message())

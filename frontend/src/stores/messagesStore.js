@@ -4,10 +4,12 @@ import authStore from './authStore'
 import MessageService from '../services/MessageService'
 
 
+const DEFAULT_CHAT_ID = 'MAIN'
+
 //TODO ChatsStore
 class MessagesStore {
   chats = {}
-  selectedChatId = 'MAIN'
+  selectedChatId = DEFAULT_CHAT_ID
   isLoadMessages = false
   loading = false
   loadError = false
@@ -68,6 +70,15 @@ class MessagesStore {
     } finally {
       this.setLoading(false)
     }
+  }
+
+  deleteChat(chatId) {
+    console.log('Попытка удаления чата', chatId)
+    if (this.selectedChatId === chatId) {
+      this.setSelectedChatId(DEFAULT_CHAT_ID)
+    }
+    delete this.chats[chatId]
+    console.log('Удалён чат', chatId)
   }
 
   addMessage(message) {

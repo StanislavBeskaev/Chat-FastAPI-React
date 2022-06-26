@@ -9,6 +9,7 @@ from .message_types import (
     NewChatMessage,
     ChangeChatNameMessage,
     AddToChatMessage,
+    DeleteFromChatMessage,
 )
 
 

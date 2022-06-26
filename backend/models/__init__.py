@@ -8,7 +8,7 @@ from .message import (
     NewChatData,
     ChatUpdateName,
     ChatChangeNameData,
-    AddToChatData,
+    ChatNameData,
 )
 from .token import Tokens
 from .user import UserUpdate, UserCreate, UserLogin, User, UserInfo

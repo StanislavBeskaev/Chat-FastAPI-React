@@ -10,7 +10,7 @@ from backend.database import get_session
 from backend.services import BaseService
 from backend.services.get_chat_members import get_chat_members
 from backend.services.user import UserService
-from backend.services.ws import AddToChatMessage
+from backend.services.ws import AddToChatMessage, DeleteFromChatMessage
 from backend.services.ws_connection_manager import WSConnectionManager
 
 
@@ -25,10 +25,10 @@ class ChatMembersService(BaseService):
         """Добавление пользователя по логину к чату. Если пользователь уже есть в чате, то ничего не происходит"""
         user = self._user_service.find_user_by_login(login=login)
         self.add_user_to_chat(user=user, chat_id=chat_id)
-        # TODO ws сообщение о добавлении пользователя к чату
+
         chat = self.get_chat_by_id(chat_id=chat_id)
         add_to_chat_message = AddToChatMessage(chat_id=chat_id, chat_name=chat.name, login=login)
-        asyncio.run(add_to_chat_message.send_all())
+        asyncio.run(add_to_chat_message.send())
 
     def delete_login_from_chat(self, login: str, chat_id: str) -> None:
         """Удаление пользователя по логину из чата"""
@@ -40,7 +40,10 @@ class ChatMembersService(BaseService):
 
         self.session.delete(chat_member)
         self.session.commit()
-        # TODO ws сообщение об удалении пользователя из чата
+
+        chat = self.get_chat_by_id(chat_id=chat_id)
+        delete_from_chat_message = DeleteFromChatMessage(chat_id=chat_id, chat_name=chat.name, login=login)
+        asyncio.run(delete_from_chat_message.send())
 
     def add_user_to_chat(self, user: models.User, chat_id: str) -> None:
         """Добавление пользователя к чату. Если пользователь уже есть в чате, то ничего не происходит"""

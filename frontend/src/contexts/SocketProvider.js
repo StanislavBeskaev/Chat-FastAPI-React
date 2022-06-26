@@ -20,7 +20,7 @@ export function SocketProvider({ login, children }) {
     ws.onmessage = async (e) => {
       const msg = JSON.parse(e.data)
       console.log('Сообщение из ws: ', msg)
-      // TODO какие ещё нужны типы?
+
       switch (msg.type) {
         case 'TEXT':
           messagesStore.addMessage(msg.data)
@@ -47,8 +47,12 @@ export function SocketProvider({ login, children }) {
           break
         case 'ADD_TO_CHAT':
           // TODO загружать данные только одного нового чата, а не перегружать полностью
-          AddToChatNotification(msg.data)
+          addToChatNotification(msg.data)
           await messagesStore.loadMessages()
+          break
+        case 'DELETE_FROM_CHAT':
+          deleteFromChatNotification(msg.data)
+          messagesStore.deleteChat(msg.data.chat_id)
           break
       }
     }
@@ -101,13 +105,19 @@ export function SocketProvider({ login, children }) {
     }
   }
 
-  const AddToChatNotification = data => {
-    addNewChatNotification(data)
+  const addToChatNotification = data => {
+    const {chat_name: chatName} = data
+    toast.success(`Вы добавлены к чату: ${chatName}`)
+  }
+
+  const deleteFromChatNotification = data => {
+    const {chat_name: chatName} = data
+    toast.error(`Вы удалены из чата: ${chatName}`)
   }
 
   const addNewChatNotification = data => {
     const {chat_name: chatName} = data
-    toast.info(`Вы добавлены к чату: ${chatName}`)
+    toast.info(`Создан новый чат: ${chatName}`)
   }
 
   const changeChatNameNotification = (previous, current) => {

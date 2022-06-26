@@ -16,7 +16,7 @@ class ChatChangeNameData(BaseModel):
     chat_name: str
 
 
-class AddToChatData(ChatChangeNameData):
+class ChatNameData(ChatChangeNameData):
     pass
 
 
