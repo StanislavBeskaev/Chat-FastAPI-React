@@ -23,7 +23,7 @@ class ChatMembersService(BaseService):
 
     def add_login_to_chat(self, login: str, chat_id: str) -> None:
         """Добавление пользователя по логину к чату. Если пользователь уже есть в чате, то ничего не происходит"""
-        user = self._user_service.find_user_by_login(login=login)
+        user = models.User.from_orm(self._user_service.find_user_by_login(login=login))
         self.add_user_to_chat(user=user, chat_id=chat_id)
 
         chat = self.get_chat_by_id(chat_id=chat_id)
@@ -32,7 +32,7 @@ class ChatMembersService(BaseService):
 
     def delete_login_from_chat(self, login: str, chat_id: str) -> None:
         """Удаление пользователя по логину из чата"""
-        user = self._user_service.find_user_by_login(login=login)
+        user = models.User.from_orm(self._user_service.find_user_by_login(login=login))
         chat_member = self.find_chat_member(user_id=user.id, chat_id=chat_id)
 
         if not chat_member:
@@ -40,6 +40,8 @@ class ChatMembersService(BaseService):
 
         self.session.delete(chat_member)
         self.session.commit()
+
+        logger.info(f"Из чата {chat_id} удалён пользователь {user}")
 
         chat = self.get_chat_by_id(chat_id=chat_id)
         delete_from_chat_message = DeleteFromChatMessage(chat_id=chat_id, chat_name=chat.name, login=login)

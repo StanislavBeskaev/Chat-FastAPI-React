@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from fastapi import Depends, HTTPException
 from sqlalchemy import and_
-from sqlalchemy.orm import Session, aliased
+from sqlalchemy.orm import Session, aliased, Query
 from loguru import logger
 
 from backend import models, tables
@@ -72,9 +72,32 @@ class MessageService(BaseService):
 
     def get_many(self, user: models.User) -> dict[str, models.ChatMessages]:
         """Получение всех сообщений пользователя по чатам"""
+        messages = (
+            self._get_chat_messages_query(user=user)
+            .all()
+        )
+
+        messages_data = [models.ChatData(**data) for data in messages]
+
+        return self._convert_messages_to_chats(chats_data=messages_data)
+
+    def get_chat_content(self, user: models.User, chat_id: str) -> models.ChatMessages:
+        """Получение содержимого чата"""
+        chat_messages = (
+            self._get_chat_messages_query(user=user)
+            .where(tables.Chat.id == chat_id)
+            .all()
+        )
+        messages_data = [models.ChatData(**data) for data in chat_messages]
+        chat_content = self._convert_messages_to_chats(chats_data=messages_data)[chat_id]
+
+        return chat_content
+
+    def _get_chat_messages_query(self, user: models.User) -> Query:
+        """Получение запроса для сообщений пользователя"""
         chat_creator = aliased(tables.User)
 
-        messages = (
+        messages_query = (
             self.session
             .query(
                 tables.Chat.id.label("chat_id"),
@@ -98,12 +121,9 @@ class MessageService(BaseService):
                 )
             )
             .order_by(tables.Message.time)
-            .all()
         )
 
-        messages_data = [models.ChatData(**data) for data in messages]
-
-        return self._convert_messages_to_chats(chats_data=messages_data)
+        return messages_query
 
     @staticmethod
     def _convert_messages_to_chats(chats_data: list[models.ChatData]) -> dict[str, models.ChatMessages]:

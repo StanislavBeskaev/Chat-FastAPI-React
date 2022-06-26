@@ -81,6 +81,22 @@ class MessagesStore {
     console.log('Удалён чат', chatId)
   }
 
+  async addChat(chatId) {
+    console.log('Попытка добавления чата', chatId)
+    try{
+      console.log(`Запрос данных чата`, chatId)
+      const response = await MessageService.getChatMessages(chatId)
+      console.log(response)
+      this.chats[chatId] = response.data
+      // TODO подумать как сделать красиво initChat
+      this.initChat(chatId)
+    } catch (e) {
+      console.log('Ошибка при загрузке данных чата', chatId)
+      console.log(e.response)
+    }
+    console.log('Чат добавлен', chatId)
+  }
+
   addMessage(message) {
     if (!this.isLoadMessages) return
 
@@ -121,9 +137,14 @@ class MessagesStore {
   setChats(chats) {
     this.chats = chats
     for (let chatId of Object.keys(this.chats)) {
-      this.chats[chatId].typingLogins = []
-      this.chats[chatId].text = ''
+      this.initChat(chatId)
     }
+  }
+
+  // Инициализация чата, добавление служебных полей
+  initChat(chatId) {
+    this.chats[chatId].typingLogins = []
+    this.chats[chatId].text = ''
   }
 
   setSelectedChatId(chatId) {

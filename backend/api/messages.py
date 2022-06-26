@@ -26,6 +26,21 @@ def get_all_messages(
     return message_service.get_many(user=user)
 
 
+@router.get(
+    "/{chat_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=models.ChatMessages
+)
+def get_chat_messages(
+        chat_id: str,
+        user: models.User = Depends(get_current_user),
+        message_service: MessageService = Depends(),
+):
+    """Получение сообщений по чату"""
+
+    return message_service.get_chat_content(user=user, chat_id=chat_id)
+
+
 @router.post(
     "/chats/",
     status_code=status.HTTP_204_NO_CONTENT

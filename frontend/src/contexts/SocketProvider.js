@@ -16,10 +16,16 @@ export function SocketProvider({ login, children }) {
   useEffect(() => {
     const ws = new WebSocket(`ws://localhost:8000/ws/${login}`)
     setSocket(ws)
+    return () => ws.close()
+  }, [login])
 
-    ws.onmessage = async (e) => {
+  useEffect(() => {
+    if (!socket) return
+
+    socket.onmessage = async (e) => {
       const msg = JSON.parse(e.data)
       console.log('Сообщение из ws: ', msg)
+      let chatId
 
       switch (msg.type) {
         case 'TEXT':
@@ -39,26 +45,25 @@ export function SocketProvider({ login, children }) {
           addNewChatNotification(msg.data)
           break
         case 'CHANGE_CHAT_NAME':
-          const chatId = msg.data["chat_id"]
+          chatId = msg.data["chat_id"]
           const previousChatName = messagesStore.getChatNameById(chatId)
           messagesStore.changeChatName(msg.data)
           const currentChatName = messagesStore.getChatNameById(chatId)
           changeChatNameNotification(previousChatName, currentChatName)
           break
         case 'ADD_TO_CHAT':
-          // TODO загружать данные только одного нового чата, а не перегружать полностью
           addToChatNotification(msg.data)
-          await messagesStore.loadMessages()
+          await messagesStore.addChat(msg.data.chat_id)
           break
         case 'DELETE_FROM_CHAT':
+          chatId = msg.data["chat_id"]
+          if (chatId === messagesStore.selectedChatId) sendStopTyping(chatId)
+          messagesStore.deleteChat(chatId)
           deleteFromChatNotification(msg.data)
-          messagesStore.deleteChat(msg.data.chat_id)
           break
       }
     }
-
-    return () => ws.close()
-  }, [login])
+  }, [socket])
 
   const sendText = (text, chatId) => {
     console.log(`Отправка сообщения:`, text)

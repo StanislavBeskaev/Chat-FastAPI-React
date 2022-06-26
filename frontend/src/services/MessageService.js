@@ -5,6 +5,10 @@ export default class MessageService {
     return axiosInstance.get("/messages/")
   }
 
+  static async getChatMessages(chatId) {
+    return axiosInstance.get(`/messages/${chatId}`)
+  }
+
   static async createNewChat(name, members) {
     return axiosInstance.post("/messages/chats/", {"chat_name": name, members})
   }
