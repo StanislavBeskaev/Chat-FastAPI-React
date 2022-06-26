@@ -1,6 +1,7 @@
-from .. import tables
-from ..services.auth import AuthService
-from .base import BaseTestCase
+from backend import tables
+from backend.services.auth import AuthService
+from backend.tests.base import BaseTestCase
+
 
 test_users = [
     tables.User(login="user", name="user", surname="surname", password_hash=AuthService.hash_password("password")),

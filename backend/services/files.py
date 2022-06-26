@@ -17,7 +17,6 @@ def check_files_folder(func):
     return wrapper
 
 
-# TODO сделать работу с minio S3
 class FilesService:
     """Сервис для управления файлами"""
 

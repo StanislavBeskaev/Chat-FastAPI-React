@@ -1,9 +1,9 @@
 from requests.cookies import RequestsCookieJar
 
-from .. import models, tables
-from ..api.auth import REFRESH_TOKEN_COOKIE_KEY
-from ..services.auth import AuthService
-from .base import BaseTestCase
+from backend import models, tables
+from backend.api.auth import REFRESH_TOKEN_COOKIE_KEY
+from backend.services.auth import AuthService
+from backend.tests.base import BaseTestCase
 
 test_users = [
     tables.User(login="user", name="user", surname="", password_hash=AuthService.hash_password("password")),

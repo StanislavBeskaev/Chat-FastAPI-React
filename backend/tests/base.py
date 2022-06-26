@@ -8,9 +8,9 @@ from loguru import logger
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from .. import tables, models
-from ..database import get_session
-from ..main import app
+from backend import tables, models
+from backend.database import get_session
+from backend.main import app
 
 
 TEST_DB_NAME = "test.db"

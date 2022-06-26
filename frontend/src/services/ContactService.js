@@ -19,6 +19,6 @@ export default class ContactService {
   }
 
   static async changeContact(login, name, surname) {
-    return axiosInstance.put('/contacts', {login, name, surname})
+    return axiosInstance.put('/contacts/', {login, name, surname})
   }
 }

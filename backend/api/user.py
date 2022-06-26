@@ -29,6 +29,7 @@ def change_user_data(
 
 # TODO документация
 # TODO тесты
+# TODO background задача для удаления не используемых файлов
 @router.post(
     "/avatar",
     status_code=status.HTTP_201_CREATED
