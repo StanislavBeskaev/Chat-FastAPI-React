@@ -4,6 +4,7 @@ import {observer} from 'mobx-react-lite'
 import {Button, ListGroup} from 'react-bootstrap'
 import contactStore from '../../../stores/contactStore'
 import chatMembersModalStore from '../../../stores/modals/chatMembersModalStore'
+import UserAvatar from '../../Avatars/UserAvatar'
 
 
 const ContactsOutsideChat = () => {
@@ -29,10 +30,13 @@ const ContactsOutsideChat = () => {
         {contactsOutside.map(contact =>
           <ListGroup.Item
             key={contact.login}
-            className="d-flex justify-content-between"
+            className="d-flex justify-content-between align-items-center"
           >
-            <div>
-              {contactStore.getDisplayName(contact.login)}
+            <div className="d-flex gap-2">
+              <UserAvatar login={contact.login} size="sm"/>
+              <div>
+                {contactStore.getDisplayName(contact.login)}
+              </div>
             </div>
             <Button
               size="sm"

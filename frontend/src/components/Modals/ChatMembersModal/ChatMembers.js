@@ -5,6 +5,7 @@ import {Badge, Button, ListGroup} from 'react-bootstrap'
 import chatMembersModalStore from '../../../stores/modals/chatMembersModalStore'
 import authStore from '../../../stores/authStore'
 import messagesStore from '../../../stores/messagesStore'
+import UserAvatar from '../../Avatars/UserAvatar'
 
 
 const ChatMembers = () => {
@@ -27,10 +28,9 @@ const ChatMembers = () => {
             key={member.login}
             className="d-flex justify-content-between"
           >
-            <div className="d-flex gap-3 align-self-center">
-              <div>
-                {member.login}
-              </div>
+            <div className="d-flex gap-3 align-items-center">
+              <UserAvatar login={member.login} size="sm"/>
+              {member.login}
               {
                 member["is_online"]
                   ? <Badge pill bg="success">online</Badge>
