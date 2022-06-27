@@ -16,7 +16,6 @@ class AuthStore {
   isAuth = false
   isLoading = false
   error = ''
-  avatarFile = ''
 
   constructor() {
     makeAutoObservable(this)
@@ -39,21 +38,10 @@ class AuthStore {
     this.error = text
   }
 
-  setAvatarFile(file) {
-    this.avatarFile = file
-  }
-
   async saveAvatar(file) {
     const formData = new FormData()
     formData.append("file", file, file.name)
-    const response = await axiosInstance.post("/user/avatar", formData)
-    this.setAvatarFile(response.data.avatar_file)
-  }
-
-  //TODO вынести в userStore?
-  async getAvatar() {
-    const response = await axiosInstance.get("/user/avatar")
-    this.setAvatarFile(response.data.avatar_file)
+    await axiosInstance.post("/user/avatar", formData)
   }
 
   async registration(login, password, name, surname) {
@@ -72,7 +60,6 @@ class AuthStore {
       localStorage.setItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY, response.data['access_token'])
       this.setAuth(true)
       this.setUser(response.data.user)
-      await this.getAvatar()
       //TODO подумать где инициализировать загрузку данных
       await messagesStore.loadMessages()
       await contactStore.loadContacts()
@@ -94,7 +81,6 @@ class AuthStore {
       this.setAuth(true)
       console.log("setAuth = true")
       this.setUser(response.data.user)
-      await this.getAvatar()
       //TODO подумать где инициализировать загрузку данных
       await messagesStore.loadMessages()
       await contactStore.loadContacts()

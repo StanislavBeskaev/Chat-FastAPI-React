@@ -4,7 +4,7 @@ import {Button, Container, Row} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
 import authStore from '../../stores/authStore'
-import AvatarBig from '../../components/Avatars/AvatarBig'
+import UserAvatar from '../../components/Avatars/UserAvatar'
 
 
 const UserData = () => {
@@ -46,7 +46,7 @@ const UserData = () => {
             : <span className="text-danger">Отправьте файл</span>
         }
         <Button onClick={uploadFile} className="mb-3">Отправить файл</Button>
-        <AvatarBig fileName={authStore.avatarFile }/>
+        <UserAvatar login="admin" size="lg" />
       </Row>
     </Container>
   )

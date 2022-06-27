@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, status, UploadFile
+from fastapi.responses import FileResponse
 from loguru import logger
 
 from backend import models
@@ -80,6 +81,21 @@ def get_login_avatar(
     return {
         "avatar_file": user_service.get_avatar_by_login(login=login)
     }
+
+
+# TODO документация
+# TODO тесты как-то
+@router.get(
+    "/avatar_file/{login}",
+    status_code=status.HTTP_200_OK,
+)
+def get_login_avatar_file(
+        login: str,
+        user_service: UserService = Depends()
+):
+    """Получение файла аватара пользователя по логину"""
+
+    return FileResponse(path=user_service.get_avatar_file_path_by_login(login=login), media_type="image/png")
 
 
 # TODO документация

@@ -9,7 +9,6 @@ class ContactModalStore {
   login = null
   name = null
   surname = null
-  avatarFile = null
   loading = false
   changed = false
 
@@ -37,7 +36,6 @@ class ContactModalStore {
       console.log(response)
       this.setName(response.data.name)
       this.setSurname(response.data.surname)
-      this.setAvatarFile(response.data.avatar_file)
     } catch (e) {
       console.log(`Ошибка при загрузке данных контакта: ${this.login}`, e)
     } finally {
@@ -69,10 +67,6 @@ class ContactModalStore {
   setSurname(surname) {
     this.surname = surname
     this.changed = false
-  }
-
-  setAvatarFile(avatarFile) {
-    this.avatarFile = avatarFile
   }
 
   setChanged(bool) {

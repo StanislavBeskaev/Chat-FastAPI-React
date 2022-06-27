@@ -5,12 +5,6 @@ export default class UserService {
     return axiosInstance.put('/user/change', {name, surname})
   }
 
-  static async getLoginAvatarFile(login) {
-    const response = await axiosInstance.get(`/user/avatar/${login}`)
-    console.log(response)
-    return response.data.avatar_file
-  }
-
   static async getUserInfo(login) {
     const response = await axiosInstance.get(`/user/info/${login}`)
     console.log('getUserInfo:', response)

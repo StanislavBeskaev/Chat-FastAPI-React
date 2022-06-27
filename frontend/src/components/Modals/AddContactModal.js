@@ -6,7 +6,7 @@ import addContactModalStore from '../../stores/modals/addContactModalStore'
 import contactStore from '../../stores/contactStore'
 
 import Loader from '../UI/Loader/Loader'
-import Avatar from '../Avatars/Avatar'
+import UserAvatar from '../Avatars/UserAvatar'
 
 
 const AddContactModal = () => {
@@ -44,10 +44,7 @@ const AddContactModal = () => {
       <Modal.Body>
         <div className="d-flex flex-column">
           <div className="d-flex flex-row justify-content-around">
-            <Avatar
-              fileName={addContactModalStore?.userInfo?.avatar_file}
-              size="md"
-            />
+            <UserAvatar login={login} size="md"/>
             <ul className="align-self-start">
               <li>Имя: {name}</li>
               <li>Фамилия: {surname}</li>

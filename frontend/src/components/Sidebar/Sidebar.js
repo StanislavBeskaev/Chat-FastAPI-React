@@ -3,7 +3,6 @@ import {Link} from 'react-router-dom'
 import {Tab, Nav, Button, Row, Modal} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
-import AvatarMini from '../Avatars/AvatarMini'
 import authStore from '../../stores/authStore'
 import Chats from './Chats'
 import Contacts from './Contacts'
@@ -13,6 +12,7 @@ import ConfirmDeleteContactModal from '../Modals/ConfirmDeleteContactModal'
 import confirmDeleteContactModalStore from '../../stores/modals/confirmDeleteContactModalStore'
 import NewChatModal from '../Modals/NewChatModal'
 import newChatModalStore from '../../stores/modals/newChatModalStore'
+import UserAvatar from '../Avatars/UserAvatar'
 
 
 const CHATS_KEY = 'chats'
@@ -43,7 +43,7 @@ function Sidebar({ login }) {
         <div className="p-2 border-top border-end small">
           <div className="d-flex flex-column">
             <div>
-              <AvatarMini fileName={authStore.avatarFile}/>
+              <UserAvatar login={authStore.user.login} size="sm"/>
               <span className="ms-2">
                 Ваш логин: <span className="text-muted">{login}</span>
               </span>
@@ -64,7 +64,6 @@ function Sidebar({ login }) {
                 Выход
               </Button>
             </div>
-
           </div>
           <Row className="mt-3">
             <Link to="/user-data/">Данные пользователя</Link>

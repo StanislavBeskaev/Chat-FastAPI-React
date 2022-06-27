@@ -4,7 +4,7 @@ import {observer} from 'mobx-react-lite'
 
 import contactModalStore from '../../stores/modals/contactModalStore'
 import Loader from '../UI/Loader/Loader'
-import Avatar from '../Avatars/Avatar'
+import UserAvatar from '../Avatars/UserAvatar'
 
 
 const ContactModal = () => {
@@ -37,10 +37,7 @@ const ContactModal = () => {
       <Modal.Header closeButton> Пользователь {login}</Modal.Header>
       <Modal.Body>
         <div className="d-flex justify-content-around">
-          <Avatar
-            fileName={avatarFile}
-            size="md"
-          />
+          <UserAvatar login={login} size="md" />
           <Form className="d-flex flex-column gap-2">
             <Form.Control
               placeholder="Имя"

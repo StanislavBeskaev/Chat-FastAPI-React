@@ -4,6 +4,8 @@ from loguru import logger
 
 
 FILES_FOLDER = "files"
+IMAGES_FOLDER = "images"
+NO_AVATAR_FILE = "no_avatar.png"
 
 
 def check_files_folder(func):
@@ -29,7 +31,7 @@ class FilesService:
     @check_files_folder
     def save_file(self, file: UploadFile, file_name: str) -> str:
         """Сохранение файла"""
-        file_path = self._get_file_path(file_name)
+        file_path = self.get_file_path(file_name)
         with open(file_path, mode="wb") as writable_file:
             writable_file.write(file.file.read())
 
@@ -37,6 +39,10 @@ class FilesService:
 
         return file_path
 
-    @staticmethod
-    def _get_file_path(file_name: str) -> str:
+    @classmethod
+    def get_file_path(cls, file_name: str) -> str:
         return os.path.join(FILES_FOLDER, file_name)
+
+    @classmethod
+    def get_no_avatar_file_path(cls) -> str:
+        return os.path.join(IMAGES_FOLDER, NO_AVATAR_FILE)

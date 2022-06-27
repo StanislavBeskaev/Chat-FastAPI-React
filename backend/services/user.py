@@ -77,6 +77,16 @@ class UserService(BaseService):
         logger.debug(f"Для пользователя {user_profile.user}, файл аватара: {user_profile.avatar_file}")
         return user_profile.avatar_file
 
+    def get_avatar_file_path_by_login(self, login: str) -> str:
+        """Получение пути до аватара пользователя по логину"""
+        avatar_file_name = self.get_avatar_by_login(login=login)
+        if not avatar_file_name:
+            return FilesService.get_no_avatar_file_path()
+
+        avatar_file_path = FilesService.get_file_path(file_name=avatar_file_name)
+
+        return avatar_file_path
+
     def get_user_info(self, login: str) -> models.UserInfo:
         user_info = (
             self.session
