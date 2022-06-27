@@ -49,41 +49,6 @@ def upload_avatar(
 
 
 # TODO документация
-@router.get(
-    "/avatar",
-    status_code=status.HTTP_200_OK
-)
-def get_avatar(
-        user_service: UserService = Depends(),
-        current_user: models.User = Depends(get_current_user),
-):
-    """Получение имени файла аватара пользователя"""
-    logger.debug(f"Запрос получения аватара для пользователя {current_user}")
-
-    return {
-        "avatar_file": user_service.get_avatar(user=current_user)
-    }
-
-
-# TODO документация
-@router.get(
-    "/avatar/{login}",
-    status_code=status.HTTP_200_OK,
-    dependencies=[Depends(get_current_user)]
-)
-def get_login_avatar(
-        login: str,
-        user_service: UserService = Depends()
-):
-    """Получение имени аватара пользователя по логину"""
-    logger.debug(f"Запрос получения аватара для пользователя {login}")
-
-    return {
-        "avatar_file": user_service.get_avatar_by_login(login=login)
-    }
-
-
-# TODO документация
 # TODO тесты как-то
 @router.get(
     "/avatar_file/{login}",
@@ -103,7 +68,7 @@ def get_login_avatar_file(
     "/info/{login}",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(get_current_user)],
-    response_model=models.UserInfo
+    response_model=models.User
 )
 def get_user_info(
         login: str,

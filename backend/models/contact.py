@@ -15,4 +15,4 @@ class ContactChange(ContactCreate):
 
 
 class Contact(ContactChange):
-    avatar_file: str | None
+    pass

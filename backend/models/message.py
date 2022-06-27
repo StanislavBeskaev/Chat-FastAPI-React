@@ -5,7 +5,6 @@ from .ws import WSMessageData
 
 class MessageData(WSMessageData):
     message_id: str | None
-    avatar_file: str | None
 
     class Config:
         orm_mode = True

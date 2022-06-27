@@ -11,7 +11,7 @@ from .message import (
     ChatNameData,
 )
 from .token import Tokens
-from .user import UserUpdate, UserCreate, UserLogin, User, UserInfo
+from .user import UserUpdate, UserCreate, UserLogin, User
 from .ws import (
     WSMessageData,
     TextMessageData,

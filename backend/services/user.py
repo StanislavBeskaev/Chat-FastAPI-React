@@ -87,14 +87,13 @@ class UserService(BaseService):
 
         return avatar_file_path
 
-    def get_user_info(self, login: str) -> models.UserInfo:
+    def get_user_info(self, login: str) -> models.User:
         user_info = (
             self.session
             .query(
                 tables.User.id,
                 tables.User.name,
                 tables.User.surname,
-                tables.Profile.avatar_file
             )
             .where(tables.User.login == login)
             .where(tables.User.id == tables.Profile.user)
@@ -107,12 +106,11 @@ class UserService(BaseService):
                 detail=f"Пользователь с логином '{login}' не найден"
             )
 
-        return models.UserInfo(
+        return models.User(
             id=user_info[0],
             login=login,
             name=user_info[1],
             surname=user_info[2],
-            avatar_file=user_info[3]
         )
 
     @staticmethod

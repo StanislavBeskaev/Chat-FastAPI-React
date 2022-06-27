@@ -31,71 +31,6 @@ class TestUser(BaseTestCase):
         self.session.query(tables.User).delete()
         self.session.commit()
 
-    def test_success_get_avatar(self):
-        tokens = self.login()
-
-        response = self.client.get(
-            f"{self.user_url}/avatar",
-            headers=self.get_authorization_headers(access_token=tokens.access_token)
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"avatar_file": "user:surname"})
-
-    def test_get_avatar_without_auth(self):
-        response = self.client.get(
-            f"{self.user_url}/avatar",
-        )
-
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
-
-    def test_get_avatar_wrong_access_token(self):
-        response = self.client.get(
-            f"{self.user_url}/avatar",
-            headers=self.get_authorization_headers(access_token="bad.access.token")
-        )
-
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json(), self.BAD_TOKEN_RESPONSE)
-
-    def test_success_get_login_avatar(self):
-        tokens = self.login()
-        response = self.client.get(
-            f"{self.user_url}/avatar/user1",
-            headers=self.get_authorization_headers(access_token=tokens.access_token)
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"avatar_file": "user1:surname1"})
-
-    def test_get_avatar_login_not_exist_login(self):
-        tokens = self.login()
-        response = self.client.get(
-            f"{self.user_url}/avatar/not_exist_login",
-            headers=self.get_authorization_headers(access_token=tokens.access_token)
-        )
-
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {"detail": "Пользователь с логином 'not_exist_login' не найден"})
-
-    def test_get_login_avatar_without_auth(self):
-        response = self.client.get(
-            f"{self.user_url}/avatar/user1",
-        )
-
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
-
-    def test_get_login_avatar_wrong_access_token(self):
-        response = self.client.get(
-            f"{self.user_url}/avatar/user1",
-            headers=self.get_authorization_headers(access_token="bad.access.token")
-        )
-
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json(), self.BAD_TOKEN_RESPONSE)
-
     def test_success_get_user_info(self):
         tokens = self.login()
 
@@ -113,8 +48,7 @@ class TestUser(BaseTestCase):
                 "login": "user2",
                 "name": "user2",
                 "surname": "surname2",
-                "id": requested_user.id,
-                "avatar_file": "user2:surname2"
+                "id": requested_user.id
             }
         )
 

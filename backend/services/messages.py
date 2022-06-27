@@ -106,7 +106,6 @@ class MessageService(BaseService):
                 tables.Message.time.label("time"),
                 tables.Message.text.label("text"),
                 tables.User.login.label("login"),
-                tables.Profile.avatar_file.label("avatar_file"),
                 chat_creator.login.label("creator")
             )
             .distinct()

@@ -25,7 +25,3 @@ class User(UserBase, UserUpdate):
 
     class Config:
         orm_mode = True
-
-
-class UserInfo(User):
-    avatar_file: str | None

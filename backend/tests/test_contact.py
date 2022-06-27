@@ -97,8 +97,7 @@ class TestContact(BaseTestCase):
             {
                 "login": "user4",
                 "name": "user4",
-                "surname": "surname4",
-                "avatar_file": None
+                "surname": "surname4"
             }
         )
 
@@ -158,20 +157,17 @@ class TestContact(BaseTestCase):
                 {
                     "login": "user1",
                     "name": "user1",
-                    "surname": "surname1",
-                    "avatar_file": None
+                    "surname": "surname1"
                 },
                 {
                     "login": "user2",
                     "name": "user2",
-                    "surname": "surname2",
-                    "avatar_file": None
+                    "surname": "surname2"
                 },
                 {
                     "login": "user3",
                     "name": "user3",
-                    "surname": "surname3",
-                    "avatar_file": None
+                    "surname": "surname3"
                 },
             ]
         )
@@ -282,8 +278,7 @@ class TestContact(BaseTestCase):
             {
                 "login": "user1",
                 "name": "user1",
-                "surname": "surname1",
-                "avatar_file": None
+                "surname": "surname1"
             }
         )
 

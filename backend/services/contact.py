@@ -81,8 +81,7 @@ class ContactService(BaseService):
         return models.Contact(
             login=contact_login,
             name=contact_user_info.name,
-            surname=contact_user_info.surname,
-            avatar_file=contact_user_info.avatar_file
+            surname=contact_user_info.surname
         )
 
     def delete(self, user: models.User, contact_login: str) -> None:
@@ -110,13 +109,10 @@ class ContactService(BaseService):
                            f"не существующего контакта {contact_login}")
             raise self._get_not_found_contact_exception(contact_login=contact_login)
 
-        contact_user_info = self._user_service.get_user_info(login=contact_login)
-
         return models.Contact(
             login=contact_login,
             name=contact.name,
-            surname=contact.surname,
-            avatar_file=contact_user_info.avatar_file
+            surname=contact.surname
         )
 
     def change(self, user: models.User, contact_data: models.ContactChange) -> None:
