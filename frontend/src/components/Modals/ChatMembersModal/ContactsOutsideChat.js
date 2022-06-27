@@ -32,7 +32,7 @@ const ContactsOutsideChat = () => {
             key={contact.login}
             className="d-flex justify-content-between align-items-center"
           >
-            <div className="d-flex gap-2">
+            <div className="d-flex gap-2 align-items-center">
               <UserAvatar login={contact.login} size="sm"/>
               <div>
                 {contactStore.getDisplayName(contact.login)}

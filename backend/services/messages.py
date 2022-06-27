@@ -169,7 +169,6 @@ class MessageService(BaseService):
 
         return chat.creator_id == user.id
 
-
     @staticmethod
     def _notify_about_change_chat_name(changed_chat: tables.Chat) -> None:
         """ws уведомление участников чата об изменении названия чата"""

@@ -26,7 +26,7 @@ const ChatMembers = () => {
         {members.map(member =>
           <ListGroup.Item
             key={member.login}
-            className="d-flex justify-content-between"
+            className="d-flex justify-content-between align-items-center"
           >
             <div className="d-flex gap-3 align-items-center">
               <UserAvatar login={member.login} size="sm"/>
