@@ -4,11 +4,14 @@ import {observer} from 'mobx-react-lite'
 
 import messagesStore from '../../stores/messagesStore'
 import {useSocket} from '../../contexts/SocketProvider'
+import {useHistory} from 'react-router-dom'
 
 
 const Chats = () => {
   const {sendStopTyping} = useSocket()
   const {chats, selectedChatId, selectedChatTyping} = messagesStore
+
+  const history = useHistory()
 
   const changeChat = (chatId) => {
     if (selectedChatTyping) {
@@ -16,6 +19,10 @@ const Chats = () => {
     }
 
     messagesStore.setSelectedChatId(chatId)
+
+    if (history.location.pathname !== '/') {
+      history.push('/')
+    }
   }
 
   return (
