@@ -22,7 +22,7 @@ function Sidebar({ login }) {
   const [activeKey, setActiveKey] = useState(CHATS_KEY)
 
   return (
-    <div style={{width: '290px'}} className="d-flex flex-column">
+    <div style={{maxWidth: '25%'}} className="d-flex flex-column flex-grow-1">
       <Tab.Container activeKey={activeKey} onSelect={setActiveKey}>
         <Nav variant="tabs" className="justify-content-center">
           <Nav.Item>
@@ -57,7 +57,7 @@ function Sidebar({ login }) {
                 Новый чат
               </Button>
               <Button
-                onClick={() => authStore.logout()}
+                onClick={() => authStore.logout()}  // TODO если печатать и выйти то печатание зависает
                 size="sm"
                 variant="danger"
               >

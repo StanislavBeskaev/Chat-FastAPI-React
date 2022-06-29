@@ -43,7 +43,7 @@ function SimpleChat() {
   }
 
   return (
-    <div className="d-flex flex-column flex-grow-1">
+    <div style={{maxWidth: '75%'}} className="d-flex flex-column flex-grow-1">
       <ChatHeader />
       <div className="flex-grow-1 overflow-auto">
         <div className="d-flex flex-column align-items-start justify-content-end px-3">
