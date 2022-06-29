@@ -27,7 +27,7 @@ const TextMessage = ({message, fromMe}) => {
           <UserAvatar login={login} size="sm" />
         </div>
         <div
-          className={`mx-2 rounded px-2 py-1 ${fromMe ? 'bg-primary text-white' : 'border'}`}
+          className={`text-break mx-2 rounded px-2 py-1 ${fromMe ? 'bg-primary text-white' : 'border'}`}
         >
           {text}
         </div>
