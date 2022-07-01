@@ -46,7 +46,7 @@ const UserData = () => {
             : <span className="text-danger">Отправьте файл</span>
         }
         <Button onClick={uploadFile} className="mb-3">Отправить файл</Button>
-        <UserAvatar login="admin" size="lg" />
+        <UserAvatar login={authStore.user.login} size="lg" />
       </Row>
     </Container>
   )

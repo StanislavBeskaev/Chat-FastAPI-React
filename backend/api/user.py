@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, status, UploadFile
+from fastapi import APIRouter, Depends, status, UploadFile, BackgroundTasks
 from fastapi.responses import FileResponse
 from loguru import logger
 
 from backend import models
+from backend.services.files import FilesService
 from backend.services.user import UserService
 from backend.dependencies import get_current_user
 
@@ -30,18 +31,20 @@ def change_user_data(
 
 # TODO документация
 # TODO тесты
-# TODO background задача для удаления не используемых файлов
 @router.post(
     "/avatar",
     status_code=status.HTTP_201_CREATED
 )
 def upload_avatar(
         file: UploadFile,
+        background_tasks: BackgroundTasks,
         user_service: UserService = Depends(),
-        current_user: models.User = Depends(get_current_user)
+        current_user: models.User = Depends(get_current_user),
+        files_service: FilesService = Depends()
 ):
     """Загрузка аватара пользователя"""
     logger.debug(f"incoming file attrs: {file.__dict__}")
+    background_tasks.add_task(files_service.delete_not_used_avatar_files)
 
     return {
         "avatar_file": user_service.save_avatar(user=current_user, file=file)
