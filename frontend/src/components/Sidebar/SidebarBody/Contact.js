@@ -1,10 +1,10 @@
 import React from 'react'
 import {Button} from 'react-bootstrap'
 
-import contactModalStore from '../../stores/modals/contactModalStore'
-import contactStore from '../../stores/contactStore'
-import confirmDeleteContactModalStore from '../../stores/modals/confirmDeleteContactModalStore'
-import UserAvatar from '../Avatars/UserAvatar'
+import contactModalStore from '../../../stores/modals/contactModalStore'
+import contactStore from '../../../stores/contactStore'
+import confirmDeleteContactModalStore from '../../../stores/modals/confirmDeleteContactModalStore'
+import UserAvatar from '../../Avatars/UserAvatar'
 
 
 const Contact = ({login}) => {

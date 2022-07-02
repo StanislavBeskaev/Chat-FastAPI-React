@@ -2,8 +2,8 @@ import React from 'react'
 import {ListGroup} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
-import messagesStore from '../../stores/messagesStore'
-import {useSocket} from '../../contexts/SocketProvider'
+import messagesStore from '../../../stores/messagesStore'
+import {useSocket} from '../../../contexts/SocketProvider'
 import {useHistory} from 'react-router-dom'
 
 

@@ -4,7 +4,6 @@ import {Button} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
 import authStore from '../../stores/authStore'
-import UserAvatar from '../../components/Avatars/UserAvatar'
 import FileAvatar from '../../components/Avatars/FileAvatar'
 
 
@@ -22,7 +21,7 @@ const UserData = () => {
   }
 
   return (
-    <div style={{maxWidth: '75%'}} className="p-2 d-flex flex-column flex-grow-1">
+    <div style={{maxWidth: '75%'}} className="ps-4 d-flex flex-column flex-grow-1">
       <Link to="/">На главную</Link>
       <h1 className="mt-3">Данные пользователя</h1>
       <h2>Логин: {authStore.user.login}</h2>

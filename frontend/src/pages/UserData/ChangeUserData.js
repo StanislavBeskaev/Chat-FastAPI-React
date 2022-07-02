@@ -8,15 +8,16 @@ import ChangeUserDataForm from '../../components/Forms/ChangeUserDataForm'
 
 const ChangeUserData = () => {
   return (
-    <Container className="justify-content-center d-flex flex-column w-50" style={{height: '100vh'}}>
-      <h1>Изменение данных</h1>
-      <h4>Логин: {authStore.user.login}</h4>
-      <ChangeUserDataForm />
-      <Row className="mt-3">
-        <Link to="/user-data/">К данным</Link>
-        <Link to="/">На главную</Link>
-      </Row>
-    </Container>
+      <Container className="d-flex flex-column justify-content-center w-50" style={{height: '100vh'}}>
+        <Row className="mb-3">
+          <Link to="/user-data/">К данным</Link>
+          <Link to="/">На главную</Link>
+        </Row>
+        <h1>Изменение данных</h1>
+        <h4>Логин: {authStore.user.login}</h4>
+        <ChangeUserDataForm />
+      </Container>
+
   )
 }
 
