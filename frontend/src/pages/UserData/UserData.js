@@ -1,10 +1,11 @@
 import React, {useState} from 'react'
 import {Link} from 'react-router-dom'
-import {Button, Container, Row} from 'react-bootstrap'
+import {Button} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
 import authStore from '../../stores/authStore'
 import UserAvatar from '../../components/Avatars/UserAvatar'
+import FileAvatar from '../../components/Avatars/FileAvatar'
 
 
 const UserData = () => {
@@ -13,22 +14,22 @@ const UserData = () => {
 
   const uploadFile = async () => {
     if (!file) {
-      alert("Укажите файл")
+      alert("Выберите файл")
       return
     }
-    await authStore.saveAvatar(file)
+    await authStore.changeAvatar(file)
     setSuccessUpload(true)
   }
 
   return (
-    <Container>
+    <div style={{maxWidth: '75%'}} className="p-2 d-flex flex-column flex-grow-1">
       <Link to="/">На главную</Link>
       <h1 className="mt-3">Данные пользователя</h1>
       <h2>Логин: {authStore.user.login}</h2>
       <h2>Имя: {authStore.user.name}</h2>
       <h2>Фамилия: {authStore.user.surname}</h2>
       <Link to="/user-data/change">Изменить</Link>
-      <Row className="mt-5 mb-3 w-50">
+      <div className="d-flex flex-column align-items-start">
         <h5>Изменить аватар</h5>
         <input
           type="file"
@@ -46,9 +47,9 @@ const UserData = () => {
             : <span className="text-danger">Отправьте файл</span>
         }
         <Button onClick={uploadFile} className="mb-3">Отправить файл</Button>
-        <UserAvatar login={authStore.user.login} size="lg" />
-      </Row>
-    </Container>
+        <FileAvatar fileName={authStore.avatarFile} size="lg"/>
+      </div>
+    </div>
   )
 }
 

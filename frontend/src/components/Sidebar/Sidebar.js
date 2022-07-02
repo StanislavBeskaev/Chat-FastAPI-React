@@ -12,12 +12,14 @@ import ConfirmDeleteContactModal from '../Modals/ConfirmDeleteContactModal'
 import confirmDeleteContactModalStore from '../../stores/modals/confirmDeleteContactModalStore'
 import NewChatModal from '../Modals/NewChatModal'
 import newChatModalStore from '../../stores/modals/newChatModalStore'
-import UserAvatar from '../Avatars/UserAvatar'
 
 import chats_blue from '../../img/chats_blue.png'
 import chats_white from '../../img/chats_white.png'
 import contact_blue from '../../img/contact_blue.png'
 import contact_white from '../../img/contact_white.png'
+import FileAvatar from '../Avatars/FileAvatar'
+import messagesStore from '../../stores/messagesStore'
+import {useSocket} from '../../contexts/SocketProvider'
 
 
 const CHATS_KEY = 'chats'
@@ -28,7 +30,17 @@ const ACTIVE_BACKGROUND_COLOR = 'dodgerblue'
 
 function Sidebar({ login }) {
   const [activeKey, setActiveKey] = useState(CHATS_KEY)
+  const {sendStopTyping} = useSocket()
+  const {selectedChatTyping, selectedChatId} = messagesStore
 
+  const logout = async () => {
+    if (selectedChatTyping) {
+      sendStopTyping(selectedChatId)
+    }
+    await authStore.logout()
+  }
+
+  // TODO побить на кусочки
   return (
     <div style={{maxWidth: '25%'}} className="d-flex flex-column flex-grow-1">
       <Tab.Container activeKey={activeKey} onSelect={setActiveKey}>
@@ -69,7 +81,7 @@ function Sidebar({ login }) {
         <div className="p-2 border-top border-end small">
           <div className="d-flex flex-column">
             <div>
-              <UserAvatar login={authStore.user.login} size="sm"/>
+              <FileAvatar fileName={authStore.avatarFile} size="sm"/>
               <span className="ms-2">
                 Ваш логин: <span className="text-muted">{login}</span>
               </span>
@@ -83,7 +95,7 @@ function Sidebar({ login }) {
                 Новый чат
               </Button>
               <Button
-                onClick={() => authStore.logout()}  // TODO если печатать и выйти то печатание зависает
+                onClick={logout}
                 size="sm"
                 variant="danger"
               >

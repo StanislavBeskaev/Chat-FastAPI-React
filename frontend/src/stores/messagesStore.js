@@ -6,7 +6,6 @@ import MessageService from '../services/MessageService'
 
 const DEFAULT_CHAT_ID = 'MAIN'
 
-//TODO ChatsStore
 class MessagesStore {
   chats = {}
   selectedChatId = DEFAULT_CHAT_ID
@@ -19,6 +18,16 @@ class MessagesStore {
   constructor() {
     makeAutoObservable(this)
     console.log("Создан MessagesStore")
+  }
+
+  setDefaultState() {
+    this.chats = {}
+    this.selectedChatId = DEFAULT_CHAT_ID
+    this.isLoadMessages = false
+    this.loading = false
+    this.loadError = false
+    this.selectedChatText = ''
+    this.selectedChatTyping = false
   }
 
   addNewChat(data) {

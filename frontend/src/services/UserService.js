@@ -10,4 +10,14 @@ export default class UserService {
     console.log('getUserInfo:', response)
     return response.data
   }
+
+  static async changeAvatar(file) {
+    const formData = new FormData()
+    formData.append("file", file, file.name)
+    return axiosInstance.post("/user/avatar", formData)
+  }
+
+  static async getAvatarFileName(login) {
+    return axiosInstance.get(`user/avatar_file_name/${login}`)
+  }
 }
