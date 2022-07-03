@@ -11,7 +11,7 @@ import changeChatNameModalStore from '../../stores/modals/changeChatNameModalSto
 import ChangeChatNameModal from '../Modals/ChangeChatNameModal'
 import messagesStore from '../../stores/messagesStore'
 
-import Messages from './Messages'
+import Messages from './Messages/Messages'
 import TextForm from './TextForm'
 import Loader from '../UI/Loader/Loader'
 import TypingInfo from './TypingInfo'

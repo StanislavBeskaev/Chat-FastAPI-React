@@ -1,10 +1,10 @@
 import React from 'react'
 import {observer} from 'mobx-react-lite'
 
-import authStore from '../../stores/authStore'
-import addContactModalStore from '../../stores/modals/addContactModalStore'
-import contactStore from '../../stores/contactStore'
-import UserAvatar from '../Avatars/UserAvatar'
+import authStore from '../../../stores/authStore'
+import addContactModalStore from '../../../stores/modals/addContactModalStore'
+import contactStore from '../../../stores/contactStore'
+import UserAvatar from '../../Avatars/UserAvatar'
 
 
 const TextMessage = ({message, fromMe}) => {

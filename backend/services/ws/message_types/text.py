@@ -34,8 +34,7 @@ class TextMessage(BaseChatWSMessage):
             login=self._login,
             time=get_formatted_time(db_message.time),
             text=self._text,
-            chat_id=self._chat_id,
-            avatar_file=self._user_service.get_avatar_by_login(self._login)
+            chat_id=self._chat_id
         )
 
         logger.info(f"В базу сохранено текстовое сообщение: {data} ")

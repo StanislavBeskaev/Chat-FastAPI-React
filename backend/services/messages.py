@@ -105,6 +105,7 @@ class MessageService(BaseService):
                 tables.Message.id.label("message_id"),
                 tables.Message.time.label("time"),
                 tables.Message.text.label("text"),
+                tables.Message.type.label("type"),
                 tables.User.login.label("login"),
                 chat_creator.login.label("creator")
             )

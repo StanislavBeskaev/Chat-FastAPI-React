@@ -1,10 +1,12 @@
 from pydantic import BaseModel
 
+from backend import tables
 from .ws import WSMessageData
 
 
 class MessageData(WSMessageData):
     message_id: str | None
+    type: str | None = tables.MessageType.TEXT
 
     class Config:
         orm_mode = True

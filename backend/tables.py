@@ -1,3 +1,5 @@
+from enum import Enum
+
 from sqlalchemy import (
     Column,
     Integer,
@@ -12,6 +14,12 @@ from sqlalchemy.sql import func
 
 
 Base = declarative_base()
+
+
+class MessageType(str, Enum):
+    """Виды сообщений"""
+    TEXT = "TEXT"
+    INFO = "INFO"
 
 
 # TODO подумать над полями
@@ -71,6 +79,7 @@ class Message(Base):
     text = Column(String, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), index=True)
     time = Column(DateTime(timezone=True), server_default=func.now())
+    type = Column(String, default=MessageType.TEXT)
 
     user_rel = relationship(User, backref="messages")
 

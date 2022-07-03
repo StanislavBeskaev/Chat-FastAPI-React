@@ -2,6 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, validator, Field
 
+from backend import tables
 from backend.core.time import get_formatted_time
 
 
@@ -27,7 +28,7 @@ class ChatMessageData(WSMessageData):
 class TextMessageData(ChatMessageData):
     """Данные текстового сообщения"""
     message_id: str
-    avatar_file: str | None  # TODO подумать как доставлять файл аватара на frontend
+    type: str = tables.MessageType.TEXT
 
 
 class InTextMessageData(BaseModel):
