@@ -10,6 +10,7 @@ from .message_types import (
     ChangeChatNameMessage,
     AddToChatMessage,
     DeleteFromChatMessage,
+    InfoMessage,
 )
 
 

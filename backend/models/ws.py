@@ -31,6 +31,12 @@ class TextMessageData(ChatMessageData):
     type: str = tables.MessageType.TEXT
 
 
+class InfoMessageData(ChatMessageData):
+    """Данные информационного сообщения"""
+    message_id: str
+    type: str = tables.MessageType.INFO
+
+
 class InTextMessageData(BaseModel):
     """Данные входящего текстового сообщения"""
     chat_id: str = Field(alias="chatId")

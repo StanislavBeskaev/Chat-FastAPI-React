@@ -1,4 +1,5 @@
 import asyncio
+from uuid import uuid4
 
 from fastapi import Depends, HTTPException
 from sqlalchemy import and_
@@ -6,11 +7,12 @@ from sqlalchemy.orm import Session
 from loguru import logger
 
 from backend import models, tables
+from backend.core.time import get_current_time
 from backend.database import get_session
 from backend.services import BaseService
 from backend.services.get_chat_members import get_chat_members
 from backend.services.user import UserService
-from backend.services.ws import AddToChatMessage, DeleteFromChatMessage
+from backend.services.ws import AddToChatMessage, DeleteFromChatMessage, InfoMessage
 from backend.services.ws_connection_manager import WSConnectionManager
 
 
@@ -21,7 +23,7 @@ class ChatMembersService(BaseService):
         super().__init__(session=session)
         self._user_service = UserService(session=session)
 
-    def add_login_to_chat(self, login: str, chat_id: str) -> None:
+    def add_login_to_chat(self, action_user: models.User, login: str, chat_id: str) -> None:
         """Добавление пользователя по логину к чату. Если пользователь уже есть в чате, то ничего не происходит"""
         user = models.User.from_orm(self._user_service.find_user_by_login(login=login))
         self.add_user_to_chat(user=user, chat_id=chat_id)
@@ -30,7 +32,28 @@ class ChatMembersService(BaseService):
         add_to_chat_message = AddToChatMessage(chat_id=chat_id, chat_name=chat.name, login=login)
         asyncio.run(add_to_chat_message.send())
 
-    def delete_login_from_chat(self, login: str, chat_id: str) -> None:
+        add_login_message = self._create_add_login_message(action_user=action_user, login=login, chat_id=chat_id)
+        ws_info_add_login_message = InfoMessage(login=action_user.login, info_message=add_login_message)
+        asyncio.run(ws_info_add_login_message.send_all())
+
+    def _create_add_login_message(self, action_user: models.User, login: str, chat_id: str) -> tables.Message:
+        """Создание сообщения в базе о добавлении пользователя в чат"""
+        add_login_message = tables.Message(
+            id=str(uuid4()),
+            chat_id=chat_id,
+            text=f"{action_user.login} добавил пользователя {login}",  # TODO подумать над разными текстами
+            user_id=action_user.id,
+            time=get_current_time(),
+            type=tables.MessageType.INFO
+        )
+
+        self.session.add(add_login_message)
+        self.session.commit()
+        logger.info(f"В базу сохранено сообщение об добавлении пользователя {login} в чат {chat_id}")
+
+        return add_login_message
+
+    def delete_login_from_chat(self, action_user: models.User, login: str, chat_id: str) -> None:
         """Удаление пользователя по логину из чата"""
         user = models.User.from_orm(self._user_service.find_user_by_login(login=login))
         chat_member = self.find_chat_member(user_id=user.id, chat_id=chat_id)
@@ -46,6 +69,27 @@ class ChatMembersService(BaseService):
         chat = self.get_chat_by_id(chat_id=chat_id)
         delete_from_chat_message = DeleteFromChatMessage(chat_id=chat_id, chat_name=chat.name, login=login)
         asyncio.run(delete_from_chat_message.send())
+
+        delete_login_message = self._create_delete_login_message(action_user=action_user, login=login, chat_id=chat_id)
+        ws_info_delete_login_message = InfoMessage(login=action_user.login, info_message=delete_login_message)
+        asyncio.run(ws_info_delete_login_message.send_all())
+
+    def _create_delete_login_message(self, action_user: models.User, login: str, chat_id: str) -> tables.Message:
+        """Создание сообщения в базе об удалении пользователя из чата"""
+        delete_login_message = tables.Message(
+            id=str(uuid4()),
+            chat_id=chat_id,
+            text=f"{action_user.login} удалил пользователя {login}",  # TODO подумать над разными текстами
+            user_id=action_user.id,
+            time=get_current_time(),
+            type=tables.MessageType.INFO
+        )
+
+        self.session.add(delete_login_message)
+        self.session.commit()
+        logger.info(f"В базу сохранено сообщение об удалении пользователя {login} из чата {chat_id}")
+
+        return delete_login_message
 
     def add_user_to_chat(self, user: models.User, chat_id: str) -> None:
         """Добавление пользователя к чату. Если пользователь уже есть в чате, то ничего не происходит"""
