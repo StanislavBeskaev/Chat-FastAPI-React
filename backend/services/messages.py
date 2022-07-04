@@ -8,11 +8,12 @@ from sqlalchemy.orm import Session, aliased, Query
 from loguru import logger
 
 from backend import models, tables
+from backend.core.time import get_current_time
 from backend.database import get_session
 from backend.services import BaseService
 from backend.services.chat_members import ChatMembersService
 from backend.services.user import UserService
-from backend.services.ws import NewChatMessage, ChangeChatNameMessage
+from backend.services.ws import NewChatMessage, ChangeChatNameMessage, InfoMessage
 
 
 class MessageService(BaseService):
@@ -162,7 +163,8 @@ class MessageService(BaseService):
         self.session.commit()
 
         logger.info(f"Для чата {chat_id} установлено название: {new_name}")
-        self._notify_about_change_chat_name(changed_chat=chat)
+        change_chat_name_message = self._create_change_chat_name_message(user=user, chat_id=chat_id, new_chat_name=new_name)  # noqa
+        self._notify_about_change_chat_name(changed_chat=chat, message=change_chat_name_message, login=user.login)
 
     def _is_user_chat_creator(self, chat_id: str, user: models.User) -> bool:
         """Является ли пользователь создателем чата"""
@@ -171,7 +173,27 @@ class MessageService(BaseService):
         return chat.creator_id == user.id
 
     @staticmethod
-    def _notify_about_change_chat_name(changed_chat: tables.Chat) -> None:
+    def _notify_about_change_chat_name(changed_chat: tables.Chat, message: tables.Message, login: str) -> None:
         """ws уведомление участников чата об изменении названия чата"""
         new_chat_message = ChangeChatNameMessage(chat_id=changed_chat.id, chat_name=changed_chat.name)
         asyncio.run(new_chat_message.send_all())
+
+        ws_info_change_chat_name_message = InfoMessage(login=login,info_message=message)
+        asyncio.run(ws_info_change_chat_name_message.send_all())
+
+    def _create_change_chat_name_message(self, user: models.User, chat_id: str, new_chat_name):
+        """Создание сообщения в базе об изменении названия чата"""
+        change_chat_name_message = tables.Message(
+            id=str(uuid4()),
+            chat_id=chat_id,
+            text=f"Название чата изменено на '{new_chat_name}'",
+            user_id=user.id,
+            time=get_current_time(),
+            type=tables.MessageType.INFO
+        )
+
+        self.session.add(change_chat_name_message)
+        self.session.commit()
+
+        logger.info(f"В базу сохранено сообщение об изменении названия чата {chat_id} на '{new_chat_name}'")
+        return change_chat_name_message
