@@ -46,6 +46,10 @@ class ChatMembersModalStore {
     } catch (e) {
       console.log('Ошибка при добавлении пользователя к чату')
       console.log(e.response)
+      if (e.response.status === 409) {
+        await this.loadChatMembers()
+        this.addMessage("Этот пользователь уже добавлен")
+      }
     }
   }
 
@@ -59,6 +63,10 @@ class ChatMembersModalStore {
     } catch (e) {
       console.log('Ошибка при удалении пользователя из чата')
       console.log(e.response)
+      if (e.response.status === 404) {
+        await this.loadChatMembers()
+        this.addMessage("Этот пользователь уже удалён из чата")
+      }
     }
   }
 
