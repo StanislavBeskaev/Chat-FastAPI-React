@@ -6,12 +6,14 @@ import chatMembersModalStore from '../../../stores/modals/chatMembersModalStore'
 import authStore from '../../../stores/authStore'
 import messagesStore from '../../../stores/messagesStore'
 import UserAvatar from '../../Avatars/UserAvatar'
+import addContactModalStore from '../../../stores/modals/addContactModalStore'
 
 
 const ChatMembers = () => {
   const {members, chatId} = chatMembersModalStore
   const {user} = authStore
-  const isChatOwner = user.login === messagesStore.getChatCreator(chatId)
+  const chatCreator = messagesStore.getChatCreator(chatId)
+  const isMeChatOwner = user.login === chatCreator
 
   {/*TODO понять как всегда показывать scroll*/}
   return (
@@ -23,34 +25,54 @@ const ChatMembers = () => {
         className="flex-grow-1 overflow-auto"
         style={{maxHeight: 220}}
       >
-        {members.map(member =>
-          <ListGroup.Item
-            key={member.login}
-            className="d-flex justify-content-between align-items-center"
-          >
-            <div className="d-flex gap-3 align-items-center">
-              <UserAvatar login={member.login} size="sm"/>
-              {member.login}
-              {
-                member["is_online"]
-                  ? <Badge pill bg="success">online</Badge>
-                  : <Badge pill bg="danger">offline</Badge>
-              }
-            </div>
-            {
-              isChatOwner && user.login !== member.login && chatId !== 'MAIN'
-              ? <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => chatMembersModalStore.deleteChatMember(member.login)}
+        {members.map(member => {
+          const isMe = member.login === user.login
+          const isChatOwner = member.login === chatCreator
+          return (
+            <ListGroup.Item
+              key={member.login}
+              className="d-flex justify-content-between align-items-center"
+            >
+              <div className="d-flex gap-3 align-items-center">
+                <div
+                  onClick={async () => {
+                    if (isMe) return
+                    await addContactModalStore.showModalWithLogin(member.login)
+                  }}
+                  style={{cursor: !isMe ? 'pointer' : null}}
                 >
-                  X
-                </Button>
-              : null
-            }
-
-
-          </ListGroup.Item>
+                  <UserAvatar login={member.login} size="sm"/>
+                </div>
+                {member.login}
+                {
+                  member["is_online"]
+                    ? <Badge pill bg="success">online</Badge>
+                    : <Badge pill bg="danger">offline</Badge>
+                }
+                {
+                  isMe
+                    ? <Badge pill bg="info">Вы</Badge>
+                    : null
+                }
+                {
+                  isChatOwner && chatId !== 'MAIN'
+                    ? <Badge pill bg="primary">Создатель</Badge>
+                    : null
+                }
+              </div>
+              {
+                isMeChatOwner && user.login !== member.login && chatId !== 'MAIN'
+                  ? <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => chatMembersModalStore.deleteChatMember(member.login)}
+                  >
+                    X
+                  </Button>
+                  : null
+              }
+            </ListGroup.Item>
+            )}
         )}
       </ListGroup>
     </div>

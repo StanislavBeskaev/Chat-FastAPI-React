@@ -1,7 +1,7 @@
 import asyncio
 from uuid import uuid4
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, status
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from loguru import logger
@@ -59,7 +59,7 @@ class ChatMembersService(BaseService):
         chat_member = self.find_chat_member(user_id=user.id, chat_id=chat_id)
 
         if not chat_member:
-            raise HTTPException(status_code=404, detail=f"Пользователя {login} нет в чате")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Пользователя {login} нет в чате")
 
         self.session.delete(chat_member)
         self.session.commit()
@@ -95,8 +95,9 @@ class ChatMembersService(BaseService):
         """Добавление пользователя к чату. Если пользователь уже есть в чате, то ничего не происходит"""
         logger.debug(f"Попытка добавить к чату {chat_id} пользователя {user}")
         if self.is_user_in_chat(user=user, chat_id=chat_id):
-            logger.warning(f"В чате {chat_id} уже есть пользователь {user}")
-            return
+            error = f"В чате {chat_id} уже есть пользователь {user}"
+            logger.warning(error)
+            raise HTTPException(detail=error, status_code=status.HTTP_409_CONFLICT)
 
         new_chat_member = tables.ChatMember(
             chat_id=chat_id,
