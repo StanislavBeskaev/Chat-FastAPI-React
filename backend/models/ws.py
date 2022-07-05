@@ -25,6 +25,13 @@ class ChatMessageData(WSMessageData):
     chat_id: str
 
 
+class ChangeChatMembersData(BaseModel):
+    """Данные сообщения об добавлении/удалении пользователя login из чата chat_id"""
+    login: str
+    chat_id: str
+    chat_name: str
+
+
 class TextMessageData(ChatMessageData):
     """Данные текстового сообщения"""
     message_id: str

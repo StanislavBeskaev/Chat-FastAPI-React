@@ -1,4 +1,4 @@
-from .single_user import AddToChatMessage, DeleteFromChatMessage
+from .change_chat_members import AddLoginToChatMessage, DeleteLoginFromChatMessage
 from .change_chat_name import ChangeChatNameMessage
 from .info import InfoMessage
 from .new_chat import NewChatMessage

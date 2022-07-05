@@ -12,7 +12,7 @@ from backend.database import get_session
 from backend.services import BaseService
 from backend.services.get_chat_members import get_chat_members
 from backend.services.user import UserService
-from backend.services.ws import AddToChatMessage, DeleteFromChatMessage, InfoMessage
+from backend.services.ws import InfoMessage, AddLoginToChatMessage, DeleteLoginFromChatMessage
 from backend.services.ws_connection_manager import WSConnectionManager
 
 
@@ -29,12 +29,13 @@ class ChatMembersService(BaseService):
         self.add_user_to_chat(user=user, chat_id=chat_id)
 
         chat = self.get_chat_by_id(chat_id=chat_id)
-        add_to_chat_message = AddToChatMessage(chat_id=chat_id, chat_name=chat.name, login=login)
-        asyncio.run(add_to_chat_message.send())
-
         add_login_message = self._create_add_login_message(action_user=action_user, login=login, chat_id=chat_id)
+
         ws_info_add_login_message = InfoMessage(login=action_user.login, info_message=add_login_message)
         asyncio.run(ws_info_add_login_message.send_all())
+
+        add_login_to_chat_message = AddLoginToChatMessage(login=login, chat_id=chat_id, chat_name=chat.name)
+        asyncio.run(add_login_to_chat_message.send_all())
 
     def _create_add_login_message(self, action_user: models.User, login: str, chat_id: str) -> tables.Message:
         """Создание сообщения в базе о добавлении пользователя в чат"""
@@ -58,6 +59,10 @@ class ChatMembersService(BaseService):
         user = models.User.from_orm(self._user_service.find_user_by_login(login=login))
         chat_member = self.find_chat_member(user_id=user.id, chat_id=chat_id)
 
+        chat = self.get_chat_by_id(chat_id=chat_id)
+        delete_login_from_chat_message = DeleteLoginFromChatMessage(login=login, chat_id=chat_id, chat_name=chat.name)
+        asyncio.run(delete_login_from_chat_message.send_all())
+
         if not chat_member:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Пользователя {login} нет в чате")
 
@@ -65,10 +70,6 @@ class ChatMembersService(BaseService):
         self.session.commit()
 
         logger.info(f"Из чата {chat_id} удалён пользователь {user}")
-
-        chat = self.get_chat_by_id(chat_id=chat_id)
-        delete_from_chat_message = DeleteFromChatMessage(chat_id=chat_id, chat_name=chat.name, login=login)
-        asyncio.run(delete_from_chat_message.send())
 
         delete_login_message = self._create_delete_login_message(action_user=action_user, login=login, chat_id=chat_id)
         ws_info_delete_login_message = InfoMessage(login=action_user.login, info_message=delete_login_message)

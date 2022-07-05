@@ -2,6 +2,8 @@ import React, { useContext, useEffect, useState } from 'react'
 
 import {toast} from 'react-toastify'
 import messagesStore from '../stores/messagesStore'
+import authStore from '../stores/authStore'
+import chatMembersModalStore from '../stores/modals/chatMembersModalStore'
 
 
 const SocketContext = React.createContext()
@@ -52,14 +54,10 @@ export function SocketProvider({ login, children }) {
           changeChatNameNotification(previousChatName, currentChatName)
           break
         case 'ADD_TO_CHAT':
-          addToChatNotification(msg.data)
-          await messagesStore.addChat(msg.data.chat_id)
+          await handleAddToChatMessage(msg.data)
           break
         case 'DELETE_FROM_CHAT':
-          chatId = msg.data["chat_id"]
-          if (chatId === messagesStore.selectedChatId) sendStopTyping(chatId)
-          messagesStore.deleteChat(chatId)
-          deleteFromChatNotification(msg.data)
+          await handleDeleteFromChatMessage(msg.data)
           break
       }
     }
@@ -96,6 +94,35 @@ export function SocketProvider({ login, children }) {
     )
 
     socket.send(typingStartMessage)
+  }
+
+  const handleAddToChatMessage = async (data) => {
+    const {login} = authStore.user
+    if (data.login === login) {
+      console.log('Меня добавляют в чат')
+      addToChatNotification(data)
+      await messagesStore.addChat(data.chat_id)
+      return
+    }
+    const {show, chatId} = chatMembersModalStore
+    if (show && chatId === data.chat_id) {
+      await chatMembersModalStore.loadChatMembers()
+    }
+  }
+
+  const handleDeleteFromChatMessage = async (data) => {
+    const {login} = authStore.user
+    if (data.login === login) {
+      console.log('Меня удаляют из чата')
+      if (data.chat_id === messagesStore.selectedChatId) sendStopTyping(data.chat_id)
+      if (chatMembersModalStore.show && data.chat_id === chatMembersModalStore.chatId) chatMembersModalStore.close()
+      messagesStore.deleteChat(data.chat_id)
+      deleteFromChatNotification(data)
+    }
+    const {show, chatId} = chatMembersModalStore
+    if (show && chatId === data.chat_id) {
+      await chatMembersModalStore.loadChatMembers()
+    }
   }
 
   const addStatusNotification = data => {

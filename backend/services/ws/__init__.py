@@ -8,9 +8,9 @@ from .message_types import (
     StopTypingMessage,
     NewChatMessage,
     ChangeChatNameMessage,
-    AddToChatMessage,
-    DeleteFromChatMessage,
     InfoMessage,
+    AddLoginToChatMessage,
+    DeleteLoginFromChatMessage,
 )
 
 

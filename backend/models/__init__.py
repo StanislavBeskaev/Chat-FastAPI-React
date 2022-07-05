@@ -19,5 +19,6 @@ from .ws import (
     InTypingMessageData,
     TypingMessageData,
     ChatMessageData,
-    InfoMessageData
+    InfoMessageData,
+    ChangeChatMembersData,
 )
