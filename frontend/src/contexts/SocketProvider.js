@@ -47,11 +47,7 @@ export function SocketProvider({ login, children }) {
           addNewChatNotification(msg.data)
           break
         case 'CHANGE_CHAT_NAME':
-          chatId = msg.data["chat_id"]
-          const previousChatName = messagesStore.getChatNameById(chatId)
-          messagesStore.changeChatName(msg.data)
-          const currentChatName = messagesStore.getChatNameById(chatId)
-          changeChatNameNotification(previousChatName, currentChatName)
+          handleChangeChatNameMessage(msg.data)
           break
         case 'ADD_TO_CHAT':
           await handleAddToChatMessage(msg.data)
@@ -94,6 +90,14 @@ export function SocketProvider({ login, children }) {
     )
 
     socket.send(typingStartMessage)
+  }
+
+  const handleChangeChatNameMessage = data => {
+    const chatId = data["chat_id"]
+    const previousChatName = messagesStore.getChatNameById(chatId)
+    messagesStore.changeChatName(data)
+    const currentChatName = messagesStore.getChatNameById(chatId)
+    changeChatNameNotification(previousChatName, currentChatName)
   }
 
   const handleAddToChatMessage = async (data) => {

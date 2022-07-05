@@ -5,7 +5,7 @@ const InfoMessage = ({message}) => {
 
   return (
     <div className="p-1 align-self-center text-muted" style={{fontSize: 14}}>
-      {time}, {text}
+      {time} {text}
     </div>
   )
 }

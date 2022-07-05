@@ -49,7 +49,7 @@ class MessagesStore {
   }
 
   getChatNameById(chatId) {
-    return this.chats[chatId]["chat_name"]
+    return this.chats[chatId]?.chat_name
   }
 
   getSelectedChatName() {
@@ -61,7 +61,7 @@ class MessagesStore {
   }
 
   getChatCreator(chatId) {
-    return this.chats[chatId].creator
+    return this.chats[chatId]?.creator
   }
 
   async loadMessages() {

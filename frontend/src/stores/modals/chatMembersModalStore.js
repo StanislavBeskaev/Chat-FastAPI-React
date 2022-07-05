@@ -79,6 +79,7 @@ class ChatMembersModalStore {
   }
 
   close() {
+    console.log('Закрываем модальное окно с участниками чата')
     this.show = false
   }
 
