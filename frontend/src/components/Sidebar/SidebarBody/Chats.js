@@ -1,5 +1,5 @@
 import React from 'react'
-import {ListGroup} from 'react-bootstrap'
+import {ListGroup, Badge} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
 import messagesStore from '../../../stores/messagesStore'
@@ -30,6 +30,7 @@ const Chats = () => {
       {Object.keys(chats).map(chatId => {
         const chatName = chats[chatId].chat_name
         const selected = selectedChatId === chatId
+        const unreadMessagesCount = messagesStore.getChatUnreadMessagesCount(chatId)
         return (
         <ListGroup.Item
           key={chatId}
@@ -39,6 +40,12 @@ const Chats = () => {
         >
           <div className="d-flex justify-content-between">
             {chatName}
+            {
+              unreadMessagesCount > 0
+                ? <Badge pill bg="primary" className="align-self-center">{unreadMessagesCount}</Badge>
+                : null
+            }
+
           </div>
         </ListGroup.Item>)
       })}

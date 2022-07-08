@@ -92,3 +92,12 @@ class Contact(Base):
     contact_user_id = Column(Integer, ForeignKey("users.id"), index=True)
     name = Column(String, nullable=True)
     surname = Column(String, nullable=True)
+
+
+class MessageReadStatus(Base):
+    __tablename__ = "messages_read_status"
+
+    id = Column(Integer, primary_key=True)
+    message_id = Column(String, ForeignKey("messages.id"), index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    is_read = Column(Boolean, default=False)

@@ -42,6 +42,11 @@ class MessagesStore {
     console.log(`Добавлен новый чат: ${chatName}`)
   }
 
+  getChatUnreadMessagesCount(chatId) {
+    const chatUnreadMessages = this.chats[chatId].messages.filter(message => message.is_read === false)
+    return chatUnreadMessages.length
+  }
+
   changeChatName(data) {
     const {chat_id: chatId, chat_name: chatName} = data
     this.chats[chatId]["chat_name"] = chatName

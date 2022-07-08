@@ -77,7 +77,7 @@ class MessageService(BaseService):
             self._get_chat_messages_query(user=user)
             .all()
         )
-
+        # TODO надо сделать что бы is_read было по дефолту True
         messages_data = [models.ChatData(**data) for data in messages]
 
         return self._convert_messages_to_chats(chats_data=messages_data)
@@ -108,13 +108,21 @@ class MessageService(BaseService):
                 tables.Message.text.label("text"),
                 tables.Message.type.label("type"),
                 tables.User.login.label("login"),
-                chat_creator.login.label("creator")
+                chat_creator.login.label("creator"),
+                tables.MessageReadStatus.is_read.label("is_read")
             )
             .distinct()
             .join(tables.Message, tables.Chat.id == tables.Message.chat_id, isouter=True)
             .join(tables.User, tables.Message.user_id == tables.User.id, isouter=True)
             .join(tables.Profile, tables.User.id == tables.Profile.user, isouter=True)
             .join(chat_creator, tables.Chat.creator_id == chat_creator.id)
+            .join(
+                tables.MessageReadStatus,
+                and_(
+                    tables.Message.id == tables.MessageReadStatus.message_id,
+                    tables.MessageReadStatus.user_id == user.id
+                ),
+                isouter=True)
             .where(
                 and_(
                     tables.Chat.id == tables.ChatMember.chat_id,

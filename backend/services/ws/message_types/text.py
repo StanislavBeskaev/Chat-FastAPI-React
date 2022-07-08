@@ -6,6 +6,7 @@ from backend import models
 from backend import tables
 from backend.database import get_session
 from backend.core.time import get_formatted_time, get_current_time
+from backend.services.get_chat_members import get_chat_members
 from backend.services.user import UserService
 from backend.services.ws.constants import MessageType
 from backend.services.ws.base_messages import BaseChatWSMessage
@@ -52,5 +53,17 @@ class TextMessage(BaseChatWSMessage):
         self._session.add(message)
         self._session.commit()
         self._session.refresh(message)
+
+        chat_members = get_chat_members(chat_id=self._chat_id)
+        unread_messages = [
+            tables.MessageReadStatus(
+                message_id=message.id,
+                user_id=user.id
+            )
+            for user in chat_members
+        ]
+
+        self._session.bulk_save_objects(unread_messages)
+        self._session.commit()
 
         return message

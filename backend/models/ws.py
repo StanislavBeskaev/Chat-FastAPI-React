@@ -36,6 +36,7 @@ class TextMessageData(ChatMessageData):
     """Данные текстового сообщения"""
     message_id: str
     type: str = tables.MessageType.TEXT
+    is_read: bool = False
 
 
 class InfoMessageData(ChatMessageData):
