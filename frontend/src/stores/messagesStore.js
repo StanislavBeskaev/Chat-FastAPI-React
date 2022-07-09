@@ -115,16 +115,17 @@ class MessagesStore {
     if (!this.isLoadMessages) return
 
     const {chat_id: chatId} = message
+    if (message.login === authStore.user.login) {
+      message.is_read = true
+    }
     console.log(`MessagesStore add message to chatId "${chatId}":`, message)
     this.chats[chatId].messages.push(message)
   }
 
   markMessageAsRead(messageId, chatId) {
-    console.log(`Помечаем прочитанным сообщение ${messageId} из чата ${chatId}`)
     for (let message of this.chats[chatId].messages) {
       if (message.message_id === messageId) {
         message.is_read = true
-        console.log(`Сообщение ${messageId} помечено прочитанным`)
       }
     }
   }

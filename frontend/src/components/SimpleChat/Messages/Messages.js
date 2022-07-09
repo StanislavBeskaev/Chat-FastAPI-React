@@ -22,6 +22,8 @@ const Messages = ({messages, login}) => {
       {messages.map((message, index) => {
         const lastMessage = index === messages.length - 1
         const fromMe = message.login === login
+        // TODO сделать нормально, сейчас будет ломаться при одном сообщении
+        const needUnreadLine = message.is_read === false && messages[index - 1]?.is_read !== false
         if (message.type === "TEXT") {
           return (
             <div
@@ -29,6 +31,12 @@ const Messages = ({messages, login}) => {
               key={message.message_id}
               className={`w-50 my-1 d-flex flex-column ${fromMe ? 'align-self-end align-items-end' : 'align-items-start'}`}
             >
+              {/*TODO отдельный компоннент для отделения*/}
+              {
+                needUnreadLine
+                  ? <div className="text-primary align-self-center m-3">Дальше не прочитанные сообщения</div>
+                  : null
+              }
               <TextMessage fromMe={fromMe} message={message} />
             </div>
           )

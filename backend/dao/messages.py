@@ -31,6 +31,7 @@ class MessagesDAO(BaseDAO):
 
     def create_unread_messages(self, message: tables.Message) -> None:
         """Создание записей не прочитанных сообщений"""
+        # TODO для всех кроме текущего пользователя
         chat_members = get_chat_members(chat_id=message.chat_id)
         unread_messages = [
             tables.MessageReadStatus(
@@ -45,7 +46,7 @@ class MessagesDAO(BaseDAO):
 
     def mark_message_as_read(self, message_id: str, user_id: int) -> None:
         """Пометить, что пользователь прочитал сообщение"""
-        logger.debug(f"Запрос на прочтении сообщения: {user_id=} {message_id=}")
+        logger.debug(f"Запрос на прочтение сообщения: {user_id=} {message_id=}")
         # TODO проверка на существование сообщения?
         unread_message = self._get_unread_message(message_id=message_id, user_id=user_id)
         unread_message.is_read = True

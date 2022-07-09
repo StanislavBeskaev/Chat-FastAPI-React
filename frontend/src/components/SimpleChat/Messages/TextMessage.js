@@ -28,7 +28,7 @@ const TextMessage = ({message, fromMe}) => {
         sendReadMessage(messageId)
         messagesStore.markMessageAsRead(messageId,  currentChatId)
         // TODO константа для задержки
-      }, 1500)
+      }, 5000)
     }
   }
 

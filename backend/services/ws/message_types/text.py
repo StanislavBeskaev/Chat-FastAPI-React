@@ -56,12 +56,13 @@ class TextMessage(BaseChatWSMessage):
         self._session.refresh(message)
 
         chat_members = get_chat_members(chat_id=self._chat_id)
+        # TODO для всех кроме текущего пользователя
         unread_messages = [
             tables.MessageReadStatus(
                 message_id=message.id,
                 user_id=user.id
             )
-            for user in chat_members
+            for user in chat_members if user.login != self._login
         ]
 
         self._session.bulk_save_objects(unread_messages)
