@@ -59,3 +59,8 @@ class InTypingMessageData(BaseModel):
 class TypingMessageData(ChatMessageData):
     """Данные сообщения о печатании"""
     pass
+
+
+class InReadMessageData(BaseModel):
+    """Данные входящего сообщения о прочтении"""
+    message_id: str = Field(alias="messageId")

@@ -42,6 +42,7 @@ class TextMessage(BaseChatWSMessage):
         return data
 
     def _create_db_message(self) -> tables.Message:
+        # TODO воспользоваться MessagesDAO
         message = tables.Message(
             id=str(uuid4()),
             text=self._text,

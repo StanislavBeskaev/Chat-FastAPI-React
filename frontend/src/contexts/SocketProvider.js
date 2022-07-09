@@ -92,6 +92,17 @@ export function SocketProvider({ login, children }) {
     socket.send(typingStartMessage)
   }
 
+  const sendReadMessage = messageId => {
+    const readMessage = JSON.stringify(
+      {
+        type: "READ_MESSAGE",
+        data: {messageId}
+      }
+    )
+
+    socket.send(readMessage)
+  }
+
   const handleChangeChatNameMessage = data => {
     const chatId = data["chat_id"]
     const previousChatName = messagesStore.getChatNameById(chatId)
@@ -165,6 +176,7 @@ export function SocketProvider({ login, children }) {
     sendStartTyping,
     sendStopTyping,
     sendText,
+    sendReadMessage,
   }
 
   return (

@@ -11,6 +11,7 @@ from .message_types import (
     InfoMessage,
     AddLoginToChatMessage,
     DeleteLoginFromChatMessage,
+    ReadMessageWSMessage
 )
 
 
@@ -19,6 +20,7 @@ def create_message_by_type(message_type: MessageType, login: str, in_data: dict)
         MessageType.TEXT: TextMessage,
         MessageType.START_TYPING: StartTypingMessage,
         MessageType.STOP_TYPING: StopTypingMessage,
+        MessageType.READ_MESSAGE: ReadMessageWSMessage,
     }
 
     message_class = type_class_mapping.get(message_type)

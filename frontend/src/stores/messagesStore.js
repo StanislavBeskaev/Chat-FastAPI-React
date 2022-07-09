@@ -119,6 +119,16 @@ class MessagesStore {
     this.chats[chatId].messages.push(message)
   }
 
+  markMessageAsRead(messageId, chatId) {
+    console.log(`Помечаем прочитанным сообщение ${messageId} из чата ${chatId}`)
+    for (let message of this.chats[chatId].messages) {
+      if (message.message_id === messageId) {
+        message.is_read = true
+        console.log(`Сообщение ${messageId} помечено прочитанным`)
+      }
+    }
+  }
+
   addTypingLogin(chatId, login) {
     if (login === authStore.user.login) return
 

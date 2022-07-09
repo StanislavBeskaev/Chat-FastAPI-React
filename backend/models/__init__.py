@@ -21,4 +21,5 @@ from .ws import (
     ChatMessageData,
     InfoMessageData,
     ChangeChatMembersData,
+    InReadMessageData
 )

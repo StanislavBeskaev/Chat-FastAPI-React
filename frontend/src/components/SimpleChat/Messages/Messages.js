@@ -16,6 +16,7 @@ const Messages = ({messages, login}) => {
     return <div className="m-3">Сообщений пока нет</div>
   }
 
+  // TODO сделать разделение непрочитанных сообщений
   return (
     <>
       {messages.map((message, index) => {

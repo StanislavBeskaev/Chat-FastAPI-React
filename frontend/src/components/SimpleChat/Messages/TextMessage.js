@@ -1,15 +1,36 @@
 import React from 'react'
 import {observer} from 'mobx-react-lite'
+import {useInView} from 'react-intersection-observer'
 
+import {useSocket} from '../../../contexts/SocketProvider'
 import authStore from '../../../stores/authStore'
 import addContactModalStore from '../../../stores/modals/addContactModalStore'
 import contactStore from '../../../stores/contactStore'
+import messagesStore from '../../../stores/messagesStore'
 import UserAvatar from '../../Avatars/UserAvatar'
 
 
 const TextMessage = ({message, fromMe}) => {
-  const {text, time, login} = message
+  const {sendReadMessage} = useSocket()
+  const {text, time, login, is_read: isRead, message_id: messageId} = message
   const {login: ownLogin} = authStore.user
+  const {selectedChatId} = messagesStore
+  const { ref, inView } = useInView({
+    threshold: 0
+  })
+
+  // TODO скорее всего надо выделить отдельный компонент не прочитанного сообщения
+  if (isRead === false) {
+    if (inView) {
+      const currentChatId = selectedChatId
+      setTimeout(() => {
+        console.log("Отправляем запрос о прочтении:", messageId, text)
+        sendReadMessage(messageId)
+        messagesStore.markMessageAsRead(messageId,  currentChatId)
+        // TODO константа для задержки
+      }, 1500)
+    }
+  }
 
   const showAddContactModal = async () => {
     await addContactModalStore.showModalWithLogin(login)
@@ -19,7 +40,10 @@ const TextMessage = ({message, fromMe}) => {
 
   return (
     <>
-      <div className={`d-flex ${fromMe ? 'flex-row-reverse' : 'flex-row'}`}>
+      <div
+        ref={ref}
+        className={`d-flex ${fromMe ? 'flex-row-reverse' : 'flex-row'}`}
+      >
         <div
           style={isMessageFromOther ? {cursor: 'pointer'} : null}
           onClick={isMessageFromOther ? showAddContactModal : null}

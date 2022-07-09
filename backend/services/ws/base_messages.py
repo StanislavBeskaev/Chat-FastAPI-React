@@ -8,7 +8,16 @@ from backend.services.get_chat_members import get_chat_members
 from backend.services.ws_connection_manager import WSConnectionManager
 
 
-class BaseWSMessage(ABC):
+class WSMessageInterface(ABC):
+    """Интерфейс ws сообщения"""
+
+    @abstractmethod
+    async def send_all(self) -> None:
+        """Отправка ws сообщения необходимым адресатам"""
+        pass
+
+
+class BaseWSMessage(WSMessageInterface, ABC):
     """Базовый класс для работы с сообщением WS"""
     message_type = None
 
@@ -69,3 +78,13 @@ class SingleLoginChatMessage(BaseWSMessage, ABC):
         logger.debug(f"Отправка пользователю {self._login} сообщения : {self._content}")
 
         await manager.send_message_to_logins(logins=[self._login], message=self._get_message())
+
+
+class NoAnswerWSMessage(WSMessageInterface, ABC):
+    """Базовый класс ws сообщения без ответа"""
+
+    def __init__(self, login: str):
+        self._login = login
+
+    async def send_all(self) -> None:
+        pass

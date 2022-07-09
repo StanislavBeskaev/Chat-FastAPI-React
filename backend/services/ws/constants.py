@@ -15,6 +15,7 @@ class MessageType(str, Enum):
     CHANGE_CHAT_NAME = "CHANGE_CHAT_NAME"
     ADD_TO_CHAT = "ADD_TO_CHAT"
     DELETE_FROM_CHAT = "DELETE_FROM_CHAT"
+    READ_MESSAGE = "READ_MESSAGE"
 
 
 class OnlineStatus(str, Enum):
