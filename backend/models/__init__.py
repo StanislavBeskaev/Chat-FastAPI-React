@@ -1,3 +1,4 @@
+from .chat import Chat
 from .chat_members import ChatMemberWithOnlineStatus, ChatMember
 from .contact import Contact, ContactCreate, ContactDelete, ContactChange
 from .message import (
@@ -9,6 +10,7 @@ from .message import (
     ChatUpdateName,
     ChatChangeNameData,
     ChatNameData,
+    Message,
 )
 from .token import Tokens
 from .user import UserUpdate, UserCreate, UserLogin, User

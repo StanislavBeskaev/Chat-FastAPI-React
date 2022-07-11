@@ -1,5 +1,4 @@
 from backend import models
-from backend import tables
 from backend.services.ws.base_messages import BaseChatWSMessage
 from backend.services.ws.constants import MessageType
 
@@ -8,7 +7,7 @@ class InfoMessage(BaseChatWSMessage):
     """Информационное сообщение в чате"""
     message_type = MessageType.TEXT
 
-    def __init__(self, login: str, info_message: tables.Message):
+    def __init__(self, login: str, info_message: models.Message):
         self._info_message = info_message
         super().__init__(login=login)
 

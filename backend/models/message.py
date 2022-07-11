@@ -1,7 +1,21 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 from backend import tables
 from .ws import WSMessageData
+
+
+class Message(BaseModel):
+    id: str
+    chat_id: str
+    text: str
+    user_id: int
+    time: datetime
+    type: str
+
+    class Config:
+        orm_mode = True
 
 
 class MessageData(WSMessageData):
