@@ -1,6 +1,5 @@
 import asyncio
 from collections import OrderedDict
-from uuid import uuid4
 
 from fastapi import Depends, HTTPException
 from sqlalchemy import and_
@@ -8,8 +7,8 @@ from sqlalchemy.orm import Session, aliased, Query
 from loguru import logger
 
 from backend import models, tables
-from backend.core.time import get_current_time
 from backend.dao.chats import ChatsDAO
+from backend.dao.messages import MessagesDAO
 from backend.dao.users import UsersDAO
 from backend.database import get_session
 from backend.services import BaseService
@@ -25,6 +24,7 @@ class MessageService(BaseService):
         self._chat_members_service = ChatMembersService(session=session)
 
         self._chats_dao = ChatsDAO(session=session)
+        self._messages_dao = MessagesDAO(session=session)
         self._users_dao = UsersDAO(session=session)
 
     # TODO сделать сервис чатов и вынести в сервис чатов
@@ -163,10 +163,7 @@ class MessageService(BaseService):
             logger.warning("Передано пустое новое название, изменение названия не выполнятся")
             raise HTTPException(status_code=400, detail="Укажите название чата")
 
-        chat = self._chats_dao.get_chat_by_id(chat_id=chat_id)
-        chat.name = new_name
-        self.session.add(chat)
-        self.session.commit()
+        chat = self._chats_dao.change_chat_name(chat_id=chat_id, new_name=new_name)
 
         logger.info(f"Для чата {chat_id} установлено название: {new_name}")
         change_chat_name_message = self._create_change_chat_name_message(user=user, chat_id=chat_id, new_chat_name=new_name)  # noqa
@@ -179,7 +176,7 @@ class MessageService(BaseService):
         return chat.creator_id == user.id
 
     @staticmethod
-    def _notify_about_change_chat_name(changed_chat: tables.Chat, message: tables.Message, login: str) -> None:
+    def _notify_about_change_chat_name(changed_chat: models.Chat, message: tables.Message, login: str) -> None:
         """ws уведомление участников чата об изменении названия чата"""
         new_chat_message = ChangeChatNameMessage(chat_id=changed_chat.id, chat_name=changed_chat.name)
         asyncio.run(new_chat_message.send_all())
@@ -187,19 +184,13 @@ class MessageService(BaseService):
         ws_info_change_chat_name_message = InfoMessage(login=login,info_message=message)
         asyncio.run(ws_info_change_chat_name_message.send_all())
 
-    def _create_change_chat_name_message(self, user: models.User, chat_id: str, new_chat_name):
+    def _create_change_chat_name_message(self, user: models.User, chat_id: str, new_chat_name) -> models.Message:
         """Создание сообщения в базе об изменении названия чата"""
-        change_chat_name_message = tables.Message(
-            id=str(uuid4()),
-            chat_id=chat_id,
+        change_chat_name_message = self._messages_dao.create_info_message(
             text=f"Название чата изменено на '{new_chat_name}'",
             user_id=user.id,
-            time=get_current_time(),
-            type=tables.MessageType.INFO
+            chat_id=chat_id
         )
-
-        self.session.add(change_chat_name_message)
-        self.session.commit()
 
         logger.info(f"В базу сохранено сообщение об изменении названия чата {chat_id} на '{new_chat_name}'")
         return change_chat_name_message
