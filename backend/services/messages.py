@@ -9,10 +9,11 @@ from loguru import logger
 
 from backend import models, tables
 from backend.core.time import get_current_time
+from backend.dao.chats import ChatsDAO
+from backend.dao.users import UsersDAO
 from backend.database import get_session
 from backend.services import BaseService
 from backend.services.chat_members import ChatMembersService
-from backend.services.user import UserService
 from backend.services.ws import NewChatMessage, ChangeChatNameMessage, InfoMessage
 
 
@@ -21,21 +22,18 @@ class MessageService(BaseService):
 
     def __init__(self, session: Session = Depends(get_session)):
         super().__init__(session=session)
-        self._user_service = UserService(session=session)
         self._chat_members_service = ChatMembersService(session=session)
 
+        self._chats_dao = ChatsDAO(session=session)
+        self._users_dao = UsersDAO(session=session)
+
+    # TODO сделать сервис чатов и вынести в сервис чатов
     def create_chat(self, chat_data: models.ChatCreate, user: models.User) -> None:
         """Создание чата"""
         logger.debug(f"Попытка создания нового чата, {chat_data=} {user=}")
         chat_users = self._validate_new_chat_data(chat_data=chat_data)
 
-        new_chat = tables.Chat(
-            id=str(uuid4()),
-            name=chat_data.chat_name,
-            creator_id=user.id
-        )
-        self.session.add(new_chat)
-        self.session.commit()
+        new_chat = self._chats_dao.create_chat(chat_name=chat_data.chat_name, creator_id=user.id)
         for chat_user in chat_users:
             self._chat_members_service.add_user_to_chat(user=chat_user, chat_id=new_chat.id)
 
@@ -56,7 +54,7 @@ class MessageService(BaseService):
             logger.error("Необходимо добавить хотя бы ещё одного участника")
             raise HTTPException(status_code=400, detail="Необходимо добавить хотя бы ещё одного участника")
 
-        chat_users = [self._user_service.find_user_by_login(login) for login in chat_data.members]
+        chat_users = [self._users_dao.find_user_by_login(login) for login in chat_data.members]
         if not all(chat_users):
             logger.error("В списке участников есть не существующие пользователи")
             raise HTTPException(status_code=400, detail="В списке участников есть не существующие пользователи")
@@ -165,7 +163,7 @@ class MessageService(BaseService):
             logger.warning("Передано пустое новое название, изменение названия не выполнятся")
             raise HTTPException(status_code=400, detail="Укажите название чата")
 
-        chat = self._chat_members_service.get_chat_by_id(chat_id=chat_id)
+        chat = self._chats_dao.get_chat_by_id(chat_id=chat_id)
         chat.name = new_name
         self.session.add(chat)
         self.session.commit()
@@ -176,7 +174,7 @@ class MessageService(BaseService):
 
     def _is_user_chat_creator(self, chat_id: str, user: models.User) -> bool:
         """Является ли пользователь создателем чата"""
-        chat = self._chat_members_service.get_chat_by_id(chat_id=chat_id)
+        chat = self._chats_dao.get_chat_by_id(chat_id=chat_id)
 
         return chat.creator_id == user.id
 

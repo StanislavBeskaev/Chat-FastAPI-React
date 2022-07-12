@@ -8,9 +8,9 @@ from backend import models
 from backend.dao.chat_members import ChatMembersDAO
 from backend.dao.chats import ChatsDAO
 from backend.dao.messages import MessagesDAO
+from backend.dao.users import UsersDAO
 from backend.database import get_session
 from backend.services import BaseService
-from backend.services.user import UserService
 from backend.services.ws import InfoMessage, AddLoginToChatMessage, DeleteLoginFromChatMessage
 from backend.services.ws_connection_manager import WSConnectionManager
 
@@ -20,19 +20,19 @@ class ChatMembersService(BaseService):
 
     def __init__(self, session: Session = Depends(get_session)):
         super().__init__(session=session)
-        self._user_service = UserService(session=session)
 
         # TODO подумать, откуда брать сессию, может делать через интерфейс и функцию получения DAO
         self._chat_members_dao = ChatMembersDAO(session=session)
-        self._chat_dao = ChatsDAO(session=session)
+        self._chats_dao = ChatsDAO(session=session)
         self._messages_dao = MessagesDAO(session=session)
+        self._users_dao = UsersDAO(session=session)
 
     def add_login_to_chat(self, action_user: models.User, login: str, chat_id: str) -> None:
         """Добавление пользователя по логину к чату. Если пользователь уже есть в чате, то ничего не происходит"""
-        user = models.User.from_orm(self._user_service.find_user_by_login(login=login))
+        user = models.User.from_orm(self._users_dao.find_user_by_login(login=login))
         self.add_user_to_chat(user=user, chat_id=chat_id)
 
-        chat = self._chat_dao.get_chat_by_id(chat_id=chat_id)
+        chat = self._chats_dao.get_chat_by_id(chat_id=chat_id)
         add_login_message = self._create_add_login_message(action_user=action_user, login=login, chat_id=chat_id)
 
         ws_info_add_login_message = InfoMessage(login=action_user.login, info_message=add_login_message)
@@ -54,10 +54,10 @@ class ChatMembersService(BaseService):
 
     def delete_login_from_chat(self, action_user: models.User, login: str, chat_id: str) -> None:
         """Удаление пользователя по логину из чата"""
-        user = models.User.from_orm(self._user_service.find_user_by_login(login=login))
+        user = models.User.from_orm(self._users_dao.find_user_by_login(login=login))
         chat_member = self._chat_members_dao.find_chat_member(user_id=user.id, chat_id=chat_id)
 
-        chat = self._chat_dao.get_chat_by_id(chat_id=chat_id)
+        chat = self._chats_dao.get_chat_by_id(chat_id=chat_id)
         delete_login_from_chat_message = DeleteLoginFromChatMessage(login=login, chat_id=chat_id, chat_name=chat.name)
         asyncio.run(delete_login_from_chat_message.send_all())
 

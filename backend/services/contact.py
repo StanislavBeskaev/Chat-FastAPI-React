@@ -2,11 +2,10 @@ from fastapi import HTTPException, status, Depends
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from .. import models
-from .. import tables
-from ..database import get_session
-from . import BaseService
-from .user import UserService
+from backend import models, tables
+from backend.dao.users import UsersDAO
+from backend.database import get_session
+from backend.services import BaseService
 
 
 class ContactService(BaseService):
@@ -14,7 +13,8 @@ class ContactService(BaseService):
 
     def __init__(self, session: Session = Depends(get_session)):
         super().__init__(session=session)
-        self._user_service = UserService(session=session)
+
+        self._users_dao = UsersDAO(session=session)
 
     def get_many(self, user: models.User) -> list[models.Contact]:
         """Получение контактов пользователя"""
@@ -64,7 +64,7 @@ class ContactService(BaseService):
                 detail=f"Такой контакт уже существует"
             )
 
-        contact_user_info = self._user_service.get_user_info(login=contact_login)
+        contact_user_info = self._users_dao.get_user_info(login=contact_login)
 
         new_contact = tables.Contact(
             owner_user_id=user.id,
@@ -131,7 +131,7 @@ class ContactService(BaseService):
         self.session.commit()
 
     def _find_contact(self, user: models.User, contact_login: str) -> tables.Contact | None:
-        contact_user = self._user_service.find_user_by_login(login=contact_login)
+        contact_user = self._users_dao.find_user_by_login(login=contact_login)
 
         if not contact_user:
             logger.warning(f"Пользователь {user.login} операция"

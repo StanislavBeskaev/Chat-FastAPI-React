@@ -5,12 +5,12 @@ from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from backend import models, tables
+from backend.dao.users import UsersDAO
 from backend.database import get_session
 from backend.settings import get_settings
 from backend.services import BaseService
 from backend.services.chat_members import ChatMembersService
 from backend.services.token import TokenService
-from backend.services.user import UserService
 
 
 class AuthService(BaseService):
@@ -20,7 +20,8 @@ class AuthService(BaseService):
         super().__init__(session=session)
         self._token_service = TokenService(session=session)
         self._chat_members_service = ChatMembersService(session=session)
-        self._user_service = UserService(session=session)
+
+        self._users_dao = UsersDAO(session=session)
 
     @classmethod
     def hash_password(cls, password: str) -> str:
@@ -33,7 +34,7 @@ class AuthService(BaseService):
     def register_new_user(self, user_data: models.UserCreate, user_agent: str) -> models.Tokens:
         """Регистрация нового пользователя"""
         logger.debug(f"Попытка регистрации нового пользователя по данным: {user_data}")
-        if self._user_service.find_user_by_login(login=user_data.login):
+        if self._users_dao.find_user_by_login(login=user_data.login):
             logger.warning(f"Пользователь с логином '{user_data.login}' уже существует")
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -48,7 +49,7 @@ class AuthService(BaseService):
     def login_user(self, login: str, password: str, user_agent: str) -> models.Tokens:
         """Авторизация пользователя"""
         logger.debug(f"Попытка авторизации с данными: {login=} {password=} {user_agent=}")
-        user = self._user_service.find_user_by_login(login)
+        user = self._users_dao.find_user_by_login(login)
         if not user:
             message = "Пользователь с таким логином не найден"
             logger.warning(message)
@@ -78,7 +79,7 @@ class AuthService(BaseService):
             raise HTTPException(status_code=401, detail="Не удалось обновить токены")
 
         try:
-            user = models.User.from_orm(self._user_service.find_user_by_id(user_id=user_data.id))
+            user = models.User.from_orm(self._users_dao.find_user_by_id(user_id=user_data.id))
         except ValidationError as e:
             logger.warning(f"Не удалось получить пользователя по id={user_data.id}: {str(e)}")
             raise HTTPException(status_code=401, detail="Не удалось обновить токены")

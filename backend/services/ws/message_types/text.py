@@ -1,8 +1,8 @@
 from backend import models
 from backend.dao.messages import MessagesDAO
+from backend.dao.users import UsersDAO
 from backend.database import get_session
 from backend.core.time import get_formatted_time
-from backend.services.user import UserService
 from backend.services.ws.constants import MessageType
 from backend.services.ws.base_messages import BaseChatWSMessage
 
@@ -13,7 +13,6 @@ class TextMessage(BaseChatWSMessage):
 
     def __init__(self, login: str, **kwargs):
         self._session = next(get_session())
-        self._user_service = UserService(session=self._session)
 
         in_text_message_data: models.InTextMessageData = models.InTextMessageData.parse_obj(kwargs)
         self._text = in_text_message_data.text
@@ -36,10 +35,12 @@ class TextMessage(BaseChatWSMessage):
         return data
 
     def _create_db_message(self) -> models.Message:
-        messages_dao = MessagesDAO.create()
+        messages_dao = MessagesDAO(session=self._session)
+        users_dao = UsersDAO(session=self._session)
+
         message = messages_dao.create_text_message(
             text=self._text,
-            user_id=self._user_service.find_user_by_login(login=self._login).id,
+            user_id=users_dao.find_user_by_login(login=self._login).id,
             chat_id=self._chat_id
         )
         return message
