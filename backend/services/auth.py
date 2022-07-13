@@ -4,7 +4,7 @@ from passlib.hash import bcrypt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from backend import models, tables
+from backend import models
 from backend.dao.users import UsersDAO
 from backend.database import get_session
 from backend.settings import get_settings
@@ -103,19 +103,14 @@ class AuthService(BaseService):
 
     def _create_new_user(self, user_data: models.UserCreate) -> models.User:
         """Создание нового пользователя"""
-        new_user = tables.User(
+        new_user = self._users_dao.create_user(
             login=user_data.login,
             password_hash=self.hash_password(user_data.password),
             name=user_data.name,
             surname=user_data.surname
         )
 
-        self.session.add(new_user)
-        self.session.commit()
-
-        self._create_user_profile(user_id=new_user.id)
-        new_user = models.User.from_orm(new_user)
-        logger.info(f"Создан новый пользователь: {new_user}")
+        self._users_dao.create_user_profile(user_id=new_user.id)
 
         # TODO тесты на это
         settings = get_settings()
@@ -125,11 +120,3 @@ class AuthService(BaseService):
         )
 
         return new_user
-
-    def _create_user_profile(self, user_id) -> None:
-        """Создание профиля для пользователя"""
-        user_profile = tables.Profile(user=user_id)
-        self.session.add(user_profile)
-        self.session.commit()
-
-        logger.debug(f"Создан профиль для пользователя {user_id}")

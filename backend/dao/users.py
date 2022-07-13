@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+from loguru import logger
 
 from backend import tables, models
 from backend.dao import BaseDAO
@@ -6,6 +7,30 @@ from backend.dao import BaseDAO
 
 class UsersDAO(BaseDAO):
     """Класс для работы с пользователями в БД"""
+
+    def create_user(self, login: str, password_hash: str, name: str, surname: str) -> models.User:
+        """Создание пользователя"""
+        new_user = tables.User(
+            login=login,
+            password_hash=password_hash,
+            name=name,
+            surname=surname
+        )
+
+        self.session.add(new_user)
+        self.session.commit()
+
+        new_user = models.User.from_orm(new_user)
+        logger.info(f"Создан новый пользователь: {new_user}")
+
+        return new_user
+
+    def create_user_profile(self, user_id) -> None:
+        """Создание профиля для пользователя"""
+        user_profile = tables.Profile(user=user_id)
+        self.session.add(user_profile)
+        self.session.commit()
+        logger.debug(f"Создан профиль для пользователя {user_id}")
 
     def find_user_by_login(self, login: str) -> tables.User | None:
         """Поиск пользователя по login"""
@@ -102,3 +127,5 @@ class UsersDAO(BaseDAO):
         user_profile.avatar_file = avatar_file
         self.session.add(user_profile)
         self.session.commit()
+
+
