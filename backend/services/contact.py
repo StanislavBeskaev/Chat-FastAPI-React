@@ -3,6 +3,7 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from backend import models, tables
+from backend.dao.contacts import ContactsDAO
 from backend.dao.users import UsersDAO
 from backend.database import get_session
 from backend.services import BaseService
@@ -14,36 +15,15 @@ class ContactService(BaseService):
     def __init__(self, session: Session = Depends(get_session)):
         super().__init__(session=session)
 
+        self._contacts_dao = ContactsDAO(session=session)
         self._users_dao = UsersDAO(session=session)
 
     def get_many(self, user: models.User) -> list[models.Contact]:
         """Получение контактов пользователя"""
         logger.debug(f"Запрос на получение контактов пользователя: {user.login}")
+        contacts = self._contacts_dao.get_user_contact(user_id=user.id)
+        logger.debug(f"Контакты пользователя {user}: {contacts}")
 
-        contacts = (
-            self.session
-            .query(
-                tables.User.login,
-                tables.Contact.name,
-                tables.Contact.surname,
-                tables.Profile.avatar_file
-            )
-            .where(tables.Contact.owner_user_id == user.id)
-            .where(tables.User.id == tables.Profile.user)
-            .where(tables.User.id == tables.Contact.contact_user_id)
-        )
-
-        contacts = [
-            models.Contact(
-                login=contact_info[0],
-                name=contact_info[1],
-                surname=contact_info[2],
-                avatar_file=contact_info[3]
-            )
-            for contact_info in contacts
-        ]
-
-        logger.debug(f"Контакты пользователя {user.login}: {contacts}")
         return contacts
 
     def create(self, user: models.User, contact_login: str) -> models.Contact:
@@ -66,16 +46,12 @@ class ContactService(BaseService):
 
         contact_user_info = self._users_dao.get_user_info(login=contact_login)
 
-        new_contact = tables.Contact(
+        self._contacts_dao.create_contact(
             owner_user_id=user.id,
             contact_user_id=contact_user_info.id,
             name=contact_user_info.name,
             surname=contact_user_info.surname
         )
-
-        self.session.add(new_contact)
-        self.session.commit()
-
         logger.info(f"Для пользователя '{user.login}' добавлен новый контакт: '{contact_login}'")
 
         return models.Contact(
@@ -94,8 +70,7 @@ class ContactService(BaseService):
                            f"не существующего контакта {contact_login}")
             raise self._get_not_found_contact_exception(contact_login=contact_login)
 
-        self.session.delete(contact)
-        self.session.commit()
+        self._contacts_dao.delete_contact(contact=contact)
 
         logger.info(f"Пользователь {user.login} удалён контакт {contact_login}")
 
@@ -125,10 +100,11 @@ class ContactService(BaseService):
                            f"не существующего контакта {contact_data.login}")
             raise self._get_not_found_contact_exception(contact_login=contact_data.login)
 
-        contact.name = contact_data.name
-        contact.surname = contact_data.surname
-        self.session.add(contact)
-        self.session.commit()
+        self._contacts_dao.change_contact(
+            contact=contact,
+            new_name=contact_data.name,
+            new_surname=contact_data.surname
+        )
 
     def _find_contact(self, user: models.User, contact_login: str) -> tables.Contact | None:
         contact_user = self._users_dao.find_user_by_login(login=contact_login)
@@ -141,15 +117,7 @@ class ContactService(BaseService):
                 detail=f"Пользователь с логином '{contact_login}' не найден"
             )
 
-        contact = (
-            self.session
-            .query(tables.Contact)
-            .where(tables.Contact.owner_user_id == user.id)
-            .where(tables.Contact.contact_user_id == contact_user.id)
-            .first()
-        )
-
-        return contact
+        return self._contacts_dao.find_contact(owner_user_id=user.id, contact_user_id=contact_user.id)
 
     @staticmethod
     def _get_not_found_contact_exception(contact_login: str) -> HTTPException:
