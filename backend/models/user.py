@@ -28,7 +28,7 @@ class User(UserBase, UserUpdate):
 class Profile(BaseModel):
     id: int
     user: int
-    avatar_file: str
+    avatar_file: str | None
 
     class Config:
         orm_mode = True
