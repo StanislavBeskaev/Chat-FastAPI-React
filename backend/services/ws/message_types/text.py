@@ -1,4 +1,5 @@
 from backend import models
+from backend.dao.chat_members import ChatMembersDAO
 from backend.dao.messages import MessagesDAO
 from backend.dao.users import UsersDAO
 from backend.database import get_session
@@ -43,4 +44,10 @@ class TextMessage(BaseChatWSMessage):
             user_id=users_dao.find_user_by_login(login=self._login).id,
             chat_id=self._chat_id
         )
+        chat_members_dao = ChatMembersDAO(session=self._session)
+        messages_dao.create_unread_messages(
+            message=message,
+            chat_members=chat_members_dao.get_chat_members(chat_id=self._chat_id)
+        )
+
         return message

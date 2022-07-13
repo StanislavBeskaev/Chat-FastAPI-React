@@ -22,7 +22,6 @@ class MessageType(str, Enum):
     INFO = "INFO"
 
 
-# TODO подумать над полями
 class User(Base):
     __tablename__ = "users"
 

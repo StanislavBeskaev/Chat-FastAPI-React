@@ -13,7 +13,7 @@ from .message import (
     Message,
 )
 from .token import Tokens
-from .user import UserUpdate, UserCreate, UserLogin, User
+from .user import UserUpdate, UserCreate, UserLogin, User, Profile
 from .ws import (
     WSMessageData,
     TextMessageData,

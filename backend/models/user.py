@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field
 
 
-# TODO валидация
 class UserBase(BaseModel):
     login: str
 
@@ -11,7 +10,6 @@ class UserUpdate(BaseModel):
     surname: str = Field(default='')
 
 
-# TODO валидация
 class UserCreate(UserBase, UserUpdate):
     password: str
 
@@ -22,6 +20,15 @@ class UserLogin(UserBase):
 
 class User(UserBase, UserUpdate):
     id: int
+
+    class Config:
+        orm_mode = True
+
+
+class Profile(BaseModel):
+    id: int
+    user: int
+    avatar_file: str
 
     class Config:
         orm_mode = True

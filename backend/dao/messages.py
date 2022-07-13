@@ -5,7 +5,6 @@ from loguru import logger
 from backend import tables, models
 from backend.core.time import get_current_time
 from backend.dao import BaseDAO
-from backend.dao.chat_members import ChatMembersDAO
 
 
 class MessagesDAO(BaseDAO):
@@ -25,16 +24,13 @@ class MessagesDAO(BaseDAO):
         self.session.commit()
         self.session.refresh(db_message)
 
-        self.create_unread_messages(message=db_message)
         text_message = models.Message.from_orm(db_message)
         logger.info(f"В базу сохранено текстовое сообщение: {text_message} ")
 
         return text_message
 
-    def create_unread_messages(self, message: tables.Message) -> None:
-        """Создание записей не прочитанных сообщений"""
-        chat_members_dao = ChatMembersDAO.create()
-        chat_members = chat_members_dao.get_chat_members(chat_id=message.chat_id)
+    def create_unread_messages(self, message: models.Message, chat_members: list[models.User]) -> None:
+        """Создание записей не прочитанного сообщения для участников чата"""
         unread_messages = [
             tables.MessageReadStatus(
                 message_id=message.id,
@@ -45,7 +41,7 @@ class MessagesDAO(BaseDAO):
 
         self.session.bulk_save_objects(unread_messages)
         self.session.commit()
-        logger.debug(f"В базу сохранены непрочитанные сообщения: {unread_messages}")
+        logger.info(f"В базу сохранено непрочитанное сообщения {message.id} для пользователей {chat_members}")
 
     def mark_message_as_read(self, message_id: str, user_id: int) -> None:
         """Пометить, что пользователь прочитал сообщение"""

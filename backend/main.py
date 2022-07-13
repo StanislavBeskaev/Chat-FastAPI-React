@@ -48,7 +48,6 @@ async def websocket_endpoint(websocket: WebSocket, login: str):
     await manager.connect(ws_client)
     logger.debug(f"Новое ws соединение от пользователя {login} {websocket.__dict__}")
     online_message = OnlineMessage(login=login)
-    # TODO позже сделать рассылку по комнатам
     await online_message.send_all()
     try:
         while True:
@@ -56,7 +55,6 @@ async def websocket_endpoint(websocket: WebSocket, login: str):
             logger.debug(f"Message from {login}: {raw_message}")
 
             message_dict = json.loads(raw_message)
-            # TODO посылать сообщение только тем пользователям, которые есть в том же чате
             new_message = create_message_by_type(
                 message_type=message_dict[MESSAGE_TYPE_KEY],
                 login=login,

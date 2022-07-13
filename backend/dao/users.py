@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 
 from backend import tables, models
 from backend.dao import BaseDAO
@@ -43,10 +43,7 @@ class UsersDAO(BaseDAO):
         )
 
         if not user_info:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Пользователь с логином '{login}' не найден"
-            )
+            raise HTTPException(status_code=404, detail=f"Пользователь с логином '{login}' не найден")
 
         return models.User(
             id=user_info[0],
@@ -66,20 +63,27 @@ class UsersDAO(BaseDAO):
 
         return models.User.from_orm(user)
 
-    def find_profile_by_user_id(self, user_id: int) -> tables.Profile:
+    def find_profile_by_user_id(self, user_id: int) -> models.Profile:
         """Нахождение профайла пользователя по id пользователя"""
-        profile = (
+        db_profile = self._find_profile_by_user_id(user_id=user_id)
+
+        if not db_profile:
+            raise HTTPException(status_code=404, detail=f"Профиль пользователя с id '{user_id}' не найден")
+
+        return models.Profile.from_orm(db_profile)
+
+    def _find_profile_by_user_id(self, user_id: int) -> tables.Profile:
+        db_profile = (
             self.session
-            .query(tables.Profile)
-            .filter(tables.Profile.user == user_id)
-            .first()
+                .query(tables.Profile)
+                .filter(tables.Profile.user == user_id)
+                .first()
         )
+        return db_profile
 
-        return profile
-
-    def find_profile_by_login(self, login: str) -> tables.Profile:
+    def find_profile_by_login(self, login: str) -> models.Profile:
         """Нахождение профайла пользователя по логину пользователя"""
-        profile = (
+        db_profile = (
             self.session
             .query(tables.Profile)
             .where(tables.Profile.user == tables.User.id)
@@ -87,14 +91,14 @@ class UsersDAO(BaseDAO):
             .first()
         )
 
-        if not profile:
-            raise HTTPException(status_code=404, detail=f"Пользователь с логином '{login}' не найден")
+        if not db_profile:
+            raise HTTPException(status_code=404, detail=f"Профиль пользователя с логином '{login}' не найден")
 
-        return profile
+        return models.Profile.from_orm(db_profile)
 
     def set_avatar_file(self, user_id: int, avatar_file: str) -> None:
         """Установка имени файла аватара для пользователя"""
-        user_profile = self.find_profile_by_user_id(user_id=user_id)
+        user_profile = self._find_profile_by_user_id(user_id=user_id)
         user_profile.avatar_file = avatar_file
         self.session.add(user_profile)
         self.session.commit()
