@@ -1,17 +1,25 @@
 from datetime import datetime, timedelta
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends
 from jose import jwt, JWTError
 from loguru import logger
 from pydantic import ValidationError
+from sqlalchemy.orm import Session
 
-from .. import models, tables
-from ..settings import get_settings, Settings
-from . import BaseService
+from backend import models, tables
+from backend.dao.tokens import TokensDAO
+from backend.database import get_session
+from backend.settings import get_settings, Settings
+from backend.services import BaseService
 
 
 class TokenService(BaseService):
     """Сервис для работы с токенами"""
+
+    def __init__(self, session: Session = Depends(get_session)):
+        super().__init__(session=session)
+
+        self._tokens_dao = TokensDAO(session=session)
 
     def generate_tokens(self, user: models.User, user_agent: str) -> models.Tokens:
         """Генерация токенов: access и refresh"""
@@ -31,45 +39,20 @@ class TokenService(BaseService):
     def save_refresh_token_to_db(self, user_id: int, refresh_token: str, user_agent: str) -> tables.RefreshToken:
         """Сохранение refresh токена для пользователя с id=user_id и приложением=user_agent в базу данных"""
         logger.debug(f"Пользователь {user_id}, запрос на сохранение refresh токена в базу: '{refresh_token}'")
-        token = self._find_refresh_token_by_user(user_id=user_id, user_agent=user_agent)
+        token = self._tokens_dao.find_refresh_token_by_user(user_id=user_id, user_agent=user_agent)
         if token:
             logger.debug(f"Для пользователя {user_id} уже существует refresh_token, обновляем")
-            token.refresh_token = refresh_token
+            self._tokens_dao.update_refresh_token(token=token, new_refresh_token=refresh_token)
         else:
             logger.debug(f"Для пользователя {user_id} не было refresh_token в базе, создаём новый")
-            token = tables.RefreshToken(
-                user=user_id,
+            token = self._tokens_dao.create_refresh_token(
+                user_id=user_id,
                 refresh_token=refresh_token,
                 user_agent=user_agent
             )
 
-        self.session.add(token)
-        self.session.commit()
         logger.info(f"Для пользователя {user_id} {user_agent=} в базу сохранён refresh_token: {refresh_token}")
         return token
-
-    def _find_refresh_token_by_user(self, user_id: int, user_agent: str) -> tables.RefreshToken | None:
-        refresh_token = (
-            self.session
-            .query(tables.RefreshToken)
-            .filter(tables.RefreshToken.user == user_id)
-            .filter(tables.RefreshToken.user_agent == user_agent)
-            .first()
-        )
-
-        return refresh_token
-
-    def find_refresh_token(self, token: str, user_agent: str) -> tables.RefreshToken | None:
-        """Поиск refresh токена по токену и user_agent"""
-        refresh_token = (
-            self.session
-            .query(tables.RefreshToken)
-            .filter(tables.RefreshToken.refresh_token == token)
-            .filter(tables.RefreshToken.user_agent == user_agent)
-            .first()
-        )
-
-        return refresh_token
 
     def generate_access_token(self, user: models.User, settings: Settings) -> str:
         """Генерация токена доступа"""
@@ -172,7 +155,5 @@ class TokenService(BaseService):
         return user
 
     def delete_refresh_token(self, token: str, user_agent: str) -> None:
-        refresh_token = self.find_refresh_token(token=token, user_agent=user_agent)
-        self.session.delete(refresh_token)
-        self.session.commit()
+        self._tokens_dao.delete_refresh_token(token=token, user_agent=user_agent)
         logger.debug(f"Из базы удалён refresh_token: {token}")

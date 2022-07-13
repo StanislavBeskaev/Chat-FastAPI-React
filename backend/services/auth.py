@@ -5,6 +5,7 @@ from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from backend import models
+from backend.dao.tokens import TokensDAO
 from backend.dao.users import UsersDAO
 from backend.database import get_session
 from backend.settings import get_settings
@@ -21,6 +22,7 @@ class AuthService(BaseService):
         self._token_service = TokenService(session=session)
         self._chat_members_service = ChatMembersService(session=session)
 
+        self._tokens_dao = TokensDAO(session=session)
         self._users_dao = UsersDAO(session=session)
 
     @classmethod
@@ -72,7 +74,7 @@ class AuthService(BaseService):
             raise HTTPException(status_code=401, detail="Не валидный refresh_token")
 
         user_data = self._token_service.verify_refresh_token(token=refresh_token)
-        refresh_token_from_db = self._token_service.find_refresh_token(token=refresh_token, user_agent=user_agent)
+        refresh_token_from_db = self._tokens_dao.find_refresh_token_by_token(token=refresh_token, user_agent=user_agent)
 
         if not user_data or not refresh_token_from_db:
             logger.debug(f"Не удалось обновить токены, {user_data=}, {refresh_token_from_db=}")
