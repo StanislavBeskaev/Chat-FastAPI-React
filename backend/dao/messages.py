@@ -1,6 +1,8 @@
 from uuid import uuid4
 
 from loguru import logger
+from sqlalchemy import and_
+from sqlalchemy.orm import Query, aliased
 
 from backend import tables, models
 from backend.core.time import get_current_time
@@ -83,3 +85,65 @@ class MessagesDAO(BaseDAO):
         logger.info(f"В базу сохранено информационное сообщение: {info_message} ")
 
         return info_message
+
+    def _get_user_chat_messages_query(self, user_id: int) -> Query:
+        """Получение запроса для сообщений пользователя, по всем чатам, где пользователь участник"""
+        chat_creator = aliased(tables.User)
+
+        messages_query = (
+            self.session
+            .query(
+                tables.Chat.id.label("chat_id"),
+                tables.Chat.name.label("chat_name"),
+                tables.Message.id.label("message_id"),
+                tables.Message.time.label("time"),
+                tables.Message.text.label("text"),
+                tables.Message.type.label("type"),
+                tables.User.login.label("login"),
+                chat_creator.login.label("creator"),
+                tables.MessageReadStatus.is_read.label("is_read")
+            )
+            .distinct()
+            .join(tables.Message, tables.Chat.id == tables.Message.chat_id, isouter=True)
+            .join(tables.User, tables.Message.user_id == tables.User.id, isouter=True)
+            .join(tables.Profile, tables.User.id == tables.Profile.user, isouter=True)
+            .join(chat_creator, tables.Chat.creator_id == chat_creator.id)
+            .join(
+                tables.MessageReadStatus,
+                and_(
+                    tables.Message.id == tables.MessageReadStatus.message_id,
+                    tables.MessageReadStatus.user_id == user_id
+                ),
+                isouter=True)
+            .where(
+                and_(
+                    tables.Chat.id == tables.ChatMember.chat_id,
+                    tables.ChatMember.user_id == user_id
+                )
+            )
+            .order_by(tables.Message.time)
+        )
+
+        return messages_query
+
+    def get_user_messages(self, user_id: int) -> list[models.ChatData]:
+        """Получение сообщений пользователя по всем чатам, где пользователь участник"""
+        messages = (
+            self._get_user_chat_messages_query(user_id=user_id)
+            .all()
+        )
+        # TODO надо сделать что бы is_read было по дефолту True
+        chats_data = [models.ChatData(**data) for data in messages]
+
+        return chats_data
+
+    def get_user_chat_messages(self, user_id: int, chat_id: str) -> list[models.ChatData]:
+        """Получение сообщений конкретного чата"""
+        chat_messages = (
+            self._get_user_chat_messages_query(user_id=user_id)
+            .where(tables.Chat.id == chat_id)
+            .all()
+        )
+        chats_data = [models.ChatData(**data) for data in chat_messages]
+
+        return chats_data

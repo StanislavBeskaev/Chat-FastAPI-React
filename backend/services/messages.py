@@ -2,8 +2,7 @@ import asyncio
 from collections import OrderedDict
 
 from fastapi import Depends, HTTPException
-from sqlalchemy import and_
-from sqlalchemy.orm import Session, aliased, Query
+from sqlalchemy.orm import Session
 from loguru import logger
 
 from backend import models, tables
@@ -70,70 +69,21 @@ class MessageService(BaseService):
         asyncio.run(new_chat_message.send_all())
 
     def get_many(self, user: models.User) -> dict[str, models.ChatMessages]:
-        """Получение всех сообщений пользователя по чатам"""
-        messages = (
-            self._get_chat_messages_query(user=user)
-            .all()
-        )
-        # TODO надо сделать что бы is_read было по дефолту True
-        messages_data = [models.ChatData(**data) for data in messages]
+        """Получение всех сообщений пользователя по чатам, где пользователь участник"""
+        chats_data = self._messages_dao.get_user_messages(user_id=user.id)
 
-        return self._convert_messages_to_chats(chats_data=messages_data)
+        return self._convert_messages_to_chats(chats_data=chats_data)
 
-    def get_chat_content(self, user: models.User, chat_id: str) -> models.ChatMessages:
-        """Получение содержимого чата"""
-        chat_messages = (
-            self._get_chat_messages_query(user=user)
-            .where(tables.Chat.id == chat_id)
-            .all()
-        )
-        messages_data = [models.ChatData(**data) for data in chat_messages]
-        chat_content = self._convert_messages_to_chats(chats_data=messages_data)[chat_id]
+    def get_chat_messages(self, user: models.User, chat_id: str) -> models.ChatMessages:
+        """Получение сообщений конкретного чата"""
+        chats_data = self._messages_dao.get_user_chat_messages(user_id=user.id, chat_id=chat_id)
+        chat_messages = self._convert_messages_to_chats(chats_data=chats_data)[chat_id]
 
-        return chat_content
-
-    def _get_chat_messages_query(self, user: models.User) -> Query:
-        """Получение запроса для сообщений пользователя"""
-        chat_creator = aliased(tables.User)
-
-        messages_query = (
-            self.session
-            .query(
-                tables.Chat.id.label("chat_id"),
-                tables.Chat.name.label("chat_name"),
-                tables.Message.id.label("message_id"),
-                tables.Message.time.label("time"),
-                tables.Message.text.label("text"),
-                tables.Message.type.label("type"),
-                tables.User.login.label("login"),
-                chat_creator.login.label("creator"),
-                tables.MessageReadStatus.is_read.label("is_read")
-            )
-            .distinct()
-            .join(tables.Message, tables.Chat.id == tables.Message.chat_id, isouter=True)
-            .join(tables.User, tables.Message.user_id == tables.User.id, isouter=True)
-            .join(tables.Profile, tables.User.id == tables.Profile.user, isouter=True)
-            .join(chat_creator, tables.Chat.creator_id == chat_creator.id)
-            .join(
-                tables.MessageReadStatus,
-                and_(
-                    tables.Message.id == tables.MessageReadStatus.message_id,
-                    tables.MessageReadStatus.user_id == user.id
-                ),
-                isouter=True)
-            .where(
-                and_(
-                    tables.Chat.id == tables.ChatMember.chat_id,
-                    tables.ChatMember.user_id == user.id
-                )
-            )
-            .order_by(tables.Message.time)
-        )
-
-        return messages_query
+        return chat_messages
 
     @staticmethod
     def _convert_messages_to_chats(chats_data: list[models.ChatData]) -> dict[str, models.ChatMessages]:
+        """Агрегация данных о сообщениях по чатам"""
         chats = OrderedDict()
 
         for chat_data in chats_data:

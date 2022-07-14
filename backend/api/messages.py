@@ -38,7 +38,7 @@ def get_chat_messages(
 ):
     """Получение сообщений по чату"""
 
-    return message_service.get_chat_content(user=user, chat_id=chat_id)
+    return message_service.get_chat_messages(user=user, chat_id=chat_id)
 
 
 @router.post(
