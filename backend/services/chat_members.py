@@ -21,7 +21,6 @@ class ChatMembersService(BaseService):
     def __init__(self, session: Session = Depends(get_session)):
         super().__init__(session=session)
 
-        # TODO подумать, откуда брать сессию, может делать через интерфейс и функцию получения DAO
         self._chat_members_dao = ChatMembersDAO(session=session)
         self._chats_dao = ChatsDAO(session=session)
         self._messages_dao = MessagesDAO(session=session)

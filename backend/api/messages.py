@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, status
 
 from backend import models
 from backend.dependencies import get_current_user
+from backend.services.chat import ChatService
 from backend.services.chat_members import ChatMembersService
 from backend.services.messages import MessageService
 
@@ -41,6 +42,7 @@ def get_chat_messages(
     return message_service.get_chat_messages(user=user, chat_id=chat_id)
 
 
+# TODO вынести работу с чатами, участниками в отдельный router
 @router.post(
     "/chats/",
     status_code=status.HTTP_204_NO_CONTENT
@@ -48,11 +50,11 @@ def get_chat_messages(
 def create_new_chat(
         new_chat_data: models.ChatCreate,
         user: models.User = Depends(get_current_user),
-        message_service: MessageService = Depends(),
+        chat_service: ChatService = Depends(),
 ):
     """Создание нового чата"""
 
-    message_service.create_chat(chat_data=new_chat_data, user=user)
+    chat_service.create_chat(chat_data=new_chat_data, user=user)
 
 
 @router.put(
@@ -63,10 +65,10 @@ def change_chat_name(
         chat_id: str,
         chat_update_data: models.ChatUpdateName,
         user: models.User = Depends(get_current_user),
-        message_service: MessageService = Depends(),
+        chat_service: ChatService = Depends(),
 ):
     """Изменение названия чата"""
-    message_service.change_chat_name(
+    chat_service.change_chat_name(
         chat_id=chat_id,
         new_name=chat_update_data.chat_name,
         user=user
