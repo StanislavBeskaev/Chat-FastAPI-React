@@ -1,6 +1,6 @@
 import {makeAutoObservable} from "mobx"
 
-import MessageService from '../../services/MessageService'
+import ChatMembersService from "../../services/chatMembersService"
 
 
 class ChatMembersModalStore {
@@ -27,7 +27,7 @@ class ChatMembersModalStore {
   async loadChatMembers() {
     try {
       console.log('Запрос участников чата', this.chatId)
-      const response = await MessageService.getChatMembers(this.chatId)
+      const response = await ChatMembersService.getChatMembers(this.chatId)
       this.setMembers(response.data)
       console.log(response)
     } catch (e) {
@@ -39,7 +39,7 @@ class ChatMembersModalStore {
   async addChatMember(login) {
     try {
       console.log(`Попытка добавить пользователя ${login} к чату ${this.chatId}`)
-      await MessageService.addChatMember(this.chatId, login)
+      await ChatMembersService.addChatMember(this.chatId, login)
       console.log('Пользователь добавлен к чату')
       await this.loadChatMembers()
       this.addMessage(`Пользователь ${login} добавлен к чату`)
@@ -56,7 +56,7 @@ class ChatMembersModalStore {
   async deleteChatMember(login) {
     try {
       console.log(`Попытка удалить пользователя ${login} из чата:${this.chatId}`)
-      await MessageService.deleteChatMember(this.chatId, login)
+      await ChatMembersService.deleteChatMember(this.chatId, login)
       console.log('Пользователь удалён из чата')
       await this.loadChatMembers()
       this.addMessage(`Пользователь ${login} удалён из чата`)

@@ -1,6 +1,6 @@
 import {makeAutoObservable} from "mobx"
 import messagesStore from '../messagesStore'
-import MessageService from '../../services/MessageService'
+import ChatService from "../../services/ChatService"
 
 
 class ChangeChatNameModalStore {
@@ -31,7 +31,7 @@ class ChangeChatNameModalStore {
   async changeChatName() {
     console.log("Попытка изменения названия чата")
     try {
-      await MessageService.changeChatName(this.chatId, this.name)
+      await ChatService.changeChatName(this.chatId, this.name)
       this.setSuccess(true)
       this.setError('')
 

@@ -1,7 +1,7 @@
 import {makeAutoObservable} from "mobx"
 
-import MessageService from '../../services/MessageService'
 import authStore from '../authStore'
+import ChatService from "../../services/ChatService"
 
 
 class NewChatModalStore {
@@ -20,7 +20,7 @@ class NewChatModalStore {
   async createNewChat() {
     console.log("Попытка создания нового чата")
     try {
-      await MessageService.createNewChat(this.name, this.logins)
+      await ChatService.createNewChat(this.name, this.logins)
       this.setSuccess(true)
       this.setError('')
 
