@@ -23,33 +23,33 @@ const SidebarBody = () => {
 
   return (
     <Tab.Container activeKey={activeKey} onSelect={setActiveKey}>
+      <Nav fill variant="tabs" className="justify-content-center">
+        <Nav.Item>
+          <Nav.Link
+            eventKey={CHATS_KEY}
+            className="btn"
+            style={{backgroundColor: activeKey === CHATS_KEY ? ACTIVE_BACKGROUND_COLOR : PASSIVE_BACKGROUND_COLOR}}
+          >
+            <Image
+              src={activeKey === CHATS_KEY ? chats_white : chats_blue}
+              height={ICON_HEIGHT}
+            />
+          </Nav.Link>
+        </Nav.Item>
+        <Nav.Item>
+          <Nav.Link
+            eventKey={CONTACTS_KEY}
+            className="btn"
+            style={{backgroundColor: activeKey === CONTACTS_KEY ? ACTIVE_BACKGROUND_COLOR : PASSIVE_BACKGROUND_COLOR}}
+          >
+            <Image
+              src={activeKey === CONTACTS_KEY ? contact_white : contact_blue}
+              height={ICON_HEIGHT}
+            />
+          </Nav.Link>
+        </Nav.Item>
+      </Nav>
       <Tab.Content className="border-end overflow-auto flex-grow-1">
-        <Nav fill variant="tabs" className="justify-content-center">
-          <Nav.Item>
-            <Nav.Link
-              eventKey={CHATS_KEY}
-              className="btn"
-              style={{backgroundColor: activeKey === CHATS_KEY ? ACTIVE_BACKGROUND_COLOR : PASSIVE_BACKGROUND_COLOR}}
-            >
-              <Image
-                src={activeKey === CHATS_KEY ? chats_white : chats_blue}
-                height={ICON_HEIGHT}
-              />
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link
-              eventKey={CONTACTS_KEY}
-              className="btn"
-              style={{backgroundColor: activeKey === CONTACTS_KEY ? ACTIVE_BACKGROUND_COLOR : PASSIVE_BACKGROUND_COLOR}}
-            >
-              <Image
-                src={activeKey === CONTACTS_KEY ? contact_white : contact_blue}
-                height={ICON_HEIGHT}
-              />
-            </Nav.Link>
-          </Nav.Item>
-        </Nav>
         <Tab.Pane eventKey={CHATS_KEY}>
           <Chats/>
         </Tab.Pane>
