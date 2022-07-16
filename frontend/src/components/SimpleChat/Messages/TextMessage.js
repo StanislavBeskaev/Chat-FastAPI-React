@@ -10,6 +10,9 @@ import messagesStore from '../../../stores/messagesStore'
 import UserAvatar from '../../Avatars/UserAvatar'
 
 
+// TODO собрать константы в одном месте
+const READ_MESSAGE_DELAY = 5_000
+
 const TextMessage = ({message, fromMe}) => {
   const {sendReadMessage} = useSocket()
   const {text, time, login, is_read: isRead, message_id: messageId} = message
@@ -19,7 +22,6 @@ const TextMessage = ({message, fromMe}) => {
     threshold: 0
   })
 
-  // TODO скорее всего надо выделить отдельный компонент не прочитанного сообщения
   if (isRead === false) {
     if (inView) {
       const currentChatId = selectedChatId
@@ -27,8 +29,7 @@ const TextMessage = ({message, fromMe}) => {
         console.log("Отправляем запрос о прочтении:", messageId, text)
         sendReadMessage(messageId)
         messagesStore.markMessageAsRead(messageId,  currentChatId)
-        // TODO константа для задержки
-      }, 5000)
+      }, READ_MESSAGE_DELAY)
     }
   }
 

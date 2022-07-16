@@ -3,6 +3,7 @@ import {observer} from 'mobx-react-lite'
 
 import TextMessage from './TextMessage'
 import InfoMessage from './InfoMessage'
+import UnreadLine from './UnreadLine'
 
 
 const Messages = ({messages, login}) => {
@@ -16,34 +17,40 @@ const Messages = ({messages, login}) => {
     return <div className="m-3">Сообщений пока нет</div>
   }
 
-  // TODO сделать разделение непрочитанных сообщений
+  let isFindUnreadMessage = false
+
   return (
     <>
       {messages.map((message, index) => {
-        const lastMessage = index === messages.length - 1
         const fromMe = message.login === login
-        // TODO сделать нормально, сейчас будет ломаться при одном сообщении
-        const needUnreadLine = message.is_read === false && messages[index - 1]?.is_read !== false
+
+        let needUnreadLine = false
+        // как только нашли первое непрочитанное сообщение, то показывает строку отделения новых сообщений от старых
+        if (message.is_read === false && isFindUnreadMessage === false) {
+          isFindUnreadMessage = true
+          needUnreadLine = true
+        }
+        const isLastMessage = index === messages.length - 1
+        const needScrollToLastMessage = isLastMessage && !isFindUnreadMessage
+
+        // TODO придумать как лучше прокручивать экран до границы прочитанных сообщений
         if (message.type === "TEXT") {
           return (
-            <div
-              ref={lastMessage ? setRef : null}
-              key={message.message_id}
-              className={`w-50 my-1 d-flex flex-column ${fromMe ? 'align-self-end align-items-end' : 'align-items-start'}`}
-            >
-              {/*TODO отдельный компоннент для отделения*/}
-              {
-                needUnreadLine
-                  ? <div className="text-primary align-self-center m-3">Дальше не прочитанные сообщения</div>
-                  : null
-              }
-              <TextMessage fromMe={fromMe} message={message} />
-            </div>
+            <>
+              { needUnreadLine ? <UnreadLine /> : null}
+              <div
+                ref={needScrollToLastMessage ? setRef : null}
+                key={message.message_id}
+                className={`w-50 my-1 d-flex flex-column ${fromMe ? 'align-self-end align-items-end' : 'align-items-start'}`}
+              >
+                <TextMessage fromMe={fromMe} message={message} />
+              </div>
+            </>
           )
         } else {
           return (
             <div
-              ref={lastMessage ? setRef : null}
+              ref={needScrollToLastMessage ? setRef : null}
               key={message.message_id}
               className="align-self-center my-1"
             >
@@ -51,7 +58,6 @@ const Messages = ({messages, login}) => {
             </div>
           )
         }
-
       })}
     </>
   )
