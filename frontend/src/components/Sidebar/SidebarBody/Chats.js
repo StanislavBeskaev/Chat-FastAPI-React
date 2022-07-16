@@ -42,7 +42,13 @@ const Chats = () => {
             {chatName}
             {
               unreadMessagesCount > 0
-                ? <Badge pill bg="primary" className="align-self-center">{unreadMessagesCount}</Badge>
+                ? <Badge
+                  pill
+                  bg={selected ? "light" : "primary"}
+                  className={`align-self-center ${selected ? 'text-primary': ''}`}
+                >
+                  {unreadMessagesCount}
+              </Badge>
                 : null
             }
 
