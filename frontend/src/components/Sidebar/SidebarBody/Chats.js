@@ -8,7 +8,7 @@ import {useHistory} from 'react-router-dom'
 
 
 const Chats = () => {
-  const {sendStopTyping} = useSocket()
+  const {sendStopTyping, sendReadMessage} = useSocket()
   const {chats, selectedChatId, selectedChatTyping} = messagesStore
 
   const history = useHistory()
@@ -18,6 +18,12 @@ const Chats = () => {
       sendStopTyping(selectedChatId)
     }
 
+    for (let messageId of messagesStore.waitReadList) {
+      console.log('sendReadMessage for id:', messageId)
+      sendReadMessage(messageId)
+      messagesStore.markMessageAsRead(messageId, selectedChatId)
+    }
+    messagesStore.clearWaitReadList()
     messagesStore.setSelectedChatId(chatId)
 
     if (history.location.pathname !== '/') {
@@ -30,7 +36,7 @@ const Chats = () => {
       {Object.keys(chats).map(chatId => {
         const chatName = chats[chatId].chat_name
         const selected = selectedChatId === chatId
-        const unreadMessagesCount = messagesStore.getChatUnreadMessagesCount(chatId)
+        const notViewedMessagesCount = messagesStore.getChatNotViewedMessagesCount(chatId)
         return (
         <ListGroup.Item
           key={chatId}
@@ -41,13 +47,13 @@ const Chats = () => {
           <div className="d-flex justify-content-between">
             {chatName}
             {
-              unreadMessagesCount > 0
+              notViewedMessagesCount > 0
                 ? <Badge
                   pill
                   bg={selected ? "light" : "primary"}
                   className={`align-self-center ${selected ? 'text-primary': ''}`}
                 >
-                  {unreadMessagesCount}
+                  {notViewedMessagesCount}
               </Badge>
                 : null
             }

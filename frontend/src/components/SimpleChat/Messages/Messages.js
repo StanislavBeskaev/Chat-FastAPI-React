@@ -4,9 +4,11 @@ import {observer} from 'mobx-react-lite'
 import TextMessage from './TextMessage'
 import InfoMessage from './InfoMessage'
 import UnreadLine from './UnreadLine'
+import messagesStore from '../../../stores/messagesStore'
 
 
 const Messages = ({messages, login}) => {
+  const {needScrollToNewMessage} = messagesStore
   const setRef = useCallback(node => {
     if (node) {
       node.scrollIntoView({smooth: true})
@@ -31,9 +33,8 @@ const Messages = ({messages, login}) => {
           needUnreadLine = true
         }
         const isLastMessage = index === messages.length - 1
-        const needScrollToLastMessage = isLastMessage && !isFindUnreadMessage
+        const needScrollToLastMessage = isLastMessage && !isFindUnreadMessage || needScrollToNewMessage
 
-        // TODO придумать как лучше прокручивать экран до границы прочитанных сообщений
         if (message.type === "TEXT") {
           return (
             <>

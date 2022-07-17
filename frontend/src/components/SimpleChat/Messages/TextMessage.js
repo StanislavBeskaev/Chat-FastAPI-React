@@ -2,7 +2,6 @@ import React from 'react'
 import {observer} from 'mobx-react-lite'
 import {useInView} from 'react-intersection-observer'
 
-import {useSocket} from '../../../contexts/SocketProvider'
 import authStore from '../../../stores/authStore'
 import addContactModalStore from '../../../stores/modals/addContactModalStore'
 import contactStore from '../../../stores/contactStore'
@@ -10,26 +9,18 @@ import messagesStore from '../../../stores/messagesStore'
 import UserAvatar from '../../Avatars/UserAvatar'
 
 
-// TODO собрать константы в одном месте
-const READ_MESSAGE_DELAY = 5_000
-
 const TextMessage = ({message, fromMe}) => {
-  const {sendReadMessage} = useSocket()
-  const {text, time, login, is_read: isRead, message_id: messageId} = message
+  const {text, time, login, is_view: isView, message_id: messageId} = message
   const {login: ownLogin} = authStore.user
   const {selectedChatId} = messagesStore
   const { ref, inView } = useInView({
     threshold: 0
   })
 
-  if (isRead === false) {
+  if (isView === false) {
     if (inView) {
-      const currentChatId = selectedChatId
-      setTimeout(() => {
-        console.log("Отправляем запрос о прочтении:", messageId, text)
-        sendReadMessage(messageId)
-        messagesStore.markMessageAsRead(messageId,  currentChatId)
-      }, READ_MESSAGE_DELAY)
+      messagesStore.markMessageAsView(messageId, selectedChatId)
+      console.log('viewed', messageId)
     }
   }
 

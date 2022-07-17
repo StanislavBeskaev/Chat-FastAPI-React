@@ -14,6 +14,8 @@ class MessagesStore {
   loadError = false
   selectedChatText = ''
   selectedChatTyping = false
+  waitReadList = []
+  needScrollToNewMessage = false
 
   constructor() {
     makeAutoObservable(this)
@@ -28,6 +30,8 @@ class MessagesStore {
     this.loadError = false
     this.selectedChatText = ''
     this.selectedChatTyping = false
+    this.waitReadList = []
+    this.needScrollToNewMessage = false
   }
 
   addNewChat(data) {
@@ -42,9 +46,9 @@ class MessagesStore {
     console.log(`Добавлен новый чат: ${chatName}`)
   }
 
-  getChatUnreadMessagesCount(chatId) {
-    const chatUnreadMessages = this.chats[chatId].messages.filter(message => message.is_read === false)
-    return chatUnreadMessages.length
+  getChatNotViewedMessagesCount(chatId) {
+    const ChatNotViewedMessages = this.chats[chatId].messages.filter(message => message.is_view === false)
+    return ChatNotViewedMessages.length
   }
 
   changeChatName(data) {
@@ -115,19 +119,48 @@ class MessagesStore {
     if (!this.isLoadMessages) return
 
     const {chat_id: chatId} = message
+    const notViewedMessagesCount = this.getChatNotViewedMessagesCount(chatId)
     if (message.login === authStore.user.login) {
       message.is_read = true
+      message.is_view = true
+    } else {
+      message.is_view = false
     }
+
+    this.needScrollToNewMessage = notViewedMessagesCount === 0 && chatId === this.selectedChatId
+
     console.log(`MessagesStore add message to chatId "${chatId}":`, message)
     this.chats[chatId].messages.push(message)
   }
 
   markMessageAsRead(messageId, chatId) {
+    // TODO тут же убирать сообщение из waitReadList и тогда не нужен clearWaitReadList
     for (let message of this.chats[chatId].messages) {
       if (message.message_id === messageId) {
         message.is_read = true
       }
     }
+  }
+
+  // TODO подумать какой из методов нужен
+  markMessageAsView(messageId, chatId) {
+    this.addMessageToWaitReadList(messageId)
+
+    for (let message of this.chats[chatId].messages) {
+      if (message.message_id === messageId) {
+        message.is_view = true
+        return
+      }
+    }
+  }
+
+  addMessageToWaitReadList(messageId) {
+    this.waitReadList.push(messageId)
+    console.log('Добавлено к waitReadList', messageId)
+  }
+
+  clearWaitReadList() {
+    this.waitReadList = []
   }
 
   addTypingLogin(chatId, login) {
@@ -170,12 +203,18 @@ class MessagesStore {
   initChat(chatId) {
     this.chats[chatId].typingLogins = []
     this.chats[chatId].text = ''
+    for (let message of this.chats[chatId].messages) {
+      if (message.is_read === false) {
+        message.is_view = false
+      }
+    }
   }
 
   setSelectedChatId(chatId) {
     this.selectedChatId = chatId
     this.selectedChatText = this.chats[chatId].text
     this.selectedChatTyping = false
+    this.needScrollToNewMessage = false
   }
 
   setIsLoadMessages(bool) {
