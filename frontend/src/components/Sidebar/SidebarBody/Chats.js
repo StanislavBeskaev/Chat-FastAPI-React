@@ -18,12 +18,14 @@ const Chats = () => {
       sendStopTyping(selectedChatId)
     }
 
-    messagesStore.readAllMessagesInWaitList(sendReadMessage)
-    messagesStore.setSelectedChatId(chatId)
-
     if (history.location.pathname !== '/') {
       history.push('/')
     }
+
+    if (selectedChatId === chatId) return
+
+    messagesStore.readAllMessagesInWaitList(sendReadMessage)
+    messagesStore.setSelectedChatId(chatId)
   }
 
   return (

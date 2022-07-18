@@ -151,20 +151,18 @@ class MessagesStore {
   }
 
   markMessageAsRead(messageId) {
-    for (let message of this.chats[this.selectedChatId].messages) {
-      if (message.message_id === messageId) {
-        message.is_read = true
-        break
-      }
-    }
+    this.setMessagePropertyValueInCurrentChat(messageId, "is_read", true)
   }
 
   markMessageAsView(messageId) {
     this.addMessageToWaitReadList(messageId)
+    this.setMessagePropertyValueInCurrentChat(messageId, "is_view", true)
+  }
 
+  setMessagePropertyValueInCurrentChat(messageId, property, value) {
     for (let message of this.chats[this.selectedChatId].messages) {
       if (message.message_id === messageId) {
-        message.is_view = true
+        message[property] = value
         return
       }
     }
