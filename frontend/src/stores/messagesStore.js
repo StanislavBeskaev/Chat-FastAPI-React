@@ -120,11 +120,13 @@ class MessagesStore {
 
     const {chat_id: chatId} = message
     const notViewedMessagesCount = this.getChatNotViewedMessagesCount(chatId)
-    if (message.login === authStore.user.login) {
-      message.is_read = true
-      message.is_view = true
-    } else {
-      message.is_view = false
+    if (message.type === 'TEXT') {
+      if (message.login === authStore.user.login) {
+        message.is_read = true
+        message.is_view = true
+      } else {
+        message.is_view = false
+      }
     }
 
     this.needScrollToNewMessage = notViewedMessagesCount === 0 && chatId === this.selectedChatId
