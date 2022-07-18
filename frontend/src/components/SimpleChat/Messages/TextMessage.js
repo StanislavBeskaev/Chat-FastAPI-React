@@ -12,14 +12,13 @@ import UserAvatar from '../../Avatars/UserAvatar'
 const TextMessage = ({message, fromMe}) => {
   const {text, time, login, is_view: isView, message_id: messageId} = message
   const {login: ownLogin} = authStore.user
-  const {selectedChatId} = messagesStore
   const { ref, inView } = useInView({
     threshold: 0
   })
 
   if (isView === false) {
     if (inView) {
-      messagesStore.markMessageAsView(messageId, selectedChatId)
+      messagesStore.markMessageAsView(messageId)
       console.log('viewed', messageId)
     }
   }

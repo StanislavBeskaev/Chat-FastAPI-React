@@ -105,8 +105,8 @@ class MessagesStore {
       console.log(`Запрос данных чата`, chatId)
       const response = await MessageService.getChatMessages(chatId)
       console.log(response)
+
       this.chats[chatId] = response.data
-      // TODO подумать как сделать красиво initChat
       this.initChat(chatId)
     } catch (e) {
       console.log('Ошибка при загрузке данных чата', chatId)
@@ -135,20 +135,28 @@ class MessagesStore {
     this.chats[chatId].messages.push(message)
   }
 
-  markMessageAsRead(messageId, chatId) {
-    // TODO тут же убирать сообщение из waitReadList и тогда не нужен clearWaitReadList
-    for (let message of this.chats[chatId].messages) {
+  readAllMessagesInWaitList(socketReadMessage) {
+    for (let messageId of this.waitReadList) {
+      console.log('sendReadMessage for id:', messageId)
+      socketReadMessage(messageId)
+      this.markMessageAsRead(messageId)
+    }
+    this.waitReadList = []
+  }
+
+  markMessageAsRead(messageId) {
+    for (let message of this.chats[this.selectedChatId].messages) {
       if (message.message_id === messageId) {
         message.is_read = true
+        break
       }
     }
   }
 
-  // TODO подумать какой из методов нужен
-  markMessageAsView(messageId, chatId) {
+  markMessageAsView(messageId) {
     this.addMessageToWaitReadList(messageId)
 
-    for (let message of this.chats[chatId].messages) {
+    for (let message of this.chats[this.selectedChatId].messages) {
       if (message.message_id === messageId) {
         message.is_view = true
         return
@@ -159,10 +167,6 @@ class MessagesStore {
   addMessageToWaitReadList(messageId) {
     this.waitReadList.push(messageId)
     console.log('Добавлено к waitReadList', messageId)
-  }
-
-  clearWaitReadList() {
-    this.waitReadList = []
   }
 
   addTypingLogin(chatId, login) {

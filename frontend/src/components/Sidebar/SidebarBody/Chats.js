@@ -18,12 +18,7 @@ const Chats = () => {
       sendStopTyping(selectedChatId)
     }
 
-    for (let messageId of messagesStore.waitReadList) {
-      console.log('sendReadMessage for id:', messageId)
-      sendReadMessage(messageId)
-      messagesStore.markMessageAsRead(messageId, selectedChatId)
-    }
-    messagesStore.clearWaitReadList()
+    messagesStore.readAllMessagesInWaitList(sendReadMessage)
     messagesStore.setSelectedChatId(chatId)
 
     if (history.location.pathname !== '/') {
@@ -38,29 +33,30 @@ const Chats = () => {
         const selected = selectedChatId === chatId
         const notViewedMessagesCount = messagesStore.getChatNotViewedMessagesCount(chatId)
         return (
-        <ListGroup.Item
-          key={chatId}
-          action
-          onClick={() => changeChat(chatId)}
-          active={selected}
-        >
-          <div className="d-flex justify-content-between">
-            {chatName}
-            {
-              notViewedMessagesCount > 0
-                ? <Badge
-                  pill
-                  bg={selected ? "light" : "primary"}
-                  className={`align-self-center ${selected ? 'text-primary': ''}`}
-                >
-                  {notViewedMessagesCount}
-              </Badge>
-                : null
-            }
-
-          </div>
-        </ListGroup.Item>)
-      })}
+          <ListGroup.Item
+            key={chatId}
+            action
+            onClick={() => changeChat(chatId)}
+            active={selected}
+          >
+            <div className="d-flex justify-content-between">
+              {chatName}
+              {
+                notViewedMessagesCount > 0
+                  ? <Badge
+                    pill
+                    bg={selected ? "light" : "primary"}
+                    className={`align-self-center ${selected ? 'text-primary': ''}`}
+                  >
+                    {notViewedMessagesCount}
+                </Badge>
+                  : null
+              }
+            </div>
+          </ListGroup.Item>
+          )
+        })
+      }
     </ListGroup>
   )
 }

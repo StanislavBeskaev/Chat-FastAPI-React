@@ -3,15 +3,12 @@ import {Button, Form, InputGroup} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
 import messagesStore from '../../stores/messagesStore'
-import {useSocket} from '../../contexts/SocketProvider'
 
 
 const STOP_TYPING_DELAY = 5_000
 
-const TextForm = ({sendTextMessage, sendStartTyping, sendStopTyping}) => {
-  // TODO передать как параметр
-  const {sendReadMessage} = useSocket()
-  const {selectedChatText, selectedChatTyping, selectedChatId} = messagesStore
+const TextForm = ({sendTextMessage, sendStartTyping, sendStopTyping, sendReadMessage}) => {
+  const {selectedChatText, selectedChatTyping} = messagesStore
 
   useEffect(() => {
     const stopTypingTimeout = setTimeout(()=> {
@@ -42,18 +39,13 @@ const TextForm = ({sendTextMessage, sendStartTyping, sendStopTyping}) => {
 
   const send = () => {
     if (!selectedChatText) return
+
     sendTextMessage(selectedChatText)
     messagesStore.setSelectedChatText('')
     sendStopTyping()
-    messagesStore.setSelectedChatTyping(false)
 
-    // TODO повторяется тут и в Chats, вынести в hook?
-    for (let messageId of messagesStore.waitReadList) {
-      console.log('sendReadMessage for id:', messageId)
-      sendReadMessage(messageId)
-      messagesStore.markMessageAsRead(messageId, selectedChatId)
-    }
-    messagesStore.clearWaitReadList()
+    messagesStore.setSelectedChatTyping(false)
+    messagesStore.readAllMessagesInWaitList(sendReadMessage)
   }
 
   return (
