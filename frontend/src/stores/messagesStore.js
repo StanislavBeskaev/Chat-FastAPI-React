@@ -115,30 +115,36 @@ class MessagesStore {
     console.log('Чат добавлен', chatId)
   }
 
-  addMessage(message) {
+  addMessage(message, socketSendReadMessage) {
     if (!this.isLoadMessages) return
 
-    const {chat_id: chatId} = message
+    const {chat_id: chatId, message_id: messageId} = message
     const notViewedMessagesCount = this.getChatNotViewedMessagesCount(chatId)
+    this.needScrollToNewMessage = notViewedMessagesCount === 0 && chatId === this.selectedChatId
+
     if (message.type === 'TEXT') {
       if (message.login === authStore.user.login) {
         message.is_read = true
         message.is_view = true
       } else {
-        message.is_view = false
+        if (this.needScrollToNewMessage) {
+          message.is_read = true
+          message.is_view = true
+          socketSendReadMessage(messageId)
+        } else {
+          message.is_view = false
+        }
       }
     }
-
-    this.needScrollToNewMessage = notViewedMessagesCount === 0 && chatId === this.selectedChatId
 
     console.log(`MessagesStore add message to chatId "${chatId}":`, message)
     this.chats[chatId].messages.push(message)
   }
 
-  readAllMessagesInWaitList(socketReadMessage) {
+  readAllMessagesInWaitList(socketSendReadMessage) {
     for (let messageId of this.waitReadList) {
       console.log('sendReadMessage for id:', messageId)
-      socketReadMessage(messageId)
+      socketSendReadMessage(messageId)
       this.markMessageAsRead(messageId)
     }
     this.waitReadList = []

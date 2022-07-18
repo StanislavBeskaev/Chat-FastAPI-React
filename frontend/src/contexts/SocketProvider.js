@@ -27,11 +27,10 @@ export function SocketProvider({ login, children }) {
     socket.onmessage = async (e) => {
       const msg = JSON.parse(e.data)
       console.log('Сообщение из ws: ', msg)
-      let chatId
 
       switch (msg.type) {
         case 'TEXT':
-          messagesStore.addMessage(msg.data)
+          messagesStore.addMessage(msg.data, sendReadMessage)
           break
         case 'STATUS':
           addStatusNotification(msg.data)
