@@ -21,7 +21,7 @@ import chatMembersModalStore from '../../stores/modals/chatMembersModalStore'
 
 
 function SimpleChat() {
-  const {sendStartTyping, sendStopTyping, sendText, sendReadMessage} = useSocket()
+  const {sendStartTyping, sendStopTyping, sendText} = useSocket()
 
   const {loading, selectedChatId, isLoadMessages, loadError} = messagesStore
   const {login} = authStore.user
@@ -57,7 +57,6 @@ function SimpleChat() {
         sendTextMessage={sendTextMessage}
         sendStartTyping={() => sendStartTyping(selectedChatId)}
         sendStopTyping={() => sendStopTyping(selectedChatId)}
-        sendReadMessage={messageId => sendReadMessage(messageId)}
       />
       <Modal show={addContactModalStore.show} onHide={closeAddContactModal}>
         <AddContactModal />

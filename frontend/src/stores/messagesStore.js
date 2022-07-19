@@ -141,10 +141,9 @@ class MessagesStore {
     this.chats[chatId].messages.push(message)
   }
 
-  readAllMessagesInWaitList(socketSendReadMessage) {
+  readAllMessagesInWaitList() {
+    console.log("Помечаем прочитанными сообщения в waitReadList")
     for (let messageId of this.waitReadList) {
-      console.log('sendReadMessage for id:', messageId)
-      socketSendReadMessage(messageId)
       this.markMessageAsRead(messageId)
     }
     this.waitReadList = []
@@ -152,11 +151,14 @@ class MessagesStore {
 
   markMessageAsRead(messageId) {
     this.setMessagePropertyValueInCurrentChat(messageId, "is_read", true)
+    console.log(messageId, "помечено прочитанным")
   }
 
-  markMessageAsView(messageId) {
+  markMessageAsView(messageId, socketSendReadMessage) {
     this.addMessageToWaitReadList(messageId)
     this.setMessagePropertyValueInCurrentChat(messageId, "is_view", true)
+    socketSendReadMessage(messageId)
+    console.log('sendReadMessage for id:', messageId)
   }
 
   setMessagePropertyValueInCurrentChat(messageId, property, value) {

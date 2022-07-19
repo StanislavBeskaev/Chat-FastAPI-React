@@ -7,18 +7,20 @@ import addContactModalStore from '../../../stores/modals/addContactModalStore'
 import contactStore from '../../../stores/contactStore'
 import messagesStore from '../../../stores/messagesStore'
 import UserAvatar from '../../Avatars/UserAvatar'
+import {useSocket} from '../../../contexts/SocketProvider'
 
 
 const TextMessage = ({message, fromMe}) => {
   const {text, time, login, is_view: isView, message_id: messageId} = message
   const {login: ownLogin} = authStore.user
+  const {sendReadMessage} = useSocket()
   const { ref, inView } = useInView({
     threshold: 0
   })
 
   if (isView === false) {
     if (inView) {
-      messagesStore.markMessageAsView(messageId)
+      messagesStore.markMessageAsView(messageId, sendReadMessage)
       console.log('viewed', messageId)
     }
   }

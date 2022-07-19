@@ -8,7 +8,7 @@ import {useHistory} from 'react-router-dom'
 
 
 const Chats = () => {
-  const {sendStopTyping, sendReadMessage} = useSocket()
+  const {sendStopTyping} = useSocket()
   const {chats, selectedChatId, selectedChatTyping} = messagesStore
 
   const history = useHistory()
@@ -24,7 +24,7 @@ const Chats = () => {
 
     if (selectedChatId === chatId) return
 
-    messagesStore.readAllMessagesInWaitList(sendReadMessage)
+    messagesStore.readAllMessagesInWaitList()
     messagesStore.setSelectedChatId(chatId)
   }
 
@@ -47,17 +47,17 @@ const Chats = () => {
                 notViewedMessagesCount > 0
                   ? <Badge
                     pill
-                    bg={selected ? "light" : "primary"}
-                    className={`align-self-center ${selected ? 'text-primary': ''}`}
+                    bg={selected ? 'light' : 'primary'}
+                    className={`align-self-center ${selected ? 'text-primary' : ''}`}
                   >
                     {notViewedMessagesCount}
-                </Badge>
+                  </Badge>
                   : null
               }
             </div>
           </ListGroup.Item>
-          )
-        })
+        )
+      })
       }
     </ListGroup>
   )

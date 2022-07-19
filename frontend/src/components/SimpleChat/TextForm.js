@@ -7,7 +7,7 @@ import messagesStore from '../../stores/messagesStore'
 
 const STOP_TYPING_DELAY = 5_000
 
-const TextForm = ({sendTextMessage, sendStartTyping, sendStopTyping, sendReadMessage}) => {
+const TextForm = ({sendTextMessage, sendStartTyping, sendStopTyping}) => {
   const {selectedChatText, selectedChatTyping} = messagesStore
 
   useEffect(() => {
@@ -45,7 +45,7 @@ const TextForm = ({sendTextMessage, sendStartTyping, sendStopTyping, sendReadMes
     sendStopTyping()
 
     messagesStore.setSelectedChatTyping(false)
-    messagesStore.readAllMessagesInWaitList(sendReadMessage)
+    messagesStore.readAllMessagesInWaitList()
   }
 
   return (
