@@ -46,6 +46,7 @@ class MessagesStore {
     console.log(`Добавлен новый чат: ${chatName}`)
   }
 
+  // количество про просмотренных сообщений в чате, для отображения в Sidebar
   getChatNotViewedMessagesCount(chatId) {
     const ChatNotViewedMessages = this.chats[chatId].messages.filter(message => message.is_view === false)
     return ChatNotViewedMessages.length
@@ -115,6 +116,8 @@ class MessagesStore {
     console.log('Чат добавлен', chatId)
   }
 
+  // is_read - пометка "прочитанности" для вычисления линии разделения новых и старых сообщений
+  // is_view - были ли сообщение просмотрено
   addMessage(message, socketSendReadMessage) {
     if (!this.isLoadMessages) return
 
@@ -141,6 +144,7 @@ class MessagesStore {
     this.chats[chatId].messages.push(message)
   }
 
+  // waitReadList - сообщения которые уже просмотрены, но не помечены на фронте как прочитанные
   readAllMessagesInWaitList() {
     console.log("Помечаем прочитанными сообщения в waitReadList")
     for (let messageId of this.waitReadList) {
@@ -154,6 +158,9 @@ class MessagesStore {
     console.log(messageId, "помечено прочитанным")
   }
 
+  // при просмотре сообщения оно сразу помечание как is_view=true, а так же отправляется пометка о прочтении в базу
+  // на фронте оно пока добавляется в waitReadList, что бы в чате оставалась разделение новых и старых сообщений
+  // сообщения waitReadList помечаются прочитанными в случае перехода в другой чат или отправки сообщения в текущем чате
   markMessageAsView(messageId, socketSendReadMessage) {
     this.addMessageToWaitReadList(messageId)
     this.setMessagePropertyValueInCurrentChat(messageId, "is_view", true)
