@@ -144,6 +144,17 @@ class MessagesStore {
     this.chats[chatId].messages.push(message)
   }
 
+  getMessagesIdsWithTextInCurrentChat(text) {
+    const ids = []
+    for (let message of this.chats[this.selectedChatId].messages) {
+      if (message.text.toLowerCase().includes(text.toLowerCase()) && message.type === 'TEXT') {
+        ids.push(message.message_id)
+      }
+    }
+
+    return ids
+  }
+
   // waitReadList - сообщения которые уже просмотрены, но не помечены на фронте как прочитанные
   readAllMessagesInWaitList() {
     console.log("Помечаем прочитанными сообщения в waitReadList")

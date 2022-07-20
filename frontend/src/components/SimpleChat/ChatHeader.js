@@ -10,6 +10,7 @@ import chatMembersModalStore from '../../stores/modals/chatMembersModalStore'
 
 import white_pencil from '../../img/white_pencil.png'
 import white_add_contact from '../../img/white_add_contact.png'
+import Search from './Search'
 
 
 const ChatHeader = () => {
@@ -24,6 +25,7 @@ const ChatHeader = () => {
           {messagesStore.getSelectedChatName()}
         </div>
         <div className="d-flex align-items-center" style={{gap: "0.75rem"}}>
+          <Search />
           <Image
             src={white_add_contact}
             height={27}

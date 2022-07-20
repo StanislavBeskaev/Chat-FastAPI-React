@@ -45,6 +45,7 @@ const TextMessage = ({message, fromMe}) => {
         </div>
         <div
           className={`text-break mx-2 rounded px-2 py-1 ${fromMe ? 'bg-primary text-white' : 'border'}`}
+          id={message.message_id}
         >
           {text}
         </div>
