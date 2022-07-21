@@ -2,6 +2,7 @@ import {makeAutoObservable} from 'mobx'
 
 import authStore from './authStore'
 import MessageService from '../services/MessageService'
+import searchMessagesStore from './searchMessagesStore'
 
 
 const DEFAULT_CHAT_ID = 'MAIN'
@@ -32,6 +33,8 @@ class MessagesStore {
     this.selectedChatTyping = false
     this.waitReadList = []
     this.needScrollToNewMessage = false
+
+    searchMessagesStore.setDefaultState()
   }
 
   addNewChat(data) {
@@ -46,7 +49,7 @@ class MessagesStore {
     console.log(`Добавлен новый чат: ${chatName}`)
   }
 
-  // количество про просмотренных сообщений в чате, для отображения в Sidebar
+  // количество не просмотренных сообщений в чате, для отображения в Sidebar
   getChatNotViewedMessagesCount(chatId) {
     const ChatNotViewedMessages = this.chats[chatId].messages.filter(message => message.is_view === false)
     return ChatNotViewedMessages.length
@@ -97,6 +100,7 @@ class MessagesStore {
       this.setSelectedChatId(DEFAULT_CHAT_ID)
     }
     delete this.chats[chatId]
+    searchMessagesStore.deleteChat(chatId)
     console.log('Удалён чат', chatId)
   }
 
@@ -109,6 +113,7 @@ class MessagesStore {
 
       this.chats[chatId] = response.data
       this.initChat(chatId)
+      searchMessagesStore.addChat(chatId)
     } catch (e) {
       console.log('Ошибка при загрузке данных чата', chatId)
       console.log(e.response)
@@ -224,9 +229,12 @@ class MessagesStore {
   
   setChats(chats) {
     this.chats = chats
-    for (let chatId of Object.keys(this.chats)) {
+    const chatIds = Object.keys(this.chats)
+    for (let chatId of chatIds) {
       this.initChat(chatId)
     }
+
+    searchMessagesStore.initialize(chatIds)
   }
 
   // Инициализация чата, добавление служебных полей
