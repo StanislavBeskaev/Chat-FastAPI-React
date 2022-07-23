@@ -8,7 +8,7 @@ import UserAvatar from '../Avatars/UserAvatar'
 
 
 const ContactModal = () => {
-  const {loading, login, name, surname, avatarFile, changed} = contactModalStore
+  const {loading, login, name, surname, changed} = contactModalStore
 
   if (loading) {
     return <>

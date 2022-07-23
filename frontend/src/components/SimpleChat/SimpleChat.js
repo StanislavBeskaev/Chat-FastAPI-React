@@ -18,6 +18,9 @@ import TypingInfo from './TypingInfo'
 import ChatHeader from './ChatHeader'
 import ChatMembersModal from '../Modals/ChatMembersModal/ChatMembersModal'
 import chatMembersModalStore from '../../stores/modals/chatMembersModalStore'
+import messageContextMenuStore from '../../stores/messageContextMenuStore'
+import MessageContextMenu from './MessageContextMenu/MessageContextMenu'
+import MessageEditModal from '../Modals/MessageEditModal'
 
 
 function SimpleChat() {
@@ -66,6 +69,13 @@ function SimpleChat() {
       </Modal>
       <Modal show={chatMembersModalStore.show} onHide={() => chatMembersModalStore.close()}>
         <ChatMembersModal />
+      </Modal>
+      <MessageContextMenu />
+      <Modal
+        show={messageContextMenuStore.showMessageEditModal}
+        onHide={() => messageContextMenuStore.closeMessageEditModal()}
+      >
+        <MessageEditModal />
       </Modal>
     </div>
   )

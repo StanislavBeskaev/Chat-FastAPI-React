@@ -77,6 +77,10 @@ class MessagesStore {
     return this.chats[chatId]?.creator
   }
 
+  getMessageInCurrentChatById(messageId) {
+    return this.chats[this.selectedChatId].messages.find(message => message.message_id === messageId)
+  }
+
   async loadMessages() {
     console.log("load messages")
     this.setLoading(true)
