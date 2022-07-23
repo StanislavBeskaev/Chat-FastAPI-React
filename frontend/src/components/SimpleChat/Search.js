@@ -10,6 +10,10 @@ const Search = () => {
   const current = searchMessagesStore.getCurrent()
   const searchText = searchMessagesStore.getSearchText()
 
+  const handleKeyPress = e => {
+    if (e.key === 'Enter') searchMessagesStore.increaseCurrent()
+  }
+
   return (
     <>
       {
@@ -38,7 +42,7 @@ const Search = () => {
       <input
         type="text"
         value={searchText}
-        // TODO сделать перемотку по Enter
+        onKeyPress={handleKeyPress}
         onChange={e => searchMessagesStore.setSearchText(e.target.value)}
       />
     </>
