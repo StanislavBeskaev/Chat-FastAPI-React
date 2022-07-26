@@ -348,7 +348,7 @@ class TestContact(BaseTestCase):
             }
         )
 
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 200)
 
         our_user = self.find_user_by_login(login="user")
         self.assertIsNotNone(our_user)

@@ -5,7 +5,6 @@ import {ContextMenuTrigger} from 'react-contextmenu'
 
 import {useSocket} from '../../../contexts/SocketProvider'
 
-import authStore from '../../../stores/authStore'
 import addContactModalStore from '../../../stores/modals/addContactModalStore'
 import contactStore from '../../../stores/contactStore'
 import messagesStore from '../../../stores/messagesStore'
@@ -16,7 +15,6 @@ import UserAvatar from '../../Avatars/UserAvatar'
 
 const TextMessage = ({message, fromMe}) => {
   const {text, time, login, is_view: isView, message_id: messageId, change_time: changeTime} = message
-  const {login: ownLogin} = authStore.user
   const {sendReadMessage} = useSocket()
   const { ref, inView } = useInView({
     threshold: 0
@@ -38,8 +36,6 @@ const TextMessage = ({message, fromMe}) => {
     messageContextMenuStore.setMessageId(messageId)
   }
 
-  const isMessageFromOther = login !== ownLogin
-
   return (
     <>
       <div
@@ -47,22 +43,31 @@ const TextMessage = ({message, fromMe}) => {
         className={`d-flex ${fromMe ? 'flex-row-reverse' : 'flex-row'}`}
       >
         <div
-          style={isMessageFromOther ? {cursor: 'pointer'} : null}
-          onClick={isMessageFromOther ? showAddContactModal : null}
+          style={!fromMe ? {cursor: 'pointer'} : null}
+          onClick={!fromMe ? showAddContactModal : null}
         >
           <UserAvatar login={login} size="sm" />
         </div>
-        {/*TODO надо сделать что бы можно было редактировать столько свои сообщения*/}
-        <ContextMenuTrigger id="message-context-menu">
-          <div
-            id={message.message_id}
-            className={`text-break mx-2 rounded px-2 py-1 ${fromMe ? 'bg-primary text-white' : 'border'}`}
-            style={{cursor: 'context-menu'}}
-            onContextMenu={onContextMenu}
-          >
-            {text}
-          </div>
-        </ContextMenuTrigger>
+        {/* Редактировать можно только свои сообщения */}
+        {
+          fromMe
+            ? <ContextMenuTrigger id="message-context-menu">
+                <div
+                  id={message.message_id}
+                  className={`text-break mx-2 rounded px-2 py-1 ${fromMe ? 'bg-primary text-white' : 'border'}`}
+                  style={{cursor: 'context-menu'}}
+                  onContextMenu={onContextMenu}
+                >
+                  {text}
+                </div>
+              </ContextMenuTrigger>
+            : <div
+                id={message.message_id}
+                className={`text-break mx-2 rounded px-2 py-1 ${fromMe ? 'bg-primary text-white' : 'border'}`}
+              >
+                {text}
+              </div>
+        }
       </div>
       <div className={`text-muted small ${fromMe ? 'text-end' : ''}`}>
         {fromMe ? 'Вы' : contactStore.getDisplayName(login)}, {time}

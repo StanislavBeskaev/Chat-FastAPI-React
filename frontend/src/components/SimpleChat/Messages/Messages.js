@@ -35,6 +35,7 @@ const Messages = ({messages, login}) => {
         const isLastMessage = index === messages.length - 1
         const needScrollToLastMessage = isLastMessage && !isFindUnreadMessage || needScrollToNewMessage
 
+        // TODO придумать прокрутку вниз, когда не видно последнее сообщение
         if (message.type === "TEXT") {
           return (
             <>

@@ -57,9 +57,8 @@ class MessageService(BaseService):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Сообщение не может быть пустым")
 
         message = self._messages_dao.get_message_by_id(message_id=message_id)
-        # TODO временно убрать потом вернуть
-        # if message.user_id != user.id:
-        #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Только автор может менять сообщение!")
+        if message.user_id != user.id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Только автор может менять сообщение!")
 
         message = self._messages_dao.change_message_text(message_id=message_id, new_text=new_text)
 
