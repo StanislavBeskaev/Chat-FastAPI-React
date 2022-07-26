@@ -11,7 +11,8 @@ from .message_types import (
     InfoMessage,
     AddLoginToChatMessage,
     DeleteLoginFromChatMessage,
-    ReadMessageWSMessage
+    ReadMessageWSMessage,
+    ChangeMessageTextMessage,
 )
 
 

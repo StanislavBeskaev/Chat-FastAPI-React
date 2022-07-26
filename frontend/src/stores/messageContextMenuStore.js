@@ -1,11 +1,11 @@
 import {makeAutoObservable} from 'mobx'
 import messagesStore from './messagesStore'
+import MessageService from '../services/MessageService'
 
 
 class MessageContextMenuStore {
   messageId = null
-  message = null
-  messageText = '' // TODO подумать надо ли выделить messageText, showMessageEditModal в отдельный store
+  messageText = ''
   showMessageEditModal = false
 
   constructor() {
@@ -16,7 +16,6 @@ class MessageContextMenuStore {
   unsetMessageId() {
     console.log('MessageContextMenuStore unsetMessageId')
     this.messageId = null
-    this.message = null
     this.messageText = ''
   }
 
@@ -24,8 +23,17 @@ class MessageContextMenuStore {
   setMessageId(id) {
     console.log('MessageContextMenuStore setMessageId', id)
     this.messageId = id
-    this.message = messagesStore.getMessageInCurrentChatById(id)
-    this.messageText = this.message.text
+    const message = messagesStore.getMessageInCurrentChatById(id)
+    this.messageText = message.text
+  }
+
+  async changeMessageText() {
+    console.log('Попытка изменения текста сообщения', this.messageId)
+    try {
+      await MessageService.changeMessageText(this.messageId, this.messageText)
+    } catch (e) {
+      console.log('Ошибка при изменеении текста сообщения:', e.response)
+    }
   }
 
   openMessageEditModal() {
@@ -34,15 +42,14 @@ class MessageContextMenuStore {
 
   closeMessageEditModal() {
     this.showMessageEditModal = false
-    this.unsetMessageId()
+    // что бы при закрытии модалки не показывался пустой текст
+    setTimeout(() => {
+      this.unsetMessageId()
+    }, 400)
   }
 
   setMessageText(text) {
     this.messageText = text
-  }
-
-  changeMessageText() {
-    this.message.text = this.messageText
   }
 }
 

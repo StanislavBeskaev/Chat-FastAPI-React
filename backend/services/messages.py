@@ -1,12 +1,15 @@
+import asyncio
 from collections import OrderedDict
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from backend import models
+from backend.core.time import get_formatted_time
 from backend.dao.messages import MessagesDAO
 from backend.database import get_session
 from backend.services import BaseService
+from backend.services.ws import ChangeMessageTextMessage
 
 
 class MessageService(BaseService):
@@ -47,3 +50,23 @@ class MessageService(BaseService):
                 chats[chat_data.chat_id].messages.append(models.MessageData.from_orm(chat_data))
 
         return chats
+
+    def change_message_text(self, message_id: str, new_text: str, user: models.User) -> None:
+        """Изменение текста сообщения"""
+        if not new_text:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Сообщение не может быть пустым")
+
+        message = self._messages_dao.get_message_by_id(message_id=message_id)
+        # TODO временно убрать потом вернуть
+        # if message.user_id != user.id:
+        #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Только автор может менять сообщение!")
+
+        message = self._messages_dao.change_message_text(message_id=message_id, new_text=new_text)
+
+        change_message_text_message = ChangeMessageTextMessage(
+            chat_id=message.chat_id,
+            message_id=message_id,
+            message_text=new_text,
+            change_time=get_formatted_time(message.change_time) if message.change_time else ""
+        )
+        asyncio.run(change_message_text_message.send_all())

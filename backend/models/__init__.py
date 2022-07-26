@@ -11,6 +11,8 @@ from .message import (
     ChatChangeNameData,
     ChatNameData,
     Message,
+    ChangeMessageText,
+    ChangeMessageTextData,
 )
 from .token import Tokens
 from .user import UserUpdate, UserCreate, UserLogin, User, Profile

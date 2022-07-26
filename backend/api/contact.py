@@ -75,7 +75,7 @@ def get_contact(
 # TODO документация
 @router.put(
     "/",
-    status_code=status.HTTP_204_NO_CONTENT
+    status_code=status.HTTP_200_OK
 )
 def change_contact(
     contact_data: models.ContactChange,

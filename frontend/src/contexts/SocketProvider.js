@@ -54,6 +54,9 @@ export function SocketProvider({ login, children }) {
         case 'DELETE_FROM_CHAT':
           await handleDeleteFromChatMessage(msg.data)
           break
+        case 'CHANGE_MESSAGE_TEXT':
+          messagesStore.changeMessageText(msg.data)
+          break
       }
     }
   }, [socket])

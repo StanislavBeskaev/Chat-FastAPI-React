@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import uuid4
 
 from loguru import logger
@@ -101,7 +102,8 @@ class MessagesDAO(BaseDAO):
                 tables.Message.type.label("type"),
                 tables.User.login.label("login"),
                 chat_creator.login.label("creator"),
-                tables.MessageReadStatus.is_read.label("is_read")
+                tables.MessageReadStatus.is_read.label("is_read"),
+                tables.Message.change_time.label("change_time")
             )
             .distinct()
             .join(tables.Message, tables.Chat.id == tables.Message.chat_id, isouter=True)
@@ -132,7 +134,6 @@ class MessagesDAO(BaseDAO):
             self._get_user_chat_messages_query(user_id=user_id)
             .all()
         )
-        # TODO надо сделать что бы is_read было по дефолту True
         chats_data = [models.ChatData(**data) for data in messages]
 
         return chats_data
@@ -147,3 +148,28 @@ class MessagesDAO(BaseDAO):
         chats_data = [models.ChatData(**data) for data in chat_messages]
 
         return chats_data
+
+    def get_message_by_id(self, message_id: str) -> tables.Message:
+        """Получение сообщения по id"""
+        message = (
+            self.session
+            .query(tables.Message)
+            .where(tables.Message.id == message_id)
+            .first()
+        )
+
+        return message
+
+    def change_message_text(self, message_id: str, new_text: str) -> tables.Message:
+        """Изменение текста сообщения"""
+        message = self.get_message_by_id(message_id=message_id)
+        old_text = message.text
+        message.text = new_text
+        message.change_time = datetime.now()
+        self.session.add(message)
+        self.session.commit()
+
+        logger.info(f"Для сообщения {message.id} изменён текст с '{old_text}' на '{new_text}'."
+                    f" Время изменения {message.change_time}")
+
+        return message

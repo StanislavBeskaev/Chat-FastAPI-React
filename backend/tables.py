@@ -79,6 +79,7 @@ class Message(Base):
     user_id = Column(Integer, ForeignKey("users.id"), index=True)
     time = Column(DateTime(timezone=True), server_default=func.now())
     type = Column(String, default=MessageType.TEXT)
+    change_time = Column(DateTime(timezone=True))
 
     user_rel = relationship(User, backref="messages")
 

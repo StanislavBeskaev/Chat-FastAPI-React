@@ -15,7 +15,7 @@ import UserAvatar from '../../Avatars/UserAvatar'
 
 
 const TextMessage = ({message, fromMe}) => {
-  const {text, time, login, is_view: isView, message_id: messageId} = message
+  const {text, time, login, is_view: isView, message_id: messageId, change_time: changeTime} = message
   const {login: ownLogin} = authStore.user
   const {sendReadMessage} = useSocket()
   const { ref, inView } = useInView({
@@ -66,6 +66,11 @@ const TextMessage = ({message, fromMe}) => {
       </div>
       <div className={`text-muted small ${fromMe ? 'text-end' : ''}`}>
         {fromMe ? 'Вы' : contactStore.getDisplayName(login)}, {time}
+        {
+          changeTime
+            ? <span className="text-primary fst-italic" style={{marginLeft: 6}}>изменено</span>
+            : null
+        }
       </div>
     </>
   )

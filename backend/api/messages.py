@@ -42,3 +42,24 @@ def get_chat_messages(
     """Получение сообщений по чату"""
 
     return message_service.get_chat_messages(user=user, chat_id=chat_id)
+
+
+# TODO Документация
+# TODO Тесты
+@router.put(
+    "/{message_id}",
+    status_code=status.HTTP_200_OK,
+)
+def change_message_text(
+        message_id: str,
+        change_message: models.ChangeMessageText,
+        user: models.User = Depends(get_current_user),
+        message_service: MessageService = Depends()
+):
+    """Изменение текста сообщения"""
+
+    message_service.change_message_text(
+        message_id=message_id,
+        new_text=change_message.text,
+        user=user
+    )

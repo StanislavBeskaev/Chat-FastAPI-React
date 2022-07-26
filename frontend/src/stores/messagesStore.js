@@ -78,7 +78,11 @@ class MessagesStore {
   }
 
   getMessageInCurrentChatById(messageId) {
-    return this.chats[this.selectedChatId].messages.find(message => message.message_id === messageId)
+    return this.getMessageInChat(messageId, this.selectedChatId)
+  }
+
+  getMessageInChat(messageId, chatId) {
+    return this.chats[chatId].messages.find(message => message.message_id === messageId)
   }
 
   async loadMessages() {
@@ -96,6 +100,14 @@ class MessagesStore {
     } finally {
       this.setLoading(false)
     }
+  }
+
+  changeMessageText(data) {
+    const {message_id: messageId, chat_id: chatId, text, change_time: changeTime} = data
+    const message = this.getMessageInChat(messageId, chatId)
+    message.text = text
+    message.change_time = changeTime
+    console.log(`Для сообщения ${messageId} из чата ${chatId} сменён текст на '${text}'`)
   }
 
   deleteChat(chatId) {

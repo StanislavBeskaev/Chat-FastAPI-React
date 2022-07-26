@@ -1,9 +1,20 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from backend import tables
-from .ws import WSMessageData
+from backend.core.time import get_formatted_time
+from backend.models.ws import WSMessageData
+
+
+class ChangeMessageText(BaseModel):
+    text: str
+
+
+class ChangeMessageTextData(ChangeMessageText):
+    chat_id: str
+    message_id: str
+    change_time: str | None
 
 
 class Message(BaseModel):
@@ -22,6 +33,23 @@ class MessageData(WSMessageData):
     message_id: str | None
     type: str | None = tables.MessageType.TEXT
     is_read: bool | None = True
+    change_time: str | datetime | None
+
+    @classmethod
+    @validator("change_time")
+    def convert_from_datetime(cls, value):
+        if isinstance(value, datetime):
+            return get_formatted_time(value)
+
+        return value
+
+    @classmethod
+    @validator("is_read")
+    def is_read_default_true(cls, value):
+        if value is None:
+            return True
+
+        return value
 
     class Config:
         orm_mode = True

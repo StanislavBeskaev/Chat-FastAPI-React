@@ -8,4 +8,8 @@ export default class MessageService {
   static async getChatMessages(chatId) {
     return axiosInstance.get(`/messages/${chatId}`)
   }
+
+  static async changeMessageText(messageId, text) {
+    return axiosInstance.put(`/messages/${messageId}`, {text})
+  }
 }
