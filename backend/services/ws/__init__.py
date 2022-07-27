@@ -13,6 +13,7 @@ from .message_types import (
     DeleteLoginFromChatMessage,
     ReadMessageWSMessage,
     ChangeMessageTextMessage,
+    DeleteMessageMessage,
 )
 
 

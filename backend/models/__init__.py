@@ -13,6 +13,7 @@ from .message import (
     Message,
     ChangeMessageText,
     ChangeMessageTextData,
+    DeleteMessageData,
 )
 from .token import Tokens
 from .user import UserUpdate, UserCreate, UserLogin, User, Profile

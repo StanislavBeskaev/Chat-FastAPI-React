@@ -12,4 +12,8 @@ export default class MessageService {
   static async changeMessageText(messageId, text) {
     return axiosInstance.put(`/messages/${messageId}`, {text})
   }
+
+  static async deleteMessage(messageId) {
+    return axiosInstance.delete(`/messages/${messageId}`)
+  }
 }

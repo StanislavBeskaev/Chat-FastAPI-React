@@ -21,6 +21,8 @@ import chatMembersModalStore from '../../stores/modals/chatMembersModalStore'
 import messageContextMenuStore from '../../stores/messageContextMenuStore'
 import MessageContextMenu from './MessageContextMenu/MessageContextMenu'
 import MessageEditModal from '../Modals/MessageEditModal'
+import ConfirmDeleteModal from '../Modals/ConfirmDeleteModal'
+import confirmDeleteModalStore from '../../stores/modals/confirmDeleteModalStore'
 
 
 function SimpleChat() {
@@ -61,13 +63,22 @@ function SimpleChat() {
         sendStartTyping={() => sendStartTyping(selectedChatId)}
         sendStopTyping={() => sendStopTyping(selectedChatId)}
       />
-      <Modal show={addContactModalStore.show} onHide={closeAddContactModal}>
+      <Modal
+        show={addContactModalStore.show}
+        onHide={closeAddContactModal}
+      >
         <AddContactModal />
       </Modal>
-      <Modal show={changeChatNameModalStore.show} onHide={() => changeChatNameModalStore.close()}>
+      <Modal
+        show={changeChatNameModalStore.show}
+        onHide={() => changeChatNameModalStore.close()}
+      >
         <ChangeChatNameModal />
       </Modal>
-      <Modal show={chatMembersModalStore.show} onHide={() => chatMembersModalStore.close()}>
+      <Modal
+        show={chatMembersModalStore.show}
+        onHide={() => chatMembersModalStore.close()}
+      >
         <ChatMembersModal />
       </Modal>
       <MessageContextMenu />
@@ -76,6 +87,12 @@ function SimpleChat() {
         onHide={() => messageContextMenuStore.closeMessageEditModal()}
       >
         <MessageEditModal />
+      </Modal>
+      <Modal
+        show={confirmDeleteModalStore.show}
+        onHide={() => confirmDeleteModalStore.close()}
+      >
+        <ConfirmDeleteModal />
       </Modal>
     </div>
   )

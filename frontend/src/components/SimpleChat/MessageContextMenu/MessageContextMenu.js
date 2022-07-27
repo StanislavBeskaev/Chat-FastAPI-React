@@ -11,13 +11,11 @@ import messageContextMenuStore from '../../../stores/messageContextMenuStore'
 const MessageContextMenu = () => {
 
   const onEdit = () => {
-    console.log('click context menu edit')
     messageContextMenuStore.openMessageEditModal()
   }
 
   const onDelete = () => {
-    console.log('click context menu delete')
-    alert(`Тут будет удаление сообщения ${messageContextMenuStore.messageId}`)
+    messageContextMenuStore.openMessageDeleteModal()
   }
 
   return (

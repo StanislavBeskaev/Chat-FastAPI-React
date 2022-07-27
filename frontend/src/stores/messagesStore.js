@@ -110,6 +110,12 @@ class MessagesStore {
     console.log(`Для сообщения ${messageId} из чата ${chatId} сменён текст на '${text}'`)
   }
 
+  deleteMessage(data) {
+    const {message_id: messageId, chat_id: chatId} = data
+    this.chats[chatId].messages = this.chats[chatId].messages.filter(message => message.message_id !== messageId )
+    console.log(`Из чата ${chatId} удалено сообщение ${messageId}`)
+  }
+
   deleteChat(chatId) {
     console.log('Попытка удаления чата', chatId)
     if (this.selectedChatId === chatId) {

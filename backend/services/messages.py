@@ -2,6 +2,7 @@ import asyncio
 from collections import OrderedDict
 
 from fastapi import Depends, HTTPException, status
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from backend import models
@@ -9,7 +10,7 @@ from backend.core.time import get_formatted_time
 from backend.dao.messages import MessagesDAO
 from backend.database import get_session
 from backend.services import BaseService
-from backend.services.ws import ChangeMessageTextMessage
+from backend.services.ws import ChangeMessageTextMessage, DeleteMessageMessage
 
 
 class MessageService(BaseService):
@@ -53,12 +54,24 @@ class MessageService(BaseService):
 
     def change_message_text(self, message_id: str, new_text: str, user: models.User) -> None:
         """Изменение текста сообщения"""
+        logger.debug(f"Попытка изменения текста сообщения. Входные данные: "
+                     f"{message_id=} {new_text=} {user=}")
         if not new_text:
+            logger.warning(f"Передан пустой текст для сообщения")
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Сообщение не может быть пустым")
 
         message = self._messages_dao.get_message_by_id(message_id=message_id)
+
+        if not message:
+            logger.warning(f"Сообщение с id {message_id} не найдено")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Сообщение с id {message_id} не найдено")
+
         if message.user_id != user.id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Только автор может менять сообщение!")
+
+        if message.text == new_text:
+            logger.warning("Передан тот же текст сообщения что уже есть ничего не делаем")
+            return
 
         message = self._messages_dao.change_message_text(message_id=message_id, new_text=new_text)
 
@@ -69,3 +82,21 @@ class MessageService(BaseService):
             change_time=get_formatted_time(message.change_time) if message.change_time else ""
         )
         asyncio.run(change_message_text_message.send_all())
+
+    def delete_message(self, message_id: str, user: models.User) -> None:
+        """Удаление сообщения"""
+        logger.debug(f"Попытка удаления сообщения c id={message_id} от пользователя {user}")
+
+        message = self._messages_dao.get_message_by_id(message_id=message_id)
+
+        if not message:
+            logger.warning(f"Сообщение с id {message_id} не найдено")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Сообщение с id {message_id} не найдено")
+
+        if message.user_id != user.id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Только автор может удалять сообщение!")
+
+        self._messages_dao.delete_message(message_id=message_id)
+
+        delete_message_ws_message = DeleteMessageMessage(chat_id=message.chat_id, message_id=message_id)
+        asyncio.run(delete_message_ws_message.send_all())

@@ -57,6 +57,8 @@ export function SocketProvider({ login, children }) {
         case 'CHANGE_MESSAGE_TEXT':
           messagesStore.changeMessageText(msg.data)
           break
+        case 'DELETE_MESSAGE':
+          messagesStore.deleteMessage(msg.data)
       }
     }
   }, [socket])

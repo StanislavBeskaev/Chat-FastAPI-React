@@ -173,3 +173,12 @@ class MessagesDAO(BaseDAO):
                     f" Время изменения {message.change_time}")
 
         return message
+
+    def delete_message(self, message_id: str) -> None:
+        """Удаление сообщения из базы"""
+        message = self.get_message_by_id(message_id=message_id)
+        self.session.delete(message)
+        self.session.commit()
+
+        logger.info(f"Удалено сообщение '{message.text}' c id {message.id},"
+                    f"чата {message.chat_id} пользователя {message.user_id}")

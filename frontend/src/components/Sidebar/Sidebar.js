@@ -22,6 +22,7 @@ function Sidebar({ login }) {
       <Modal show={contactModalStore.show} onHide={() => contactModalStore.close()}>
         <ContactModal/>
       </Modal>
+      {/* TODO внести этот функционал в ConfirmDeleteModal */}
       <Modal show={confirmDeleteContactModalStore.show} onHide={() => confirmDeleteContactModalStore.close()}>
         <ConfirmDeleteContactModal />
       </Modal>

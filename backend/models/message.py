@@ -11,9 +11,12 @@ class ChangeMessageText(BaseModel):
     text: str
 
 
-class ChangeMessageTextData(ChangeMessageText):
+class DeleteMessageData(BaseModel):
     chat_id: str
     message_id: str
+
+
+class ChangeMessageTextData(ChangeMessageText, DeleteMessageData):
     change_time: str | None
 
 

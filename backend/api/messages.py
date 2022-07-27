@@ -63,3 +63,19 @@ def change_message_text(
         new_text=change_message.text,
         user=user
     )
+
+
+# TODO Документация
+# TODO Тесты
+@router.delete(
+    "/{message_id}",
+    status_code=status.HTTP_200_OK,
+)
+def delete_message(
+    message_id: str,
+    user: models.User = Depends(get_current_user),
+    message_service: MessageService = Depends()
+):
+    """Удаление сообщения"""
+
+    message_service.delete_message(message_id=message_id, user=user)

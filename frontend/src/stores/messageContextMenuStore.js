@@ -1,6 +1,7 @@
 import {makeAutoObservable} from 'mobx'
 import messagesStore from './messagesStore'
 import MessageService from '../services/MessageService'
+import confirmDeleteModalStore from './modals/confirmDeleteModalStore'
 
 
 class MessageContextMenuStore {
@@ -46,6 +47,28 @@ class MessageContextMenuStore {
     setTimeout(() => {
       this.unsetMessageId()
     }, 400)
+  }
+
+  async deleteMessage() {
+    console.log('Попытка удалить сообщение', this.messageId, this.messageText)
+    try {
+      await MessageService.deleteMessage(this.messageId)
+    } catch (e) {
+      console.log('Ошибка при удалении сообшения', e.response)
+    }
+  }
+
+  openMessageDeleteModal() {
+    confirmDeleteModalStore.open(
+      `Вы точно хотите удалить сообщение '${this.messageText}'?`,
+      async () => {
+        await this.deleteMessage()
+        this.unsetMessageId()
+      },
+      () => {
+        this.unsetMessageId()
+      }
+    )
   }
 
   setMessageText(text) {
