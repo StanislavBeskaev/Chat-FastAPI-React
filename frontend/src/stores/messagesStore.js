@@ -111,6 +111,7 @@ class MessagesStore {
   }
 
   deleteMessage(data) {
+    this.needScrollToNewMessage = false
     const {message_id: messageId, chat_id: chatId} = data
     this.chats[chatId].messages = this.chats[chatId].messages.filter(message => message.message_id !== messageId )
     console.log(`Из чата ${chatId} удалено сообщение ${messageId}`)
@@ -150,6 +151,9 @@ class MessagesStore {
 
     const {chat_id: chatId, message_id: messageId} = message
     const notViewedMessagesCount = this.getChatNotViewedMessagesCount(chatId)
+    // TODO придумать механизм для понимания, что чат прокручен не до конца, а где-то в середине
+    //  и по этому определять, нужно ли докрутить чат до нового сообщения
+    //  так же это применить в компоненте Messages для определения needScrollToLastMessage
     this.needScrollToNewMessage = notViewedMessagesCount === 0 && chatId === this.selectedChatId
 
     if (message.type === 'TEXT') {
