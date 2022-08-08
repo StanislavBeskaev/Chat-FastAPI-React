@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import {observer} from 'mobx-react-lite'
 import {useInView} from 'react-intersection-observer'
 import {ContextMenuTrigger} from 'react-contextmenu'
@@ -16,9 +16,19 @@ import UserAvatar from '../../Avatars/UserAvatar'
 const TextMessage = ({message, fromMe}) => {
   const {text, time, login, is_view: isView, message_id: messageId, change_time: changeTime} = message
   const {sendReadMessage} = useSocket()
-  const { ref, inView } = useInView({
-    threshold: 0
+  const { ref, inView, entry } = useInView({
+    threshold: 1
   })
+
+  useEffect(() => {
+    if (!entry) return
+
+    if (inView) {
+      messagesStore.addMessageToInView(message)
+    } else {
+      messagesStore.deleteMessageFromInView(message)
+    }
+  }, [inView])
 
   if (isView === false) {
     if (inView) {

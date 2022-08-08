@@ -37,22 +37,65 @@ class MessagesStore {
     searchMessagesStore.setDefaultState()
   }
 
+  // Первоначальная загрузка информации о сообщениях, выделение чатов
+  async loadMessages() {
+    console.log("load messages")
+    this.setLoading(true)
+    try{
+      const response = await MessageService.getMessages()
+      console.log("success load, response:", response)
+      this.setChats(response.data)
+      this.setLoadError(false)
+      this.setIsLoadMessages(true)
+    } catch (e) {
+      console.log("Ошибка при зарузке сообщений:", e)
+      this.setLoadError(true)
+    } finally {
+      this.setLoading(false)
+    }
+  }
+
+  setChats(chats) {
+    this.chats = chats
+    const chatIds = Object.keys(this.chats)
+    for (let chatId of chatIds) {
+      this.initChat(chatId)
+    }
+
+    searchMessagesStore.initialize(chatIds)
+  }
+
+  // Инициализация чата, добавление служебных полей
+  initChat(chatId) {
+    this.chats[chatId].typingLogins = []
+    this.chats[chatId].text = ''
+    this.chats[chatId].messagesInView = []
+    this.chats[chatId].wasOpened = false
+    for (let message of this.chats[chatId].messages) {
+      if (message.is_read === false) {
+        message.is_view = false
+      }
+    }
+    searchMessagesStore.addChat(chatId)
+  }
+
+  // Добавление только что созданного чата
   addNewChat(data) {
     const {chat_id: chatId, chat_name: chatName, creator} = data
     this.chats[chatId] = {
       "chat_name": chatName,
       messages: [],
-      typingLogins: [],
-      text: '',
       creator
     }
+
+    this.initChat(chatId)
     console.log(`Добавлен новый чат: ${chatName}`)
   }
 
   // количество не просмотренных сообщений в чате, для отображения в Sidebar
   getChatNotViewedMessagesCount(chatId) {
-    const ChatNotViewedMessages = this.chats[chatId].messages.filter(message => message.is_view === false)
-    return ChatNotViewedMessages.length
+    const chatNotViewedMessages = this.chats[chatId].messages.filter(message => message.is_view === false)
+    return chatNotViewedMessages.length
   }
 
   changeChatName(data) {
@@ -77,29 +120,47 @@ class MessagesStore {
     return this.chats[chatId]?.creator
   }
 
+  deleteChat(chatId) {
+    console.log('Попытка удаления чата', chatId)
+    if (this.selectedChatId === chatId) {
+      this.setSelectedChatId(DEFAULT_CHAT_ID)
+    }
+    delete this.chats[chatId]
+    searchMessagesStore.deleteChat(chatId)
+    console.log('Удалён чат', chatId)
+  }
+
+  setSelectedChatId(chatId) {
+    console.log('setSelectedChatId', chatId)
+    this.selectedChatId = chatId
+    this.selectedChatText = this.chats[chatId].text
+    this.selectedChatTyping = false
+    this.needScrollToNewMessage = false  // TODO кажись тут надо вычислять в зависимости от не прочитанных сообщений
+  }
+
+  // Метод для добавления чата, когда текущего пользователя добавляют в чат
+  async addChat(chatId) {
+    console.log('Попытка добавления чата', chatId)
+    try{
+      console.log(`Запрос данных чата`, chatId)
+      const response = await MessageService.getChatMessages(chatId)
+      console.log(response)
+
+      this.chats[chatId] = response.data
+      this.initChat(chatId)
+    } catch (e) {
+      console.log('Ошибка при загрузке данных чата', chatId)
+      console.log(e.response)
+    }
+    console.log('Чат добавлен', chatId)
+  }
+
   getMessageInCurrentChatById(messageId) {
     return this.getMessageInChat(messageId, this.selectedChatId)
   }
 
   getMessageInChat(messageId, chatId) {
     return this.chats[chatId].messages.find(message => message.message_id === messageId)
-  }
-
-  async loadMessages() {
-    console.log("load messages")
-    this.setLoading(true)
-    try{
-      const response = await MessageService.getMessages()
-      console.log("success load, response:", response)
-      this.setChats(response.data)
-      this.setLoadError(false)
-      this.setIsLoadMessages(true)
-    } catch (e) {
-      console.log("Ошибка при зарузке сообщений:", e)
-      this.setLoadError(true)
-    } finally {
-      this.setLoading(false)
-    }
   }
 
   changeMessageText(data) {
@@ -117,35 +178,8 @@ class MessagesStore {
     console.log(`Из чата ${chatId} удалено сообщение ${messageId}`)
   }
 
-  deleteChat(chatId) {
-    console.log('Попытка удаления чата', chatId)
-    if (this.selectedChatId === chatId) {
-      this.setSelectedChatId(DEFAULT_CHAT_ID)
-    }
-    delete this.chats[chatId]
-    searchMessagesStore.deleteChat(chatId)
-    console.log('Удалён чат', chatId)
-  }
-
-  async addChat(chatId) {
-    console.log('Попытка добавления чата', chatId)
-    try{
-      console.log(`Запрос данных чата`, chatId)
-      const response = await MessageService.getChatMessages(chatId)
-      console.log(response)
-
-      this.chats[chatId] = response.data
-      this.initChat(chatId)
-      searchMessagesStore.addChat(chatId)
-    } catch (e) {
-      console.log('Ошибка при загрузке данных чата', chatId)
-      console.log(e.response)
-    }
-    console.log('Чат добавлен', chatId)
-  }
-
   // is_read - пометка "прочитанности" для вычисления линии разделения новых и старых сообщений
-  // is_view - были ли сообщение просмотрено
+  // is_view - были ли сообщение просмотрено для отображения количества новых сообщений в Sidebar
   addMessage(message, socketSendReadMessage) {
     if (!this.isLoadMessages) return
 
@@ -154,20 +188,22 @@ class MessagesStore {
     // TODO придумать механизм для понимания, что чат прокручен не до конца, а где-то в середине
     //  и по этому определять, нужно ли докрутить чат до нового сообщения
     //  так же это применить в компоненте Messages для определения needScrollToLastMessage
-    this.needScrollToNewMessage = notViewedMessagesCount === 0 && chatId === this.selectedChatId
+
+    this.needScrollToNewMessage = notViewedMessagesCount === 0 && chatId === this.selectedChatId && this.isSelectedChatLastMessageInView()
+    console.log('message store, addMessage, needScrollToNewMessage=', this.needScrollToNewMessage)
 
     if (message.type === 'TEXT') {
       if (message.login === authStore.user.login) {
         message.is_read = true
         message.is_view = true
       } else {
-        if (this.needScrollToNewMessage) {
-          message.is_read = true
-          message.is_view = true
-          socketSendReadMessage(messageId)
-        } else {
-          message.is_view = false
-        }
+          if (this.needScrollToNewMessage) {
+            message.is_read = true
+            message.is_view = true
+            socketSendReadMessage(messageId)
+          } else {
+            message.is_view = false
+          }
       }
     }
 
@@ -208,6 +244,56 @@ class MessagesStore {
     this.setMessagePropertyValueInCurrentChat(messageId, "is_view", true)
     socketSendReadMessage(messageId)
     console.log('sendReadMessage for id:', messageId)
+  }
+
+  addMessageToInView(message) {
+    const chatId = this.selectedChatId
+    if (this.chats[chatId].messagesInView.indexOf(message) !== -1) return
+    this.chats[chatId].messagesInView.push(message)
+
+    const messages = this.chats[chatId].messagesInView.map(message => message.text)
+    console.log(`addMessageToInView chatId=${this.getSelectedChatName()} message=${message.text}, messagesInView:`, messages)
+    console.log('isLastMessageInView:', this.isSelectedChatLastMessageInView())
+    console.log('selectedChatLastMessageInView:', this.getSelectedChatLastMessageInView()?.text)
+  }
+
+  deleteMessageFromInView(message) {
+    const chatId = this.selectedChatId
+    const {message_id: messageId} = message
+    this.chats[chatId].messagesInView = this.chats[chatId].messagesInView.filter(message => message.message_id !== messageId)
+
+    const messages = this.chats[chatId].messagesInView.map(message => message.text)
+    console.log(`deleteMessageFromInView chatId=${this.getSelectedChatName()} message=${message.text}, messagesInView:`, messages)
+    console.log('isLastMessageInView:', this.isSelectedChatLastMessageInView())
+    console.log('selectedChatLastMessageInView:', this.getSelectedChatLastMessageInView()?.text)
+  }
+
+  getSelectedChatLastMessageId() {
+    const selectedChatMessages = this.chats[this.selectedChatId].messages
+    if (selectedChatMessages.length > 0) {
+      const lastMessage = selectedChatMessages[selectedChatMessages.length - 1]
+      return lastMessage.message_id
+    }
+    return undefined
+  }
+
+  isSelectedChatLastMessageInView() {
+    const selectedChatMessagesInViewIds = this.chats[this.selectedChatId].messagesInView.map(message => message.message_id)
+    const selectedChatLastMessageId = this.getSelectedChatLastMessageId()
+    if (!selectedChatLastMessageId) return true
+    return selectedChatMessagesInViewIds.includes(selectedChatLastMessageId)
+  }
+
+  getSelectedChatLastMessageInView() {
+    const selectedChatMessagesInView = this.chats[this.selectedChatId].messagesInView
+    const sortedMessagesInView = selectedChatMessagesInView.sort((a, b) => {
+      const aMessageIndex = this.chats[this.selectedChatId].messages.indexOf(a)
+      const bMessageIndex = this.chats[this.selectedChatId].messages.indexOf(b)
+      if (aMessageIndex > bMessageIndex) return 1
+      return -1
+    })
+    if (sortedMessagesInView.length > 0) return sortedMessagesInView[sortedMessagesInView.length - 1]
+    return undefined
   }
 
   setMessagePropertyValueInCurrentChat(messageId, property, value) {
@@ -252,34 +338,6 @@ class MessagesStore {
   setSelectedChatTyping(bool) {
     this.selectedChatTyping = bool
   }
-  
-  setChats(chats) {
-    this.chats = chats
-    const chatIds = Object.keys(this.chats)
-    for (let chatId of chatIds) {
-      this.initChat(chatId)
-    }
-
-    searchMessagesStore.initialize(chatIds)
-  }
-
-  // Инициализация чата, добавление служебных полей
-  initChat(chatId) {
-    this.chats[chatId].typingLogins = []
-    this.chats[chatId].text = ''
-    for (let message of this.chats[chatId].messages) {
-      if (message.is_read === false) {
-        message.is_view = false
-      }
-    }
-  }
-
-  setSelectedChatId(chatId) {
-    this.selectedChatId = chatId
-    this.selectedChatText = this.chats[chatId].text
-    this.selectedChatTyping = false
-    this.needScrollToNewMessage = false
-  }
 
   setIsLoadMessages(bool) {
     this.isLoadMessages = bool
@@ -291,6 +349,14 @@ class MessagesStore {
 
   setLoadError(bool) {
     this.loadError = bool
+  }
+
+  setSelectedChatWasOpened() {
+    this.chats[this.selectedChatId].wasOpened = true
+  }
+
+  isSelectedChatWasOpened() {
+    return this.chats[this.selectedChatId].wasOpened
   }
 }
 

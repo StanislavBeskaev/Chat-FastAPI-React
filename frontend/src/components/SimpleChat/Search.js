@@ -41,6 +41,7 @@ const Search = () => {
       }
       <input
         type="text"
+        placeholder="поиск сообщений"
         value={searchText}
         onKeyPress={handleKeyPress}
         onChange={e => searchMessagesStore.setSearchText(e.target.value)}

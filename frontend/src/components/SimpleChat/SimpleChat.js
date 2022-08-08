@@ -23,6 +23,7 @@ import MessageContextMenu from './MessageContextMenu/MessageContextMenu'
 import MessageEditModal from '../Modals/MessageEditModal'
 import ConfirmDeleteModal from '../Modals/ConfirmDeleteModal'
 import confirmDeleteModalStore from '../../stores/modals/confirmDeleteModalStore'
+import ScrollButton from './Messages/ScrollButton'
 
 
 function SimpleChat() {
@@ -53,6 +54,7 @@ function SimpleChat() {
       <div className="flex-grow-1 overflow-auto">
         <div className="d-flex flex-column align-items-start justify-content-end px-3">
           <Messages messages={messagesStore.selectedChatMessages()} login={login}/>
+          <ScrollButton />
         </div>
       </div>
       <div className="mt-2">
