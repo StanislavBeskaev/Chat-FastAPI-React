@@ -14,18 +14,18 @@ class MessageContextMenuStore {
     console.log("Создан MessageContextMenuStore")
   }
 
-  unsetMessageId() {
-    console.log('MessageContextMenuStore unsetMessageId')
-    this.messageId = null
-    this.messageText = ''
-  }
-
   // установка id сообщения, вызывается из компонента сообщения при событии contextmenu
   setMessageId(id) {
     console.log('MessageContextMenuStore setMessageId', id)
     this.messageId = id
     const message = messagesStore.getMessageInCurrentChatById(id)
     this.messageText = message.text
+  }
+
+  unsetMessageId() {
+    console.log('MessageContextMenuStore unsetMessageId')
+    this.messageId = null
+    this.messageText = ''
   }
 
   async changeMessageText() {

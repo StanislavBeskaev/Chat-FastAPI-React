@@ -10,7 +10,6 @@ import messagesStore from '../../../stores/messagesStore'
 const Messages = ({messages, login}) => {
   const unreadLineRef = useRef()
   const {needScrollToNewMessage, selectedChatId} = messagesStore
-  console.log('needScrollToNewMessage', needScrollToNewMessage)
   const setRef = useCallback(node => {
     if (node) {
       console.log('Messages scroll to last message')
@@ -69,7 +68,6 @@ const Messages = ({messages, login}) => {
         }
         const isLastMessage = index === messages.length - 1
         const needScrollToLastMessage = isLastMessage && !isFindUnreadMessage && messagesStore.isSelectedChatLastMessageInView() || needScrollToNewMessage
-        console.log('needScrollToLastMessage=',  needScrollToLastMessage)
 
         if (message.type === "TEXT") {
           return (

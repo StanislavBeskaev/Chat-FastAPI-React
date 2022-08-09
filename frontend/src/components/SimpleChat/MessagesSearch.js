@@ -5,7 +5,7 @@ import {observer} from 'mobx-react-lite'
 import searchMessagesStore from '../../stores/searchMessagesStore'
 
 
-const Search = () => {
+const MessagesSearch = () => {
   const count = searchMessagesStore.getCount()
   const current = searchMessagesStore.getCurrent()
   const searchText = searchMessagesStore.getSearchText()
@@ -45,9 +45,10 @@ const Search = () => {
         value={searchText}
         onKeyPress={handleKeyPress}
         onChange={e => searchMessagesStore.setSearchText(e.target.value)}
+        style={{paddingLeft: 7, width: 175}}
       />
     </>
   )
 }
 
-export default observer(Search)
+export default observer(MessagesSearch)

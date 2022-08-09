@@ -13,6 +13,7 @@ class ConfirmDeleteModalStore {
   }
 
   open(text, onYes, onNo) {
+    console.log('open ConfirmDeleteModal')
     this.text = text
     this.onYes = () => {
       onYes()
@@ -26,6 +27,7 @@ class ConfirmDeleteModalStore {
   }
 
   close() {
+    console.log('close ConfirmDeleteModal')
     this.show = false
     setTimeout(() => {
       this.text = ''

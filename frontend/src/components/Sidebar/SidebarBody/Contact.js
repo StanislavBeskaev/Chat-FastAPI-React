@@ -3,14 +3,20 @@ import {Button} from 'react-bootstrap'
 
 import contactModalStore from '../../../stores/modals/contactModalStore'
 import contactStore from '../../../stores/contactStore'
-import confirmDeleteContactModalStore from '../../../stores/modals/confirmDeleteContactModalStore'
 import UserAvatar from '../../Avatars/UserAvatar'
+import confirmDeleteModalStore from '../../../stores/modals/confirmDeleteModalStore'
 
 
 const Contact = ({login}) => {
 
   const handleDelete = async () => {
-    confirmDeleteContactModalStore.showWithLogin(login)
+    confirmDeleteModalStore.open(
+      `Вы точно хотите удалить контакт ${contactStore.getDisplayName(login)} ?`,
+      async () => {
+        await contactStore.deleteContact(login)
+      },
+      () => {}
+    )
   }
 
   return (
