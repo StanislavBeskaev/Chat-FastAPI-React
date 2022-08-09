@@ -22,6 +22,7 @@ const InfoMessage = ({message}) => {
   return (
     <div
       ref={ref}
+      id={message.message_id}
       className="p-1 align-self-center text-muted"
       style={{fontSize: 14}}
     >

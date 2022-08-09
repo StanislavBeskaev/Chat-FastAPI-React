@@ -15,7 +15,6 @@ const ChatMembers = () => {
   const chatCreator = messagesStore.getChatCreator(chatId)
   const isMeChatOwner = user.login === chatCreator
 
-  {/*TODO понять как всегда показывать scroll*/}
   return (
     <div className="d-flex flex-column gap-1">
       <div className="text-primary">

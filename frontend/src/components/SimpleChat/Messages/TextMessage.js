@@ -47,7 +47,7 @@ const TextMessage = ({message, fromMe}) => {
   }
 
   return (
-    <>
+    <div id={message.message_id}>
       <div
         ref={ref}
         className={`d-flex ${fromMe ? 'flex-row-reverse' : 'flex-row'}`}
@@ -63,7 +63,6 @@ const TextMessage = ({message, fromMe}) => {
           fromMe
             ? <ContextMenuTrigger id="message-context-menu">
                 <div
-                  id={message.message_id}
                   className={`text-break mx-2 rounded px-2 py-1 ${fromMe ? 'bg-primary text-white' : 'border'}`}
                   style={{cursor: 'context-menu'}}
                   onContextMenu={onContextMenu}
@@ -72,7 +71,6 @@ const TextMessage = ({message, fromMe}) => {
                 </div>
               </ContextMenuTrigger>
             : <div
-                id={message.message_id}
                 className={`text-break mx-2 rounded px-2 py-1 ${fromMe ? 'bg-primary text-white' : 'border'}`}
               >
                 {text}
@@ -87,7 +85,7 @@ const TextMessage = ({message, fromMe}) => {
             : null
         }
       </div>
-    </>
+    </div>
   )
 }
 

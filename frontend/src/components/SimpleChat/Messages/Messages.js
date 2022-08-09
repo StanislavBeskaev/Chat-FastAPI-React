@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect} from 'react'
+import React, {useCallback, useEffect, useRef} from 'react'
 import {observer} from 'mobx-react-lite'
 
 import TextMessage from './TextMessage'
@@ -8,12 +8,13 @@ import messagesStore from '../../../stores/messagesStore'
 
 
 const Messages = ({messages, login}) => {
+  const unreadLineRef = useRef()
   const {needScrollToNewMessage, selectedChatId} = messagesStore
   console.log('needScrollToNewMessage', needScrollToNewMessage)
   const setRef = useCallback(node => {
     if (node) {
       console.log('Messages scroll to last message')
-      node.scrollIntoView({behavior: 'auto'})
+      node.scrollIntoView({behavior: 'smooth'})
     }
   }, [])
 
@@ -22,7 +23,12 @@ const Messages = ({messages, login}) => {
     console.log('Messages chatWasOpened', messagesStore.isSelectedChatWasOpened())
     if (!messagesStore.isSelectedChatWasOpened()) {
       messagesStore.setSelectedChatWasOpened()
-      if (messagesStore.getChatNotViewedMessagesCount(selectedChatId) > 0) return
+      if (messagesStore.getChatNotViewedMessagesCount(selectedChatId) > 0) {
+        unreadLineRef.current.scrollIntoView({behavior: 'auto', block: 'center'})
+        console.log('прокрутка до UnreadLine')
+        return
+      }
+
       const lastChatMessageId = messagesStore.getSelectedChatLastMessageId()
       if (!lastChatMessageId) return
       const lastMessage = document.getElementById(lastChatMessageId)
@@ -30,13 +36,17 @@ const Messages = ({messages, login}) => {
       lastMessage.scrollIntoView({behavior: 'auto'})
       console.log(`Messages первый раз в чате ${selectedChatId} прокрутка до последнего сообщения`)
     } else {
-      if (messagesStore.getChatNotViewedMessagesCount(selectedChatId) > 0) return
       const lastChatMessageInView = messagesStore.getSelectedChatLastMessageInView()
       if (!lastChatMessageInView) return
       const lastMessage = document.getElementById(lastChatMessageInView.message_id)
       if (!lastMessage) return
       lastMessage.scrollIntoView({behavior: 'auto', block: 'end'})
       console.log(`Messages уже были в чате ${selectedChatId} прокрутка до последнего видимого сообщения: ${lastChatMessageInView.text}`)
+
+      if (messagesStore.getChatNotViewedMessagesCount(selectedChatId) > 0) {
+        unreadLineRef.current.scrollIntoView({behavior: 'smooth', block: 'center'})
+        console.log('прокрутка до UnreadLine')
+      }
     }
   }, [selectedChatId])
 
@@ -64,7 +74,13 @@ const Messages = ({messages, login}) => {
         if (message.type === "TEXT") {
           return (
             <>
-              { needUnreadLine ? <UnreadLine /> : null}
+              {
+                needUnreadLine
+                  ? <div ref={unreadLineRef} className="align-self-center m-3">
+                      <UnreadLine />
+                    </div>
+                  : null
+              }
               <div
                 ref={needScrollToLastMessage ? setRef : null}
                 key={message.message_id}

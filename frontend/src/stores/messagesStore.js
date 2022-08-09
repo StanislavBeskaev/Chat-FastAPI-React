@@ -135,7 +135,7 @@ class MessagesStore {
     this.selectedChatId = chatId
     this.selectedChatText = this.chats[chatId].text
     this.selectedChatTyping = false
-    this.needScrollToNewMessage = false  // TODO кажись тут надо вычислять в зависимости от не прочитанных сообщений
+    this.needScrollToNewMessage = false
   }
 
   // Метод для добавления чата, когда текущего пользователя добавляют в чат
@@ -185,11 +185,13 @@ class MessagesStore {
 
     const {chat_id: chatId, message_id: messageId} = message
     const notViewedMessagesCount = this.getChatNotViewedMessagesCount(chatId)
-    // TODO придумать механизм для понимания, что чат прокручен не до конца, а где-то в середине
-    //  и по этому определять, нужно ли докрутить чат до нового сообщения
-    //  так же это применить в компоненте Messages для определения needScrollToLastMessage
 
-    this.needScrollToNewMessage = notViewedMessagesCount === 0 && chatId === this.selectedChatId && this.isSelectedChatLastMessageInView()
+    this.needScrollToNewMessage = (
+      notViewedMessagesCount === 0 && chatId === this.selectedChatId && this.isSelectedChatLastMessageInView()
+      ||
+      // Если пользоватль сам написал сообщений в чате, то надо показать сообщение даже если чат промотан
+      message.login === authStore.user.login && chatId === this.selectedChatId
+    )
     console.log('message store, addMessage, needScrollToNewMessage=', this.needScrollToNewMessage)
 
     if (message.type === 'TEXT') {
