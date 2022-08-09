@@ -33,7 +33,7 @@ export function SocketProvider({ login, children }) {
           messagesStore.addMessage(msg.data, sendReadMessage)
           break
         case 'STATUS':
-          addStatusNotification(msg.data)
+          await addStatusNotification(msg.data)
           break
         case 'START_TYPING':
           messagesStore.addTypingLogin(msg.data.chat_id, msg.data.login)
@@ -144,7 +144,7 @@ export function SocketProvider({ login, children }) {
     }
   }
 
-  const addStatusNotification = data => {
+  const addStatusNotification = async data => {
     const {login: msgLogin, text, online_status: onlineStatus} = data
 
     if (login === msgLogin) return
@@ -153,6 +153,10 @@ export function SocketProvider({ login, children }) {
       toast.success(text)
     } else {
       toast.error(text)
+    }
+
+    if (chatMembersModalStore.show) {
+      await chatMembersModalStore.loadChatMembers()
     }
   }
 
