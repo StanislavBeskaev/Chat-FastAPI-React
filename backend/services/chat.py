@@ -66,6 +66,7 @@ class ChatService(BaseService):
         new_chat_message = NewChatMessage(chat_id=new_chat.id, chat_name=new_chat.name, creator=creator)
         asyncio.run(new_chat_message.send_all())
 
+    # TODO проверка, что название чата отличается от текущего
     def change_chat_name(self, chat_id: str, new_name: str, user: models.User) -> None:
         """Изменение названия чата"""
         logger.debug(f"Попытка изменить название чата: {chat_id=} {new_name=} {user=}")

@@ -17,10 +17,16 @@ function Sidebar({ login }) {
       <SidebarBody />
       <SidebarFooter login={login} />
       {/*TODO Подумать где расположить модалки*/}
-      <Modal show={contactModalStore.show} onHide={() => contactModalStore.close()}>
+      <Modal
+        show={contactModalStore.show}
+        onHide={() => contactModalStore.close()}
+      >
         <ContactModal/>
       </Modal>
-      <Modal show={newChatModalStore.show} onHide={() => newChatModalStore.close()}>
+      <Modal
+        show={newChatModalStore.show}
+        onHide={() => newChatModalStore.close()}
+      >
         <NewChatModal />
       </Modal>
     </div>
