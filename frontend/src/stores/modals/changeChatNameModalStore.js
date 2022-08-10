@@ -39,7 +39,7 @@ class ChangeChatNameModalStore {
         this.close()
       }, 2000)
     } catch (e) {
-      console.log('Ошибка при изменении названия чата чата')
+      console.log('Ошибка при изменении названия чата')
       console.log(e.response)
       this.setError(e.response.data.detail)
     }
@@ -51,6 +51,7 @@ class ChangeChatNameModalStore {
 
   setName(value) {
     this.name = value
+    if (this.error) this.setError('')
   }
 
   setSuccess(bool) {

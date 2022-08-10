@@ -66,7 +66,6 @@ class ChatService(BaseService):
         new_chat_message = NewChatMessage(chat_id=new_chat.id, chat_name=new_chat.name, creator=creator)
         asyncio.run(new_chat_message.send_all())
 
-    # TODO проверка, что название чата отличается от текущего
     def change_chat_name(self, chat_id: str, new_name: str, user: models.User) -> None:
         """Изменение названия чата"""
         logger.debug(f"Попытка изменить название чата: {chat_id=} {new_name=} {user=}")
@@ -80,6 +79,11 @@ class ChatService(BaseService):
         if not new_name:
             logger.warning("Передано пустое новое название, изменение названия не выполнятся")
             raise HTTPException(status_code=400, detail="Укажите название чата")
+
+        previous_chat_name = self._chats_dao.get_chat_by_id(chat_id=chat_id).name
+        if previous_chat_name == new_name:
+            logger.warning("Передано такое же название чата, изменение названия не выполнятся")
+            raise HTTPException(status_code=400, detail="Название чата совпадает с текущим")
 
         chat = self._chats_dao.change_chat_name(chat_id=chat_id, new_name=new_name)
 
@@ -99,7 +103,7 @@ class ChatService(BaseService):
         new_chat_message = ChangeChatNameMessage(chat_id=changed_chat.id, chat_name=changed_chat.name)
         asyncio.run(new_chat_message.send_all())
 
-        ws_info_change_chat_name_message = InfoMessage(login=login,info_message=message)
+        ws_info_change_chat_name_message = InfoMessage(login=login, info_message=message)
         asyncio.run(ws_info_change_chat_name_message.send_all())
 
     def _create_change_chat_name_message(self, user: models.User, chat_id: str, new_chat_name) -> models.Message:

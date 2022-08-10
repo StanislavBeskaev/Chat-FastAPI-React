@@ -63,7 +63,7 @@ def delete_contact(
     status_code=status.HTTP_200_OK,
     response_model=models.Contact
 )
-def get_contact(
+def get_contact_info(
     login: str,
     user: models.User = Depends(get_current_user),
     contact_service: ContactService = Depends()
