@@ -9,4 +9,4 @@
 Отчёт о покрытии в html: `coverage html`
 
 ## Тесты и coverage
-`coverage run -m unittest  && coverage report -m`
+`coverage run -m unittest && coverage report -m`

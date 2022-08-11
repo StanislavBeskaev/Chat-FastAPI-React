@@ -43,13 +43,6 @@ class UserService(BaseService):
         logger.info(f"Для пользователя {user} сохранён аватар {store_file_name}")
         return store_file_name
 
-    def get_avatar(self, user: models.User) -> str | None:
-        """Получение имени файла аватара пользователя"""
-        user_profile = self._users_dao.find_profile_by_user_id(user_id=user.id)
-
-        logger.debug(f"Для пользователя {user}, файл аватара: {user_profile.avatar_file}")
-        return user_profile.avatar_file
-
     def get_avatar_by_login(self, login: str) -> str | None:
         """Получение имени файла аватара пользователя по логину"""
         user_profile = self._users_dao.find_profile_by_login(login=login)
