@@ -64,3 +64,55 @@ class TestChats(BaseTestCase):
                 self.assertEqual(ws_message["type"], MessageType.NEW_CHAT)
                 self.assertEqual(ws_message["data"]["creator"], self.DEFAULT_USER)
                 self.assertEqual(ws_message["data"]["chat_name"], new_chat_name)
+
+    def test_create_new_chat_not_auth(self):
+        response = self.client.post(
+            self.chats_url
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
+
+    def test_create_new_chat_empty_chat_name(self):
+        tokens = self.login()
+        response = self.client.post(
+            url=self.chats_url,
+            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            json={"chat_name": "", "members": ["user1", "user", "new"]}
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {"detail": "Не указано имя чата"})
+
+    def test_create_new_chat_blank_chat_members(self):
+        tokens = self.login()
+        response = self.client.post(
+            url=self.chats_url,
+            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            json={"chat_name": "Новый чат", "members": []}
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {"detail": "Не указаны участники чата"})
+
+    def test_create_new_chat_few_chat_members(self):
+        tokens = self.login()
+        response = self.client.post(
+            url=self.chats_url,
+            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            json={"chat_name": "Новый чат", "members": ["user"]}
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {"detail": "Необходимо добавить хотя бы ещё одного участника"})
+
+    def test_create_new_chat_not_exist_user(self):
+        tokens = self.login()
+        response = self.client.post(
+            url=self.chats_url,
+            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            json={"chat_name": "Новый чат", "members": ["user", "bad_User"]}
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {"detail": "В списке участников есть не существующие пользователи"})

@@ -40,20 +40,20 @@ class ChatService(BaseService):
     def _validate_new_chat_data(self, chat_data: models.ChatCreate) -> list[models.User]:
         """Проверка данных для создания нового чата"""
         if not chat_data.chat_name:
-            logger.error("Не указано имя чата")
+            logger.warning("Не указано имя чата")
             raise HTTPException(status_code=400, detail="Не указано имя чата")
 
         if not chat_data.members:
-            logger.error("Не указаны участники чата")
+            logger.warning("Не указаны участники чата")
             raise HTTPException(status_code=400, detail="Не указаны участники чата")
 
         if len(chat_data.members) < 2:
-            logger.error("Необходимо добавить хотя бы ещё одного участника")
+            logger.warning("Необходимо добавить хотя бы ещё одного участника")
             raise HTTPException(status_code=400, detail="Необходимо добавить хотя бы ещё одного участника")
 
         chat_users = [self._users_dao.find_user_by_login(login) for login in chat_data.members]
         if not all(chat_users):
-            logger.error("В списке участников есть не существующие пользователи")
+            logger.warning("В списке участников есть не существующие пользователи")
             raise HTTPException(status_code=400, detail="В списке участников есть не существующие пользователи")
 
         chat_users = [models.User.from_orm(user) for user in chat_users]
