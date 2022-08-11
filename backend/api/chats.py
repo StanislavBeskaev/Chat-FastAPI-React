@@ -12,7 +12,6 @@ router = APIRouter(
 
 
 # TODO Документация
-# TODO Тесты
 @router.post(
     "/",
     status_code=status.HTTP_200_OK
@@ -28,7 +27,6 @@ def create_new_chat(
 
 
 # TODO Документация
-# TODO Тесты
 @router.put(
     "/{chat_id}",
     status_code=status.HTTP_200_OK
