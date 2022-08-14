@@ -7,6 +7,7 @@ import confirmDeleteModalStore from './modals/confirmDeleteModalStore'
 class MessageContextMenuStore {
   messageId = null
   messageText = ''
+  beforeChangeMessageText = ''
   showMessageEditModal = false
 
   constructor() {
@@ -20,18 +21,21 @@ class MessageContextMenuStore {
     this.messageId = id
     const message = messagesStore.getMessageInCurrentChatById(id)
     this.messageText = message.text
+    this.beforeChangeMessageText = message.text
   }
 
   unsetMessageId() {
     console.log('MessageContextMenuStore unsetMessageId')
     this.messageId = null
     this.messageText = ''
+    this.beforeChangeMessageText = ''
   }
 
   async changeMessageText() {
     console.log('Попытка изменения текста сообщения', this.messageId)
     try {
       await MessageService.changeMessageText(this.messageId, this.messageText)
+      this.closeMessageEditModal()
     } catch (e) {
       console.log('Ошибка при изменении текста сообщения:', e.response)
     }

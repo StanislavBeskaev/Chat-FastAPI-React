@@ -4,8 +4,9 @@ import {observer} from 'mobx-react-lite'
 
 import messageContextMenuStore from '../../stores/messageContextMenuStore'
 
+
 const MessageEditModal = () => {
-  const {messageText} = messageContextMenuStore
+  const {messageText, beforeChangeMessageText} = messageContextMenuStore
   const inputRef = useRef()
 
   useEffect(() => {
@@ -23,16 +24,14 @@ const MessageEditModal = () => {
   const handleKeyPress = async e => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      await submitChange()
+      if (messageText !== beforeChangeMessageText) await submitChange()
     }
   }
 
-  // TODO показывать ошибку, если текст такой же
   const submitChange = async () => {
     if (messageText.length === 0) return
 
     await messageContextMenuStore.changeMessageText()
-    messageContextMenuStore.closeMessageEditModal()  // перенести в messageContextMenuStore
   }
 
   return (
@@ -51,7 +50,7 @@ const MessageEditModal = () => {
           <Button
             onClick={submitChange}
             className="align-self-center"
-            disabled={messageText?.length === 0}
+            disabled={messageText?.length === 0 || messageText === beforeChangeMessageText}
           >
             Изменить
           </Button>
