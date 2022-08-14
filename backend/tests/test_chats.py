@@ -47,7 +47,7 @@ class TestChats(BaseTestCase):
         self.session.query(tables.User).delete()
         self.session.commit()
 
-        self.get_session_patcher.start()
+        self.get_session_patcher.stop()
 
     def test_success_create_new_chat(self):
         tokens = self.login()

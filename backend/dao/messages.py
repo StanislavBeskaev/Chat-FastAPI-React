@@ -49,16 +49,18 @@ class MessagesDAO(BaseDAO):
     def mark_message_as_read(self, message_id: str, user_id: int) -> None:
         """Пометить, что пользователь прочитал сообщение"""
         logger.debug(f"Запрос на прочтение сообщения: {user_id=} {message_id=}")
-        # TODO проверка на существование сообщения?
-        unread_message = self._get_unread_message(message_id=message_id, user_id=user_id)
-        unread_message.is_read = True
+        unread_message = self.get_unread_message(message_id=message_id, user_id=user_id)
+        if not unread_message:
+            logger.warning(f"Пользователь {user_id} попытка пометить прочитанным не существующее сообщение {message_id}")
+            return
 
+        unread_message.is_read = True
         self.session.add(unread_message)
         self.session.commit()
 
         logger.debug(f"Сообщение помечено прочитанным: {user_id=} {message_id=}")
 
-    def _get_unread_message(self, message_id: str, user_id: int) -> tables.MessageReadStatus:
+    def get_unread_message(self, message_id: str, user_id: int) -> tables.MessageReadStatus:
         unread_message = (
             self.session
             .query(tables.MessageReadStatus)

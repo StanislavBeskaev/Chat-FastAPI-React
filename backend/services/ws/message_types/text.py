@@ -1,11 +1,10 @@
 from backend import models
+from backend.core.time import get_formatted_time
 from backend.dao.chat_members import ChatMembersDAO
 from backend.dao.messages import MessagesDAO
 from backend.dao.users import UsersDAO
-from backend.database import get_session
-from backend.core.time import get_formatted_time
-from backend.services.ws.constants import MessageType
 from backend.services.ws.base_messages import BaseChatWSMessage
+from backend.services.ws.constants import MessageType
 
 
 class TextMessage(BaseChatWSMessage):
@@ -13,8 +12,6 @@ class TextMessage(BaseChatWSMessage):
     message_type = MessageType.TEXT
 
     def __init__(self, login: str, **kwargs):
-        self._session = next(get_session())
-
         in_text_message_data: models.InTextMessageData = models.InTextMessageData.parse_obj(kwargs)
         self._text = in_text_message_data.text
         self._chat_id = in_text_message_data.chat_id
@@ -36,15 +33,15 @@ class TextMessage(BaseChatWSMessage):
         return data
 
     def _create_db_message(self) -> models.Message:
-        messages_dao = MessagesDAO(session=self._session)
-        users_dao = UsersDAO(session=self._session)
+        messages_dao = MessagesDAO.create()
+        users_dao = UsersDAO.create()
 
         message = messages_dao.create_text_message(
             text=self._text,
             user_id=users_dao.find_user_by_login(login=self._login).id,
             chat_id=self._chat_id
         )
-        chat_members_dao = ChatMembersDAO(session=self._session)
+        chat_members_dao = ChatMembersDAO.create()
         messages_dao.create_unread_messages(
             message=message,
             chat_members=chat_members_dao.get_chat_members(chat_id=self._chat_id)
