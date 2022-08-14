@@ -73,6 +73,7 @@ class TestInWSMessages(BaseTestCase):
         self.session.query(tables.ChatMember).delete()
         self.session.query(tables.Chat).delete()
         self.session.query(tables.User).delete()
+        self.session.query(tables.MessageReadStatus).delete()
         self.session.query(tables.Message).delete()
         self.session.commit()
 
@@ -198,3 +199,81 @@ class TestInWSMessages(BaseTestCase):
                 user_id=users_dao.find_user_by_login(login="user1").id
             )
             self.assertEqual(message_read_status_after.is_read, True)
+
+    def test_text_message(self):
+        with self.client.websocket_connect("ws/user") as user_ws, \
+                self.client.websocket_connect("ws/user1") as user1_ws, \
+                self.client.websocket_connect("ws/new") as new_ws, \
+                self.client.websocket_connect("ws/some") as some_ws:
+            # Необходимо указывать пользователей в порядке подключения
+            ws_users = ["user", "user1", "new", "some"]
+            for index, ws in enumerate((user_ws, user1_ws, new_ws, some_ws)):
+                self.check_ws_online_status_notifications(ws=ws, users=ws_users[index:])
+
+            user_ws.send_json(
+                data={
+                    MESSAGE_TYPE_KEY: MessageType.TEXT,
+                    MESSAGE_DATA_KEY: {
+                        "text": "Новое сообщение",
+                        "chatId": TEST_CHAT_ID
+                    }
+                }
+            )
+            self._check_ws_text_notification(
+                ws_list=[user_ws, user1_ws, new_ws, some_ws],
+                user="user",
+                text="Новое сообщение",
+                chat_id=TEST_CHAT_ID
+            )
+
+            user1_ws.send_json(
+                data={
+                    MESSAGE_TYPE_KEY: MessageType.TEXT,
+                    MESSAGE_DATA_KEY: {
+                        "text": "от первого",
+                        "chatId": TEST_CHAT_ID
+                    }
+                }
+            )
+            self._check_ws_text_notification(
+                ws_list=[user_ws, user1_ws, new_ws, some_ws],
+                user="user1",
+                text="от первого",
+                chat_id=TEST_CHAT_ID
+            )
+
+            new_ws.send_json(
+                data={
+                    MESSAGE_TYPE_KEY: MessageType.TEXT,
+                    MESSAGE_DATA_KEY: {
+                        "text": "я тут",
+                        "chatId": SECOND_CHAT_ID
+                    }
+                }
+            )
+            self._check_ws_text_notification(
+                ws_list=[user_ws, user1_ws, new_ws],
+                user="new",
+                text="я тут",
+                chat_id=SECOND_CHAT_ID
+            )
+
+    def _check_ws_text_notification(self, ws_list, user: str, text: str, chat_id: str):
+        messages_dao = MessagesDAO.create()
+        users_dao = UsersDAO.create()
+        for ws in ws_list:
+            ws_message = ws.receive_json()
+            self.assertEqual(ws_message["type"], MessageType.TEXT)
+            self.assertEqual(ws_message["data"]["login"], user)
+            self.assertEqual(ws_message["data"]["chat_id"], chat_id)
+            self.assertEqual(ws_message["data"]["text"], text)
+            self.assertIsNotNone(ws_message["data"]["message_id"])
+
+            message = messages_dao.get_message_by_id(message_id=ws_message["data"]["message_id"])
+            self.assertIsNotNone(message)
+            self.assertEqual(message.text, text)
+            self.assertEqual(message.chat_id, chat_id)
+            self.assertEqual(message.user_id, users_dao.find_user_by_login(login=user).id)
+            self.assertEqual(message.type, MessageType.TEXT)
+            self.assertIsNotNone(message.time)
+            self.assertIsNone(message.change_time)
