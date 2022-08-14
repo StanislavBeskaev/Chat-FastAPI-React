@@ -67,10 +67,12 @@ class MessageService(BaseService):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Сообщение с id {message_id} не найдено")
 
         if message.user_id != user.id:
+            logger.warning(f"Только автор может менять сообщение! {message.user_id=} {user.id=}")
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Только автор может менять сообщение!")
 
         if message.text == new_text:
             logger.warning("Передан тот же текст сообщения что уже есть ничего не делаем")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="У сообщения уже такой текст")
             return
 
         message = self._messages_dao.change_message_text(message_id=message_id, new_text=new_text)

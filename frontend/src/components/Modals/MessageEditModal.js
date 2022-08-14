@@ -27,11 +27,12 @@ const MessageEditModal = () => {
     }
   }
 
+  // TODO показывать ошибку, если текст такой же
   const submitChange = async () => {
     if (messageText.length === 0) return
 
     await messageContextMenuStore.changeMessageText()
-    messageContextMenuStore.closeMessageEditModal()
+    messageContextMenuStore.closeMessageEditModal()  // перенести в messageContextMenuStore
   }
 
   return (

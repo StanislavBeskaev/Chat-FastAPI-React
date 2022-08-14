@@ -33,7 +33,7 @@ class MessageContextMenuStore {
     try {
       await MessageService.changeMessageText(this.messageId, this.messageText)
     } catch (e) {
-      console.log('Ошибка при изменеении текста сообщения:', e.response)
+      console.log('Ошибка при изменении текста сообщения:', e.response)
     }
   }
 
