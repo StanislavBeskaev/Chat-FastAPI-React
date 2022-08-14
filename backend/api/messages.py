@@ -45,7 +45,6 @@ def get_chat_messages(
 
 
 # TODO Документация
-# TODO Тесты
 @router.put(
     "/{message_id}",
     status_code=status.HTTP_200_OK,
@@ -66,7 +65,6 @@ def change_message_text(
 
 
 # TODO Документация
-# TODO Тесты
 @router.delete(
     "/{message_id}",
     status_code=status.HTTP_200_OK,

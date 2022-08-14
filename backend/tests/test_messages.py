@@ -19,7 +19,7 @@ SECOND_CHAT_ID = "SECOND"
 SECOND_CHAT_NAME = "SECOND_CHAT"
 
 
-class TestChats(BaseTestCase):
+class TestMessages(BaseTestCase):
     messages_url = "/api/messages/"
 
     def setUp(self) -> None:
@@ -66,7 +66,6 @@ class TestChats(BaseTestCase):
         self.session.query(tables.ChatMember).delete()
         self.session.query(tables.Chat).delete()
         self.session.query(tables.User).delete()
-        self.session.query(tables.MessageReadStatus).delete()
         self.session.query(tables.Message).delete()
         self.session.commit()
 
@@ -176,3 +175,67 @@ class TestChats(BaseTestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), {"detail": "У сообщения уже такой текст"})
+
+    def test_success_delete_message(self):
+        tokens = self.login()
+        delete_message_id = "0"
+
+        with self.client.websocket_connect("ws/user") as user_ws, \
+                self.client.websocket_connect("ws/user1") as user1_ws, \
+                self.client.websocket_connect("ws/new") as new_ws, \
+                self.client.websocket_connect("ws/some") as some_ws:
+            # Необходимо указывать пользователей в порядке подключения
+            ws_users = ["user", "user1", "new", "some"]
+            # Что бы прочитать статусные сообщения
+            for index, ws in enumerate((user_ws, user1_ws, new_ws, some_ws)):
+                self.check_ws_online_status_notifications(ws=ws, users=ws_users[index:])
+
+            response = self.client.delete(
+                url=f"{self.messages_url}{delete_message_id}",
+                headers=self.get_authorization_headers(access_token=tokens.access_token)
+            )
+
+            self.assertEqual(response.status_code, 200)
+            self._check_ws_delete_message_notification(
+                ws_list=[user_ws, user1_ws, new_ws, some_ws],
+                message_id=delete_message_id,
+                chat_id=TEST_CHAT_ID
+            )
+
+    def _check_ws_delete_message_notification(self, ws_list, message_id: str, chat_id: str):
+        for ws in ws_list:
+            ws_message = ws.receive_json()
+            self.assertEqual(ws_message["type"], MessageType.DELETE_MESSAGE)
+            self.assertEqual(ws_message["data"]["chat_id"], chat_id)
+            self.assertEqual(ws_message["data"]["message_id"], message_id)
+
+    def test_delete_message_not_auth(self):
+        delete_message_id = "0"
+        response = self.client.delete(
+            url=f"{self.messages_url}{delete_message_id}",
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
+
+    def test_delete_message_bad_message_id(self):
+        tokens = self.login()
+        bad_message_id = "bad_id"
+        response = self.client.delete(
+            url=f"{self.messages_url}{bad_message_id}",
+            headers=self.get_authorization_headers(access_token=tokens.access_token)
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {"detail": f"Сообщение с id {bad_message_id} не найдено"})
+
+    def test_delete_message_not_owner(self):
+        tokens = self.login(username="user1", password="password1")
+        delete_message_id = "0"
+
+        response = self.client.delete(
+            url=f"{self.messages_url}{delete_message_id}",
+            headers=self.get_authorization_headers(access_token=tokens.access_token)
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json(), {"detail": "Только автор может удалять сообщение!"})
