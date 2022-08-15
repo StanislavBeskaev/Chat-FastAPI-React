@@ -29,6 +29,9 @@ class TestMessages(BaseTestCase):
         user = next((user for user in users if user.login == self.DEFAULT_USER))
         test_chat = tables.Chat(id=TEST_CHAT_ID, name=TEST_CHAT_NAME, creator_id=user.id)
         self.session.add(test_chat)
+        second_chat = tables.Chat(id=SECOND_CHAT_ID, name=SECOND_CHAT_NAME, creator_id=user.id)
+        self.session.add(second_chat)
+
         user_test_messages = [
             tables.Message(
                 id=index,
@@ -47,8 +50,6 @@ class TestMessages(BaseTestCase):
         self.session.bulk_save_objects(profiles)
         self.session.bulk_save_objects(test_chat_members)
 
-        second_chat = tables.Chat(id=SECOND_CHAT_ID, name=SECOND_CHAT_NAME, creator_id=user.id)
-        self.session.add(second_chat)
         second_chat_members = []
         for user in [user for user in users if user.login != "some"]:
             second_chat_members.append(tables.ChatMember(chat_id=SECOND_CHAT_ID, user_id=user.id))
@@ -239,3 +240,64 @@ class TestMessages(BaseTestCase):
 
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.json(), {"detail": "Только автор может удалять сообщение!"})
+
+    def test_success_get_all_messages(self):
+        tokens = self.login()
+        response = self.client.get(
+            url=self.messages_url,
+            headers=self.get_authorization_headers(access_token=tokens.access_token)
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.json(), dict)
+        self.assertIn(member=TEST_CHAT_ID, container=response.json().keys())
+        self.assertIn(member=SECOND_CHAT_ID, container=response.json().keys())
+        self.assertEqual(response.json()[TEST_CHAT_ID]["chat_name"], TEST_CHAT_NAME)
+        self.assertEqual(response.json()[SECOND_CHAT_ID]["chat_name"], SECOND_CHAT_NAME)
+
+        self.assertEqual(response.json()[TEST_CHAT_ID]["creator"], "user")
+        self.assertEqual(response.json()[SECOND_CHAT_ID]["creator"], "user")
+
+        self.assertEqual(len(response.json()[TEST_CHAT_ID]["messages"]), 3)
+        self.assertEqual(len(response.json()[SECOND_CHAT_ID]["messages"]), 0)
+
+        self._check_user_test_chat_messages(
+            test_chat_messages=response.json()[TEST_CHAT_ID]["messages"]
+        )
+
+    def _check_user_test_chat_messages(self, test_chat_messages: list[dict]):
+        self.assertIsInstance(test_chat_messages, list)
+        for index, message_text in enumerate(test_messages):
+            message = test_chat_messages[index]
+            self.assertIsInstance(message, dict)
+            self.assertEqual(message["login"], "user")
+            self.assertEqual(message["text"], message_text)
+            self.assertEqual(message["type"], MessageType.TEXT)
+            self.assertIsNotNone(message["time"])
+            self.assertIsNone(message["change_time"])
+
+    def test_get_all_messages_not_auth(self):
+        response = self.client.get(url=self.messages_url)
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
+
+    def test_success_get_chat_messages(self):
+        tokens = self.login()
+        response = self.client.get(
+            url=f"{self.messages_url}{TEST_CHAT_ID}",
+            headers=self.get_authorization_headers(access_token=tokens.access_token)
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.json(), dict)
+        self.assertEqual(response.json()["chat_name"], TEST_CHAT_NAME)
+        self.assertEqual(response.json()["creator"], "user")
+        self.assertEqual(len(response.json()["messages"]), 3)
+        self._check_user_test_chat_messages(
+            test_chat_messages=response.json()["messages"]
+        )
+
+    def test_get_chat_messages_not_auth(self):
+        response = self.client.get(url=f"{self.messages_url}{TEST_CHAT_ID}")
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)

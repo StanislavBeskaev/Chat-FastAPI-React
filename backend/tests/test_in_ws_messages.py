@@ -200,6 +200,16 @@ class TestInWSMessages(BaseTestCase):
             )
             self.assertEqual(message_read_status_after.is_read, True)
 
+            # Попытка прочитать не существующее сообщение
+            user1_ws.send_json(
+                data={
+                    MESSAGE_TYPE_KEY: MessageType.READ_MESSAGE,
+                    MESSAGE_DATA_KEY: {
+                        "messageId": "bad_message_id"
+                    }
+                }
+            )
+
     def test_text_message(self):
         with self.client.websocket_connect("ws/user") as user_ws, \
                 self.client.websocket_connect("ws/user1") as user1_ws, \

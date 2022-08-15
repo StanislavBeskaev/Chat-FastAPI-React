@@ -23,12 +23,14 @@ class MessageService(BaseService):
 
     def get_many(self, user: models.User) -> dict[str, models.ChatMessages]:
         """Получение всех сообщений пользователя по чатам, где пользователь участник"""
+        logger.debug(f"Запрос всех сообщений от пользователя {user}")
         chats_data = self._messages_dao.get_user_messages(user_id=user.id)
 
         return self._convert_messages_to_chats(chats_data=chats_data)
 
     def get_chat_messages(self, user: models.User, chat_id: str) -> models.ChatMessages:
         """Получение сообщений конкретного чата"""
+        logger.debug(f"Запрос сообщений чата {chat_id} от пользователя {user}")
         chats_data = self._messages_dao.get_user_chat_messages(user_id=user.id, chat_id=chat_id)
         chat_messages = self._convert_messages_to_chats(chats_data=chats_data)[chat_id]
 

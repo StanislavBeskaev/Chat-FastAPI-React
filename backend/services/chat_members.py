@@ -53,6 +53,7 @@ class ChatMembersService(BaseService):
 
     def delete_login_from_chat(self, action_user: models.User, login: str, chat_id: str) -> None:
         """Удаление пользователя по логину из чата"""
+        # TODO проверка, что action_user создатель чата
         user = models.User.from_orm(self._users_dao.find_user_by_login(login=login))
         chat_member = self._chat_members_dao.find_chat_member(user_id=user.id, chat_id=chat_id)
 

@@ -12,7 +12,6 @@ router = APIRouter(
 
 
 # TODO Документация
-# TODO Тесты
 @router.get(
     "/",
     status_code=status.HTTP_200_OK,
@@ -28,7 +27,6 @@ def get_all_messages(
 
 
 # TODO Документация
-# TODO Тесты
 @router.get(
     "/{chat_id}",
     status_code=status.HTTP_200_OK,
