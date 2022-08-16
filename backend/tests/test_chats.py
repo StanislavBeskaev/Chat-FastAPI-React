@@ -182,14 +182,15 @@ class TestChats(BaseTestCase):
 
     def test_change_chat_name_not_exist_chat(self):
         tokens = self.login()
+        bad_chat_id = "bad_chat_id"
         response = self.client.put(
-            url=f"{self.chats_url}bad_chat_id",
+            url=f"{self.chats_url}{bad_chat_id}",
             headers=self.get_authorization_headers(access_token=tokens.access_token),
             json={"chat_name": TEST_CHAT_NAME}
         )
 
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {"detail": "Чата с таким id не существует"})
+        self.assertEqual(response.json(), {"detail": f"Чата с id {bad_chat_id} не существует"})
 
     def test_change_chat_name_not_creator(self):
         not_creator = test_users[1]

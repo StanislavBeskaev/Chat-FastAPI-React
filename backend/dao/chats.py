@@ -15,8 +15,9 @@ class ChatsDAO(BaseDAO):
         db_chat = self._get_chat_by_id(chat_id=chat_id)
 
         if not db_chat:
-            logger.warning(f"Чата с id {chat_id} не существует")
-            raise HTTPException(status_code=404, detail="Чата с таким id не существует")
+            error = f"Чата с id {chat_id} не существует"
+            logger.warning(error)
+            raise HTTPException(status_code=404, detail=error)
 
         return models.Chat.from_orm(db_chat)
 

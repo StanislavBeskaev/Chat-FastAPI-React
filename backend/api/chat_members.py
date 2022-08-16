@@ -13,7 +13,6 @@ router = APIRouter(
 
 # TODO Документация
 # TODO Тесты
-# TODO условие что бы текущий пользователь был участником чата?
 @router.get(
     "/{chat_id}",
     status_code=status.HTTP_200_OK,
@@ -29,8 +28,6 @@ def get_chat_members(
 
 
 # TODO Документация
-# TODO Тесты
-# TODO условие что бы текущий пользователь был участником чата?
 @router.post(
     "/{chat_id}",
     status_code=status.HTTP_201_CREATED
@@ -53,7 +50,6 @@ def add_chat_member(
 
 # TODO Документация
 # TODO Тесты
-# TODO условие что бы текущий пользователь был участником чата?
 @router.delete(
     "/{chat_id}",
     status_code=status.HTTP_200_OK
