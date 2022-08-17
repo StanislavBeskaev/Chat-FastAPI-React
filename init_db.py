@@ -7,8 +7,6 @@ from backend.database import get_session
 from backend.settings import get_settings, Settings
 from backend.services.auth import AuthService
 
-tables.Base.metadata.create_all(bind=engine)
-
 
 def init_db():
     tables.Base.metadata.create_all(bind=engine)
@@ -21,8 +19,11 @@ def init_db():
 
 
 def create_admin_if_needed(session: Session, settings: Settings) -> None:
-    if get_admin(session=session):
+    if admin := get_admin(session=session):
         logger.info("Админ уже существует")
+        admin.password_hash = AuthService.hash_password(password=settings.admin_password)
+        session.commit()
+        logger.info("Для админа изменён пароль на текущий")
         return
 
     admin = tables.User(
