@@ -65,16 +65,26 @@ class ChatMembersService(BaseService):
 
     def delete_login_from_chat(self, action_user: models.User, login: str, chat_id: str) -> None:
         """Удаление пользователя по логину из чата"""
-        # TODO проверка, что action_user создатель чата и находится в чате
-        user = models.User.from_orm(self._users_dao.find_user_by_login(login=login))
-        chat_member = self._chat_members_dao.find_chat_member(user_id=user.id, chat_id=chat_id)
+        # TODO вынести все 404 ошибки из сервисного слоя в DAO
+        logger.debug(f"Попытка удалить пользователя {login} из чата {chat_id} пользователем {action_user}")
+        if not self._is_user_chat_creator(chat_id=chat_id, user=action_user):
+            logger.warning(f"Пользователь {action_user.login} не является создателем чата {chat_id},"
+                           f" удаление пользователя {login} из чата не выполняется")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Только создатель может удалять из чата")
 
+        db_user = self._users_dao.find_user_by_login(login=login)
+        if not db_user:
+            raise HTTPException(status_code=404, detail=f"Пользователя с логином {login} не существует")
+        user = models.User.from_orm(db_user)
+
+        # Тут будет 404 если чата нет
         chat = self._chats_dao.get_chat_by_id(chat_id=chat_id)
-        delete_login_from_chat_message = DeleteLoginFromChatMessage(login=login, chat_id=chat_id, chat_name=chat.name)
-        asyncio.run(delete_login_from_chat_message.send_all())
-
+        chat_member = self._chat_members_dao.find_chat_member(user_id=user.id, chat_id=chat_id)
         if not chat_member:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Пользователя {login} нет в чате")
+
+        delete_login_from_chat_message = DeleteLoginFromChatMessage(login=login, chat_id=chat_id, chat_name=chat.name)
+        asyncio.run(delete_login_from_chat_message.send_all())
 
         self._chat_members_dao.delete_chat_member(chat_member=chat_member)
         logger.info(f"Из чата {chat_id} удалён пользователь {user}")
@@ -82,6 +92,12 @@ class ChatMembersService(BaseService):
         delete_login_message = self._create_delete_login_message(action_user=action_user, login=login, chat_id=chat_id)
         ws_info_delete_login_message = InfoMessage(login=action_user.login, info_message=delete_login_message)
         asyncio.run(ws_info_delete_login_message.send_all())
+
+    def _is_user_chat_creator(self, chat_id: str, user: models.User) -> bool:
+        """Является ли пользователь создателем чата"""
+        chat = self._chats_dao.get_chat_by_id(chat_id=chat_id)
+
+        return chat.creator_id == user.id
 
     def _create_delete_login_message(self, action_user: models.User, login: str, chat_id: str) -> models.Message:
         """Создание сообщения в базе об удалении пользователя из чата"""

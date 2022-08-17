@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from .user import User
+from backend.models.user import User
 
 
 class Tokens(BaseModel):

@@ -49,7 +49,6 @@ def add_chat_member(
 
 
 # TODO Документация
-# TODO Тесты
 @router.delete(
     "/{chat_id}",
     status_code=status.HTTP_200_OK

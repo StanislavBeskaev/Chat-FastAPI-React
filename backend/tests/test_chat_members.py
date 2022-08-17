@@ -87,7 +87,7 @@ class TestChatMembers(BaseTestCase):
                 chat_name=TEST_CHAT_NAME
             )
 
-    def _check_ws_add_to_chat_notifications(self, ws_list, chat_id: str, action_user: str, user: str, chat_name: str) -> None:
+    def _check_ws_add_to_chat_notifications(self, ws_list, chat_id: str, action_user: str, user: str, chat_name: str):
         for ws in ws_list:
             info_message = ws.receive_json()
             self.assertEqual(info_message["type"], MessageType.TEXT)
@@ -160,3 +160,114 @@ class TestChatMembers(BaseTestCase):
 
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json(), {"detail": f"Пользователя с логином {not_exist_login} не существует"})
+
+    def test_success_delete_chat_member(self):
+        tokens = self.login()
+        removable_user = "new"
+
+        with self.client.websocket_connect("ws/user") as user_ws, \
+                self.client.websocket_connect("ws/new") as new_ws:
+
+            # Необходимо указывать пользователей в порядке подключения
+            ws_users = ["user", "new"]
+            # Что бы прочитать статусные сообщения
+            for index, ws in enumerate((user_ws, new_ws)):
+                self.check_ws_online_status_notifications(ws=ws, users=ws_users[index:])
+
+            response = self.client.delete(
+                url=f"{self.chat_members_url}{TEST_CHAT_ID}",
+                headers=self.get_authorization_headers(access_token=tokens.access_token),
+                json={"login": removable_user}
+            )
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {"message": f"Пользователь {removable_user} удалён из чата: {TEST_CHAT_ID}"})
+            self._check_ws_delete_from_chat_message(
+                ws_list=[user_ws, new_ws],
+                chat_id=TEST_CHAT_ID,
+                removable_user=removable_user,
+                chat_name=TEST_CHAT_NAME
+            )
+            self._check_ws_delete_from_chat_info_message(
+                ws_list=[user_ws],
+                chat_id=TEST_CHAT_ID,
+                action_user=self.DEFAULT_USER,
+                removable_user=removable_user
+            )
+
+    def _check_ws_delete_from_chat_message(self, ws_list, chat_id: str, removable_user: str, chat_name: str):
+        for ws in ws_list:
+            delete_from_chat_message = ws.receive_json()
+            self.assertEqual(delete_from_chat_message["type"], MessageType.DELETE_FROM_CHAT)
+            self.assertEqual(delete_from_chat_message["data"]["login"], removable_user)
+            self.assertEqual(delete_from_chat_message["data"]["chat_id"], chat_id)
+            self.assertEqual(delete_from_chat_message["data"]["chat_name"], chat_name)
+
+    def _check_ws_delete_from_chat_info_message(self, ws_list, chat_id: str, action_user: str, removable_user: str):
+        for ws in ws_list:
+            info_message = ws.receive_json()
+            self.assertEqual(info_message["type"], MessageType.TEXT)
+            self.assertEqual(info_message["data"]["login"], action_user)
+            self.assertEqual(info_message["data"]["text"], f"{action_user} удалил пользователя {removable_user}")
+            self.assertIsNotNone(info_message["data"]["time"])
+            self.assertEqual(info_message["data"]["chat_id"], chat_id)
+            self.assertIsNotNone(info_message["data"]["message_id"])
+            self.assertEqual(info_message["data"]["type"], tables.MessageType.INFO)
+
+    def test_delete_chat_member_not_auth(self):
+        removable_user = "new"
+        response = self.client.delete(
+            url=f"{self.chat_members_url}{TEST_CHAT_ID}",
+            json={"login": removable_user}
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
+
+    def test_delete_chat_member_user_not_in_chat(self):
+        tokens = self.login()
+        user_not_in_test_chat = "some"
+
+        response = self.client.delete(
+            url=f"{self.chat_members_url}{TEST_CHAT_ID}",
+            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            json={"login": user_not_in_test_chat}
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {"detail": f"Пользователя {user_not_in_test_chat} нет в чате"})
+
+    def test_delete_chat_member_not_exist_chat(self):
+        tokens = self.login()
+        removable_user = "new"
+        not_exist_chat_id = "not_exist_chat_id"
+
+        response = self.client.delete(
+            url=f"{self.chat_members_url}{not_exist_chat_id}",
+            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            json={"login": removable_user}
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {"detail": f"Чата с id {not_exist_chat_id} не существует"})
+
+    def test_delete_chat_member_not_exist_login(self):
+        tokens = self.login()
+        not_exist_user = "bad_login"
+
+        response = self.client.delete(
+            url=f"{self.chat_members_url}{TEST_CHAT_ID}",
+            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            json={"login": not_exist_user}
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {"detail": f"Пользователя с логином {not_exist_user} не существует"})
+
+    def test_delete_chat_member_by_not_chat_creator(self):
+        tokens = self.login(username="new", password="password2")
+        response = self.client.delete(
+            url=f"{self.chat_members_url}{TEST_CHAT_ID}",
+            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            json={"login": "new"}
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json(), {"detail": "Только создатель может удалять из чата"})
