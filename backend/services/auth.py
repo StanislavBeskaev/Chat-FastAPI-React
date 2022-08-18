@@ -37,7 +37,8 @@ class AuthService(BaseService):
 
     def register_new_user(self, user_data: models.UserCreate, user_agent: str) -> models.Tokens:
         """Регистрация нового пользователя"""
-        logger.debug(f"Попытка регистрации нового пользователя по данным: {user_data}")
+        logger.debug(f"Попытка регистрации нового пользователя c данными:"
+                     f" login={user_data.login}, name={user_data.name}, surname={user_data.surname}")
         if self._users_dao.find_user_by_login(login=user_data.login):
             logger.warning(f"Пользователь с логином '{user_data.login}' уже существует")
             raise HTTPException(
@@ -52,7 +53,7 @@ class AuthService(BaseService):
 
     def login_user(self, login: str, password: str, user_agent: str) -> models.Tokens:
         """Авторизация пользователя"""
-        logger.debug(f"Попытка авторизации с данными: {login=} {password=} {user_agent=}")
+        logger.debug(f"Попытка авторизации с данными: {login=} {user_agent=}")
         user = self._users_dao.find_user_by_login(login)
         if not user:
             message = "Пользователь с таким логином не найден"
@@ -60,8 +61,7 @@ class AuthService(BaseService):
             raise HTTPException(status_code=401, detail=message)
 
         if not self.verify_password(plain_password=password, hashed_password=user.password_hash):
-            logger.warning(f"Попытка авторизации с неверным паролем для пользователя {user.id},"
-                           f" переданные данные: {login=} {password=}")
+            logger.warning(f"Попытка авторизации с неверным паролем для пользователя {user.id}")
             raise HTTPException(status_code=401, detail="Неверный пароль")
 
         tokens = self._token_service.generate_tokens(user=models.User.from_orm(user), user_agent=user_agent)
