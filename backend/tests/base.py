@@ -19,10 +19,10 @@ TEST_SQLALCHEMY_DATABASE_URL = f"sqlite:///./{TEST_DB_NAME}"
 AUTHORIZATION = "Authorization"
 BEARER = "Bearer"
 
-engine = create_engine(
+test_engine = create_engine(
     TEST_SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
 
 def override_get_session() -> Generator[Session, None, None]:
@@ -34,6 +34,13 @@ def override_get_session() -> Generator[Session, None, None]:
             test_session.close()
         except:
             pass
+
+
+def drop_test_db():
+    test_db_file_path = os.path.join(Path(__file__).resolve().parent.parent.parent, TEST_DB_NAME)
+    if os.path.exists(test_db_file_path):
+        os.remove(test_db_file_path)
+        logger.info(f"Удалён файл тестовой базы: {test_db_file_path}")
 
 
 class BaseTestCase(TestCase):
@@ -48,20 +55,13 @@ class BaseTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls._drop_test_db()
+        drop_test_db()
         app.dependency_overrides[get_session] = override_get_session
-        tables.Base.metadata.create_all(bind=engine)
+        tables.Base.metadata.create_all(bind=test_engine)
 
     @classmethod
     def tearDownClass(cls) -> None:
         app.dependency_overrides = {}
-
-    @staticmethod
-    def _drop_test_db():
-        test_db_file_path = os.path.join(Path(__file__).resolve().parent.parent.parent, TEST_DB_NAME)
-        if os.path.exists(test_db_file_path):
-            os.remove(test_db_file_path)
-            logger.info(f"Удалён файл тестовой базы: {test_db_file_path}")
 
     @staticmethod
     def get_authorization_headers(access_token: str) -> dict:
