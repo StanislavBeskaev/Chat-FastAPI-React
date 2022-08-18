@@ -12,19 +12,18 @@ router = APIRouter(
 
 
 # TODO Документация
-# TODO Тесты
 @router.get(
     "/{chat_id}",
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(get_current_user)],
     response_model=list[models.ChatMemberWithOnlineStatus]
 )
 def get_chat_members(
         chat_id: str,
-        chat_members_service: ChatMembersService = Depends()
+        chat_members_service: ChatMembersService = Depends(),
+        current_user: models.User = Depends(get_current_user)
 ):
     """Получение списка участников чата с онлайн статусом"""
-    return chat_members_service.get_chat_members_with_online_status(chat_id=chat_id)
+    return chat_members_service.get_chat_members_with_online_status(chat_id=chat_id, user=current_user)
 
 
 # TODO Документация

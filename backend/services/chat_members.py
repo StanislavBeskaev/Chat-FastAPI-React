@@ -111,7 +111,10 @@ class ChatMembersService(BaseService):
         return delete_login_message
 
     def add_user_to_chat(self, user: models.User, chat_id: str) -> None:
-        """Добавление пользователя к чату. Если пользователь уже есть в чате, то raise HTTPException 409"""
+        """
+        Добавление пользователя к чату. Если пользователь уже есть в чате, то raise HTTPException 409
+        Предполагается, что пользователь и чат существуют
+        """
         logger.debug(f"Попытка добавить к чату {chat_id} пользователя {user}")
         if self.is_user_in_chat(user=user, chat_id=chat_id):
             error = f"В чате {chat_id} уже есть пользователь {user.login}"
@@ -126,12 +129,19 @@ class ChatMembersService(BaseService):
 
         return self._chat_members_dao.find_chat_member(user_id=user.id, chat_id=chat_id) is not None
 
-    def get_chat_members_with_online_status(self, chat_id: str) -> list[models.ChatMemberWithOnlineStatus]:
+    def get_chat_members_with_online_status(self, chat_id: str, user: models.User) -> list[models.ChatMemberWithOnlineStatus]:
         """Получение информации об участниках чата и их онлайн статусе"""
-        # TODO получение пользователя из запроса и проверка, что он участник чата
+        logger.debug(f"Запрос на получение участников чата {chat_id} от пользователя {user.login}")
+        # Если такого чата нет, то 404
+        self._chats_dao.get_chat_by_id(chat_id=chat_id)
+
+        if not self.is_user_in_chat(user=user, chat_id=chat_id):
+            logger.warning(f"Пользователь {user.login} не является участником чата {chat_id},"
+                           f" участники чата не высылаются")
+            raise HTTPException(status_code=403, detail=f"Вы не участник чата {chat_id}")
+
         chat_members = self._chat_members_dao.get_chat_members(chat_id=chat_id)
         active_logins = WSConnectionManager().get_active_logins()
-
         chat_members_with_online_status = [
             models.ChatMemberWithOnlineStatus(
                 login=member.login,

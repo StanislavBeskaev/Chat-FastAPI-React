@@ -271,3 +271,56 @@ class TestChatMembers(BaseTestCase):
 
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.json(), {"detail": "Только создатель может удалять из чата"})
+
+    def test_success_get_chat_members(self):
+        tokens = self.login()
+        response = self.client.get(
+            url=f"{self.chat_members_url}{TEST_CHAT_ID}",
+            headers=self.get_authorization_headers(access_token=tokens.access_token)
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.json(), list)
+        for chat_member in response.json():
+            self.assertIn(member=chat_member["login"], container=["user", "new"])
+            self.assertFalse(chat_member["is_online"])
+
+        with self.client.websocket_connect("ws/user"):
+            response = self.client.get(
+                url=f"{self.chat_members_url}{TEST_CHAT_ID}",
+                headers=self.get_authorization_headers(access_token=tokens.access_token)
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertIsInstance(response.json(), list)
+            for chat_member in response.json():
+                self.assertIn(member=chat_member["login"], container=["user", "new"])
+                if chat_member["login"] == "user":
+                    self.assertTrue(chat_member["is_online"])
+                else:
+                    self.assertFalse(chat_member["is_online"])
+
+    def test_get_chat_members_not_auth(self):
+        response = self.client.get(
+            url=f"{self.chat_members_url}{TEST_CHAT_ID}"
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
+
+    def test_get_chat_members_not_exist_chat(self):
+        tokens = self.login()
+        not_exist_chat_chat_id = "not_exist_chat_chat_id"
+        response = self.client.get(
+            url=f"{self.chat_members_url}{not_exist_chat_chat_id}",
+            headers=self.get_authorization_headers(access_token=tokens.access_token)
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {"detail": f"Чата с id {not_exist_chat_chat_id} не существует"})
+
+    def test_get_chat_members_by_not_chat_member(self):
+        tokens = self.login(username="user1", password="password1")
+        response = self.client.get(
+            url=f"{self.chat_members_url}{TEST_CHAT_ID}",
+            headers=self.get_authorization_headers(access_token=tokens.access_token)
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json(), {"detail": f"Вы не участник чата {TEST_CHAT_ID}"})
