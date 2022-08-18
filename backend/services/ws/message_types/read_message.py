@@ -7,7 +7,7 @@ from backend.services.ws.base_messages import NoAnswerWSMessage
 
 
 class ReadMessageWSMessage(NoAnswerWSMessage):
-    """Сообщение о прочтении"""
+    """Сообщение о прочтении сообщения"""
 
     def __init__(self, login: str, **kwargs):
         logger.debug(f"{self.__class__.__name__} инициализация с параметрами: {login=} {kwargs=}")

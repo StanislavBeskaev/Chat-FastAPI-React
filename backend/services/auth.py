@@ -27,10 +27,12 @@ class AuthService(BaseService):
 
     @classmethod
     def hash_password(cls, password: str) -> str:
+        """Хеширование пароля"""
         return bcrypt.hash(password)
 
     @classmethod
     def verify_password(cls, plain_password: str, hashed_password: str) -> bool:
+        """Соответствие пароля и хеша"""
         return bcrypt.verify(plain_password, hashed_password)
 
     def register_new_user(self, user_data: models.UserCreate, user_agent: str) -> models.Tokens:

@@ -23,6 +23,7 @@ class MessageType(str, Enum):
 
 
 class User(Base):
+    """Пользователь системы"""
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
@@ -33,6 +34,7 @@ class User(Base):
 
 
 class RefreshToken(Base):
+    """JWT refresh токен конкретного пользователя и user_agent подключения"""
     __tablename__ = "refresh_tokens"
 
     id = Column(Integer, primary_key=True)
@@ -44,6 +46,7 @@ class RefreshToken(Base):
 
 
 class Profile(Base):
+    """Профиль пользователя для хранения аватарки"""
     __tablename__ = "profiles"
 
     id = Column(Integer, primary_key=True)
@@ -54,6 +57,7 @@ class Profile(Base):
 
 
 class Chat(Base):
+    """Чат"""
     __tablename__ = "chats"
 
     id = Column(String, primary_key=True, autoincrement=False)
@@ -63,6 +67,7 @@ class Chat(Base):
 
 
 class ChatMember(Base):
+    """Участник чата"""
     __tablename__ = "chat_members"
 
     id = Column(Integer, primary_key=True)
@@ -71,6 +76,7 @@ class ChatMember(Base):
 
 
 class Message(Base):
+    """Сообщение чата"""
     __tablename__ = "messages"
 
     id = Column(String, primary_key=True, autoincrement=False)
@@ -85,6 +91,7 @@ class Message(Base):
 
 
 class Contact(Base):
+    """Контакт пользователя"""
     __tablename__ = "contacts"
 
     id = Column(Integer, primary_key=True)
@@ -95,6 +102,7 @@ class Contact(Base):
 
 
 class MessageReadStatus(Base):
+    """Информация о прочтении сообщения пользователем"""
     __tablename__ = "messages_read_status"
 
     id = Column(Integer, primary_key=True)

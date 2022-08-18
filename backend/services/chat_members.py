@@ -65,7 +65,6 @@ class ChatMembersService(BaseService):
 
     def delete_login_from_chat(self, action_user: models.User, login: str, chat_id: str) -> None:
         """Удаление пользователя по логину из чата"""
-        # TODO вынести все 404 ошибки из сервисного слоя в DAO
         logger.debug(f"Попытка удалить пользователя {login} из чата {chat_id} пользователем {action_user}")
         if not self._is_user_chat_creator(chat_id=chat_id, user=action_user):
             logger.warning(f"Пользователь {action_user.login} не является создателем чата {chat_id},"
@@ -129,7 +128,7 @@ class ChatMembersService(BaseService):
 
         return self._chat_members_dao.find_chat_member(user_id=user.id, chat_id=chat_id) is not None
 
-    def get_chat_members_with_online_status(self, chat_id: str, user: models.User) -> list[models.ChatMemberWithOnlineStatus]:
+    def get_chat_members_with_online_status(self, chat_id: str, user: models.User) -> list[models.ChatMemberWithOnlineStatus]:  # noqa
         """Получение информации об участниках чата и их онлайн статусе"""
         logger.debug(f"Запрос на получение участников чата {chat_id} от пользователя {user.login}")
         # Если такого чата нет, то 404

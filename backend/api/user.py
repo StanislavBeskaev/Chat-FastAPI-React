@@ -30,7 +30,6 @@ def change_user_data(
 
 
 # TODO документация
-# TODO тесты
 @router.post(
     "/avatar",
     status_code=status.HTTP_201_CREATED

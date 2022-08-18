@@ -13,6 +13,9 @@ from backend.settings import get_settings, Settings
 from backend.services import BaseService
 
 
+USER_JWT_KEY = "user"
+
+
 class TokenService(BaseService):
     """Сервис для работы с токенами"""
 
@@ -74,7 +77,6 @@ class TokenService(BaseService):
             token_kind="refresh"
         )
 
-    # TODO посмотреть, может нужен общий payload
     @staticmethod
     def _generate_token(user: models.User, duration: int, secret_key: str, algorithm: str, token_kind: str) -> str:
         """Генерация токена"""
@@ -84,7 +86,7 @@ class TokenService(BaseService):
             "nbf": now,
             "exp": now + timedelta(seconds=duration),
             "kind": token_kind,
-            "user": user.dict(),
+            USER_JWT_KEY: user.dict(),
         }
         token = jwt.encode(
             claims=payload,
@@ -98,13 +100,13 @@ class TokenService(BaseService):
     def verify_access_token(token: str) -> models.User:
         """Проверка токена доступа"""
         logger.debug(f"Проверяем access_token: {token}")
-        settings = get_settings()
         exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Не валидный токен доступа',
             headers={'WWW-Authenticate': 'Bearer'},
         )
         try:
+            settings = get_settings()
             payload = jwt.decode(
                 token=token,
                 key=settings.jwt_access_secret,
@@ -115,7 +117,7 @@ class TokenService(BaseService):
             raise exception from None
 
         logger.debug(f"{payload=}")
-        user_data = payload.get('user')
+        user_data = payload.get(USER_JWT_KEY)
 
         try:
             user = models.User.parse_obj(user_data)
@@ -143,7 +145,7 @@ class TokenService(BaseService):
             raise exception from None
 
         logger.debug(f"{payload=}")
-        user_data = payload.get('user')
+        user_data = payload.get(USER_JWT_KEY)
 
         try:
             user = models.User.parse_obj(user_data)
@@ -155,5 +157,6 @@ class TokenService(BaseService):
         return user
 
     def delete_refresh_token(self, token: str, user_agent: str) -> None:
+        """Удаление refresh токена для user_agent"""
         self._tokens_dao.delete_refresh_token(token=token, user_agent=user_agent)
         logger.debug(f"Из базы удалён refresh_token: {token}")

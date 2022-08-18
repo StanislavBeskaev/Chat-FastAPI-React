@@ -41,7 +41,6 @@ class OnlineMessage(BaseStatusMessage):
     online_status = OnlineStatus.ONLINE
 
     def _get_text_templates(self) -> list[str]:
-        # TODO добавить больше фраз
         online_text_templates = [
             "Пользователь {login} в сети",
             "К нам подкрался {login}",
@@ -51,6 +50,8 @@ class OnlineMessage(BaseStatusMessage):
             "Хорошо, что ты пришёл {login}",
             "Пользователь {login} ворвался в чат",
             "{login} уже тут",
+            "{login} online",
+            "{login} присоединился",
         ]
 
         return online_text_templates
@@ -61,7 +62,6 @@ class OfflineMessage(BaseStatusMessage):
     online_status = OnlineStatus.OFFLINE
 
     def _get_text_templates(self) -> list[str]:
-        # TODO добавить больше фраз
         offline_text_templates = [
             "{login} вышел",
             "Куда ты {login}?",
@@ -69,6 +69,7 @@ class OfflineMessage(BaseStatusMessage):
             "Пользователь {login} решил смыться",
             "Стало пусто без {login}",
             "Пока {login}",
+            "Как же мы без {login}...",
         ]
 
         return offline_text_templates

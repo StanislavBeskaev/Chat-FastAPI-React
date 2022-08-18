@@ -4,7 +4,7 @@ from backend.services.ws.base_messages import BaseChatWSMessage
 
 
 class NewChatMessage(BaseChatWSMessage):
-    """Сообщение о новом чате"""
+    """Сообщение всем участникам чата о новом чате"""
     message_type = MessageType.NEW_CHAT
 
     def __init__(self, chat_id: str, chat_name: str, creator: str):

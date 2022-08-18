@@ -55,27 +55,13 @@ class UsersDAO(BaseDAO):
         return user
 
     def get_user_info(self, login: str) -> models.User:
-        user_info = (
-            self.session
-            .query(
-                tables.User.id,
-                tables.User.name,
-                tables.User.surname,
-            )
-            .where(tables.User.login == login)
-            .where(tables.User.id == tables.Profile.user)
-            .first()
-        )
+        """Получение информации и пользователе"""
+        user_info = self.find_user_by_login(login=login)
 
         if not user_info:
             raise HTTPException(status_code=404, detail=f"Пользователь с логином '{login}' не найден")
 
-        return models.User(
-            id=user_info[0],
-            login=login,
-            name=user_info[1],
-            surname=user_info[2],
-        )
+        return models.User.from_orm(user_info)
 
     def change_user_data(self, login: str, name: str, surname: str) -> models.User:
         """Изменение данных пользователя"""
@@ -87,24 +73,6 @@ class UsersDAO(BaseDAO):
         self.session.commit()
 
         return models.User.from_orm(user)
-
-    def find_profile_by_user_id(self, user_id: int) -> models.Profile:
-        """Нахождение профайла пользователя по id пользователя"""
-        db_profile = self._find_profile_by_user_id(user_id=user_id)
-
-        if not db_profile:
-            raise HTTPException(status_code=404, detail=f"Профиль пользователя с id '{user_id}' не найден")
-
-        return models.Profile.from_orm(db_profile)
-
-    def _find_profile_by_user_id(self, user_id: int) -> tables.Profile:
-        db_profile = (
-            self.session
-                .query(tables.Profile)
-                .filter(tables.Profile.user == user_id)
-                .first()
-        )
-        return db_profile
 
     def find_profile_by_login(self, login: str) -> models.Profile:
         """Нахождение профайла пользователя по логину пользователя"""
@@ -128,4 +96,11 @@ class UsersDAO(BaseDAO):
         self.session.add(user_profile)
         self.session.commit()
 
-
+    def _find_profile_by_user_id(self, user_id: int) -> tables.Profile:
+        db_profile = (
+            self.session
+                .query(tables.Profile)
+                .filter(tables.Profile.user == user_id)
+                .first()
+        )
+        return db_profile

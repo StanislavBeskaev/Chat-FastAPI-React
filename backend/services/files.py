@@ -12,6 +12,7 @@ NO_AVATAR_FILE = "no_avatar.png"
 
 
 def check_files_folder(func):
+    """Декоратор для создания папки под файлы, если папки нет"""
     def wrapper(*args, **kwargs):
         if not os.path.exists(FILES_FOLDER):
             logger.debug(f"Создана папка под файлы {FILES_FOLDER}")
@@ -27,6 +28,7 @@ class FilesService:
 
     @classmethod
     def get_file_extension(cls, file_name) -> str:
+        """Получение расширения файла"""
         filename, file_extension = os.path.splitext(file_name)
 
         return file_extension
@@ -44,10 +46,12 @@ class FilesService:
 
     @classmethod
     def get_file_path(cls, file_name: str) -> str:
+        """Получение пути до файла в папке с файлами"""
         return os.path.join(FILES_FOLDER, file_name)
 
     @classmethod
     def get_no_avatar_file_path(cls) -> str:
+        """Путь до файла"""
         return os.path.join(IMAGES_FOLDER, NO_AVATAR_FILE)
 
     def delete_not_used_avatar_files(self) -> None:

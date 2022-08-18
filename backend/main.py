@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
 from backend import api
+from backend.init_db import init_db
 from backend.services.ws import (
     OnlineMessage,
     OfflineMessage,
@@ -36,6 +37,8 @@ app.include_router(api.router)
 @app.on_event("startup")
 def start():
     logger.info("Старт API")
+    # TODO тесты на инициализацию базы
+    init_db()
 
 
 app.mount("/api/static", StaticFiles(directory="files"), name="static")
@@ -43,6 +46,7 @@ app.mount("/api/static", StaticFiles(directory="files"), name="static")
 
 @app.websocket("/ws/{login}")
 async def websocket_endpoint(websocket: WebSocket, login: str):
+    """Endpoint для ws соединений от пользователей"""
     manager = WSConnectionManager()
     ws_client = WebsocketClient(login=login, websocket=websocket)
     await manager.connect(ws_client)

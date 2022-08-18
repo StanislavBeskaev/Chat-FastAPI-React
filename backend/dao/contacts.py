@@ -5,7 +5,7 @@ from backend.dao import BaseDAO
 class ContactsDAO(BaseDAO):
     """Класс для работы с контактами в БД"""
 
-    def get_user_contact(self, user_id) -> list[models.Contact]:
+    def get_user_contacts(self, user_id: int) -> list[models.Contact]:
         """Получение контактов пользователя"""
         contacts = (
             self.session
@@ -23,7 +23,7 @@ class ContactsDAO(BaseDAO):
 
         return contacts
 
-    def find_contact(self, owner_user_id: int, contact_user_id) -> tables.Contact | None:
+    def find_contact(self, owner_user_id: int, contact_user_id: int) -> tables.Contact | None:
         """Нахождение контакта пользователя"""
         contact = (
             self.session

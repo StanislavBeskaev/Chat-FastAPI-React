@@ -80,6 +80,7 @@ class ChatService(BaseService):
             logger.warning("Передано пустое новое название, изменение названия не выполнятся")
             raise HTTPException(status_code=400, detail="Укажите название чата")
 
+        # Тут будет 404 если чата нет
         previous_chat_name = self._chats_dao.get_chat_by_id(chat_id=chat_id).name
         if previous_chat_name == new_name:
             logger.warning("Передано такое же название чата, изменение названия не выполнятся")

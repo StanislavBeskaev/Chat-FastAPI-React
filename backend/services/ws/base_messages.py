@@ -30,6 +30,7 @@ class BaseWSMessage(WSMessageInterface, ABC):
         }
 
     async def send_all(self) -> None:
+        """Отправка сообщения всем подключённым пользователям"""
         manager = WSConnectionManager()
         logger.debug(f"Отправка сообщения: {self._content}")
 
@@ -47,6 +48,7 @@ class BaseChatWSMessage(BaseWSMessage, ABC):
     """Базовый класс для работы с сообщениями в привязке к чатам"""
 
     async def send_all(self) -> None:
+        """Отправка сообщения всем участникам чата"""
         chat_members_dao = ChatMembersDAO.create()
         chat_members = chat_members_dao.get_chat_members(chat_id=self._data.chat_id)  # noqa
         logins_to_send = [member.login for member in chat_members]

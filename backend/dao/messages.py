@@ -1,6 +1,7 @@
 from datetime import datetime
 from uuid import uuid4
 
+from fastapi import HTTPException, status
 from loguru import logger
 from sqlalchemy import and_
 from sqlalchemy.orm import Query, aliased
@@ -60,7 +61,8 @@ class MessagesDAO(BaseDAO):
 
         logger.debug(f"Сообщение помечено прочитанным: {user_id=} {message_id=}")
 
-    def get_unread_message(self, message_id: str, user_id: int) -> tables.MessageReadStatus:
+    def get_unread_message(self, message_id: str, user_id: int) -> tables.MessageReadStatus | None:
+        """Получение объекта информации о прочтении сообщения пользователем """
         unread_message = (
             self.session
             .query(tables.MessageReadStatus)
@@ -72,6 +74,7 @@ class MessagesDAO(BaseDAO):
         return unread_message
 
     def create_info_message(self, text: str, user_id: int, chat_id: str) -> models.Message:
+        """Создание информационного сообщения в базе"""
         db_message = tables.Message(
             id=str(uuid4()),
             text=text,
@@ -141,7 +144,7 @@ class MessagesDAO(BaseDAO):
         return chats_data
 
     def get_user_chat_messages(self, user_id: int, chat_id: str) -> list[models.ChatData]:
-        """Получение сообщений конкретного чата"""
+        """Получение сообщений пользователя по конкретному чату"""
         chat_messages = (
             self._get_user_chat_messages_query(user_id=user_id)
             .where(tables.Chat.id == chat_id)
@@ -159,6 +162,10 @@ class MessagesDAO(BaseDAO):
             .where(tables.Message.id == message_id)
             .first()
         )
+
+        if not message:
+            logger.warning(f"Сообщение с id {message_id} не найдено")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Сообщение с id {message_id} не найдено")
 
         return message
 

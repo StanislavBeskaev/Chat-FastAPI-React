@@ -4,7 +4,7 @@ from backend.services.ws.constants import MessageType
 
 
 class InfoMessage(BaseChatWSMessage):
-    """Информационное сообщение в чате"""
+    """Информационное сообщение всем участникам чата"""
     message_type = MessageType.TEXT
 
     def __init__(self, login: str, info_message: models.Message):

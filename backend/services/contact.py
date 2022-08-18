@@ -21,7 +21,7 @@ class ContactService(BaseService):
     def get_many(self, user: models.User) -> list[models.Contact]:
         """Получение контактов пользователя"""
         logger.debug(f"Запрос на получение контактов пользователя: {user.login}")
-        contacts = self._contacts_dao.get_user_contact(user_id=user.id)
+        contacts = self._contacts_dao.get_user_contacts(user_id=user.id)
         logger.debug(f"Контакты пользователя {user}: {contacts}")
 
         return contacts

@@ -4,7 +4,7 @@ from backend.services.ws.base_messages import BaseChatWSMessage
 
 
 class DeleteMessageMessage(BaseChatWSMessage):
-    """Сообщение об удалении сообщения"""
+    """Сообщение всем участникам чата об удалении сообщения"""
     message_type = MessageType.DELETE_MESSAGE
 
     def __init__(self, chat_id: str, message_id: str):

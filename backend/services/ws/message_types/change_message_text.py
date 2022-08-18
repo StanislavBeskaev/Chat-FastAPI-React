@@ -4,7 +4,7 @@ from backend.services.ws.base_messages import BaseChatWSMessage
 
 
 class ChangeMessageTextMessage(BaseChatWSMessage):
-    """Сообщение об изменении текста в сообщении"""
+    """Сообщение всем участникам чата об изменении текста в сообщении"""
     message_type = MessageType.CHANGE_MESSAGE_TEXT
 
     def __init__(self, chat_id: str, message_id: str, message_text: str, change_time: str):

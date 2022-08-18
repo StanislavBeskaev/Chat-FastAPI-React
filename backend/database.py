@@ -17,6 +17,7 @@ Session = sessionmaker(
 
 
 def get_session():
+    """Получение сессии БД"""
     session = Session()
     try:
         yield session

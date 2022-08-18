@@ -5,11 +5,11 @@ from backend.services.ws.constants import MessageType
 
 
 class StartTypingMessage(BaseChatWSMessage):
-    """Сообщение о начале печатания"""
+    """Сообщение всем участникам чата о начале печатания"""
     message_type = MessageType.START_TYPING
 
     def __init__(self, login: str, **kwargs):
-        in_typing_message_data: models.InTypingMessageData = models.InTypingMessageData.parse_obj(kwargs)
+        in_typing_message_data = models.InTypingMessageData.parse_obj(kwargs)
         self._chat_id = in_typing_message_data.chat_id
 
         super().__init__(login=login)
@@ -24,5 +24,5 @@ class StartTypingMessage(BaseChatWSMessage):
 
 
 class StopTypingMessage(StartTypingMessage):
-    """Сообщение об окончании печатании"""
+    """Сообщение всем участникам чата об окончании печатании"""
     message_type = MessageType.STOP_TYPING

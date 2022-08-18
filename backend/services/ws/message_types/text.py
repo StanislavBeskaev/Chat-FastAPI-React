@@ -8,7 +8,7 @@ from backend.services.ws.constants import MessageType
 
 
 class TextMessage(BaseChatWSMessage):
-    """Текстовое сообщение"""
+    """Текстовое сообщение всем участникам чата"""
     message_type = MessageType.TEXT
 
     def __init__(self, login: str, **kwargs):
@@ -33,6 +33,7 @@ class TextMessage(BaseChatWSMessage):
         return data
 
     def _create_db_message(self) -> models.Message:
+        """Создание сообщения в базе"""
         messages_dao = MessagesDAO.create()
         users_dao = UsersDAO.create()
 
