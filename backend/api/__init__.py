@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from . import auth, user, messages, contact, chats, chat_members
+from . import auth, user, messages, contacts, chats, chat_members
 
 
 router = APIRouter(
@@ -8,7 +8,7 @@ router = APIRouter(
 )
 
 router.include_router(auth.router)
-router.include_router(contact.router)
+router.include_router(contacts.router)
 router.include_router(chats.router)
 router.include_router(chat_members.router)
 router.include_router(messages.router)
