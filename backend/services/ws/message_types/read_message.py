@@ -3,11 +3,13 @@ from loguru import logger
 from backend import models
 from backend.dao.messages import MessagesDAO
 from backend.dao.users import UsersDAO
-from backend.services.ws.base_messages import NoAnswerWSMessage
+from backend.metrics import ws as ws_metrics
+from backend.services.ws.base_messages import NoAnswerWSMessage, InWSMessageMixin
 
 
-class ReadMessageWSMessage(NoAnswerWSMessage):
+class ReadMessageWSMessage(InWSMessageMixin, NoAnswerWSMessage):
     """Сообщение о прочтении сообщения"""
+    in_metrics_counter = ws_metrics.READ_MESSAGE_IN_WS_MESSAGE_CNT
 
     def __init__(self, login: str, **kwargs):
         logger.debug(f"{self.__class__.__name__} инициализация с параметрами: {login=} {kwargs=}")

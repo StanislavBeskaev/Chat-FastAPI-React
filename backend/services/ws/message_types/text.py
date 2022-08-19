@@ -3,13 +3,15 @@ from backend.core.time import get_formatted_time
 from backend.dao.chat_members import ChatMembersDAO
 from backend.dao.messages import MessagesDAO
 from backend.dao.users import UsersDAO
-from backend.services.ws.base_messages import BaseChatWSMessage
+from backend.metrics import ws as ws_metrics
+from backend.services.ws.base_messages import BaseChatWSMessage, InWSMessageMixin
 from backend.services.ws.constants import MessageType
 
 
-class TextMessage(BaseChatWSMessage):
+class TextMessage(InWSMessageMixin, BaseChatWSMessage):
     """Текстовое сообщение всем участникам чата"""
     message_type = MessageType.TEXT
+    in_metrics_counter = ws_metrics.TEXT_IN_WS_MESSAGE_CNT
 
     def __init__(self, login: str, **kwargs):
         in_text_message_data: models.InTextMessageData = models.InTextMessageData.parse_obj(kwargs)

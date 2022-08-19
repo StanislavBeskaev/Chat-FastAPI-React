@@ -40,7 +40,7 @@ class BaseStatusMessage(BaseWSMessage, ABC):
 class OnlineMessage(BaseStatusMessage):
     """Сообщение при подключении пользователя"""
     online_status = OnlineStatus.ONLINE
-    metrics_counter = ws_metrics.ONLINE_STATUS_OUT_WS_MESSAGE_CNT
+    out_metrics_counter = ws_metrics.ONLINE_STATUS_OUT_WS_MESSAGE_CNT
 
     def _get_text_templates(self) -> list[str]:
         online_text_templates = [
@@ -62,7 +62,7 @@ class OnlineMessage(BaseStatusMessage):
 class OfflineMessage(BaseStatusMessage):
     """Сообщение об отключении пользователя"""
     online_status = OnlineStatus.OFFLINE
-    metrics_counter = ws_metrics.OFLINE_STATUS_OUT_WS_MESSAGE_CNT
+    out_metrics_counter = ws_metrics.OFLINE_STATUS_OUT_WS_MESSAGE_CNT
 
     def _get_text_templates(self) -> list[str]:
         offline_text_templates = [
