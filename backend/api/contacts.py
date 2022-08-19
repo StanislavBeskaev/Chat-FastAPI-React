@@ -24,7 +24,7 @@ router = APIRouter(
 )
 def get_contacts(user: models.User = Depends(get_current_user), contact_service: ContactService = Depends()):
     """Получение контактов текущего пользователя"""
-    contacts_metrics.GET_CONTACTS_CNT.inc()
+    contacts_metrics.GET_CONTACTS_COUNTER.inc()
 
     return contact_service.get_many(user=user)
 
@@ -41,7 +41,7 @@ def create_contact(
     contact_service: ContactService = Depends()
 ):
     """Создание нового контакта"""
-    contacts_metrics.CREATE_CONTACT_CNT.inc()
+    contacts_metrics.CREATE_CONTACT_COUNTER.inc()
 
     return contact_service.create(user=user, contact_login=new_contact.login)
 
@@ -57,7 +57,7 @@ def delete_contact(
     contact_service: ContactService = Depends()
 ):
     """Удаление контакта"""
-    contacts_metrics.DELETE_CONTACT_CNT.inc()
+    contacts_metrics.DELETE_CONTACT_COUNTER.inc()
 
     contact_service.delete(user=user, contact_login=contact_to_delete.login)
     return {"message": f"Контакт {contact_to_delete.login} удалён"}
@@ -75,7 +75,7 @@ def get_contact_info(
     contact_service: ContactService = Depends()
 ):
     """Получение данных контакта по логину"""
-    contacts_metrics.GET_CONTACT_INFO_CNT.inc()
+    contacts_metrics.GET_CONTACT_INFO_COUNTER.inc()
 
     return contact_service.get_by_login(user=user, contact_login=login)
 
@@ -91,6 +91,6 @@ def change_contact(
     contact_service: ContactService = Depends()
 ):
     """Изменение данных контакта"""
-    contacts_metrics.CHANGE_CONTACT_CNT.inc()
+    contacts_metrics.CHANGE_CONTACT_COUNTER.inc()
 
     contact_service.change(user=user, contact_data=contact_data)

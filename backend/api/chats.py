@@ -23,7 +23,7 @@ def create_new_chat(
         chat_service: ChatService = Depends(),
 ):
     """Создание нового чата"""
-    chats_metrics.CREATE_NEW_CHAT_CNT.inc()
+    chats_metrics.CREATE_NEW_CHAT_COUNTER.inc()
 
     chat_service.create_chat(chat_data=new_chat_data, user=user)
 
@@ -40,7 +40,7 @@ def change_chat_name(
         chat_service: ChatService = Depends(),
 ):
     """Изменение названия чата"""
-    chats_metrics.CHANGE_CHAT_NAME_CNT.inc()
+    chats_metrics.CHANGE_CHAT_NAME_COUNTER.inc()
 
     chat_service.change_chat_name(
         chat_id=chat_id,

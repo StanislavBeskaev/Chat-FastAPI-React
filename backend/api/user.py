@@ -27,7 +27,7 @@ def change_user_data(
         user_service: UserService = Depends()
 ):
     """Изменение данных пользователя"""
-    user_metrics.CHANGE_USER_DATA_CNT.inc()
+    user_metrics.CHANGE_USER_DATA_COUNTER.inc()
 
     updated_user = user_service.change_user_data(user_login=current_user.login, user_data=user_data)
     return updated_user
@@ -46,7 +46,7 @@ def upload_avatar(
         files_service: FilesService = Depends()
 ):
     """Загрузка аватара пользователя"""
-    user_metrics.UPLOAD_AVATAR_CNT.inc()
+    user_metrics.UPLOAD_AVATAR_COUNTER.inc()
 
     logger.debug(f"incoming file attrs: {file.__dict__}")
     background_tasks.add_task(files_service.delete_not_used_avatar_files)
@@ -67,7 +67,7 @@ def get_login_avatar_file(
         user_service: UserService = Depends()
 ):
     """Получение файла аватара пользователя по логину"""
-    user_metrics.GET_LOGIN_AVATAR_FILE_CNT.inc()
+    user_metrics.GET_LOGIN_AVATAR_FILE_COUNTER.inc()
 
     return FileResponse(path=user_service.get_avatar_file_path_by_login(login=login), media_type="image/png")
 
@@ -83,7 +83,7 @@ def get_login_avatar_filename(
         user_service: UserService = Depends()
 ):
     """Получение названия файла аватара пользователя по логину"""
-    user_metrics.GET_LOGIN_AVATAR_FILENAME_CNT.inc()
+    user_metrics.GET_LOGIN_AVATAR_FILENAME_COUNTER.inc()
 
     logger.debug(f"Запрос получения наименования аватара для пользователя {login}")
     return {"avatar_file": user_service.get_avatar_by_login(login=login)}
@@ -101,7 +101,7 @@ def get_user_info(
         user_service: UserService = Depends()
 ):
     """Получение информации о пользователе по логину"""
-    user_metrics.GET_USER_INFO_CNT.inc()
+    user_metrics.GET_USER_INFO_COUNTER.inc()
 
     logger.debug(f"Запрос получения информации о пользователе: {login}")
     return user_service.get_user_info(login=login)

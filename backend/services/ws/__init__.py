@@ -1,4 +1,4 @@
-from .base_messages import BaseWSMessage
+from .base_messages import BaseOutWSMessage
 from .constants import MESSAGE_TYPE_KEY, MESSAGE_DATA_KEY, MessageType
 from .message_types import (
     OnlineMessage,
@@ -17,7 +17,7 @@ from .message_types import (
 )
 
 
-def create_message_by_type(message_type: MessageType, login: str, in_data: dict) -> BaseWSMessage:
+def create_message_by_type(message_type: MessageType, login: str, in_data: dict) -> BaseOutWSMessage:
     type_class_mapping = {
         MessageType.TEXT: TextMessage,
         MessageType.START_TYPING: StartTypingMessage,

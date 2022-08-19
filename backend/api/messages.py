@@ -23,7 +23,7 @@ def get_all_messages(
         message_service: MessageService = Depends(),
 ):
     """Получение сообщений текущего пользователя"""
-    messages_metrics.GET_ALL_MESSAGES_CNT.inc()
+    messages_metrics.GET_ALL_MESSAGES_COUNTER.inc()
 
     return message_service.get_many(user=user)
 
@@ -40,7 +40,7 @@ def get_chat_messages(
         message_service: MessageService = Depends(),
 ):
     """Получение сообщений по чату"""
-    messages_metrics.GET_CHAT_MESSAGES_CNT.inc()
+    messages_metrics.GET_CHAT_MESSAGES_COUNTER.inc()
 
     return message_service.get_chat_messages(user=user, chat_id=chat_id)
 
@@ -57,7 +57,7 @@ def change_message_text(
         message_service: MessageService = Depends()
 ):
     """Изменение текста сообщения"""
-    messages_metrics.CHANGE_MESSAGE_TEXT_CNT.inc()
+    messages_metrics.CHANGE_MESSAGE_TEXT_COUNTER.inc()
 
     message_service.change_message_text(
         message_id=message_id,
@@ -77,6 +77,6 @@ def delete_message(
     message_service: MessageService = Depends()
 ):
     """Удаление сообщения"""
-    messages_metrics.DELETE_MESSAGE_CNT.inc()
+    messages_metrics.DELETE_MESSAGE_COUNTER.inc()
 
     message_service.delete_message(message_id=message_id, user=user)

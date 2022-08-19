@@ -9,7 +9,7 @@ from backend.services.ws.base_messages import NoAnswerWSMessage, InWSMessageMixi
 
 class ReadMessageWSMessage(InWSMessageMixin, NoAnswerWSMessage):
     """Сообщение о прочтении сообщения"""
-    in_metrics_counter = ws_metrics.READ_MESSAGE_IN_WS_MESSAGE_CNT
+    in_metrics_counter = ws_metrics.READ_MESSAGE_IN_WS_MESSAGE_COUNTER
 
     def __init__(self, login: str, **kwargs):
         logger.debug(f"{self.__class__.__name__} инициализация с параметрами: {login=} {kwargs=}")

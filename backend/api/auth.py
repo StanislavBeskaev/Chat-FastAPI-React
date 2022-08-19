@@ -29,7 +29,7 @@ def registration(
         settings: Settings = Depends(get_settings)
 ) -> models.Tokens:
     """Регистрация нового пользователя"""
-    auth_metrics.REGISTRATION_CNT.inc()
+    auth_metrics.REGISTRATION_COUNTER.inc()
 
     tokens = auth_service.register_new_user(
         user_data=user_data,
@@ -58,7 +58,7 @@ def login(
         settings: Settings = Depends(get_settings)
 ) -> models.Tokens:
     """Авторизация пользователя"""
-    auth_metrics.LOGIN_CNT.inc()
+    auth_metrics.LOGIN_COUNTER.inc()
 
     tokens = auth_service.login_user(
         login=user_data.username,
@@ -88,7 +88,7 @@ def refresh_tokens(
         settings: Settings = Depends(get_settings)
 ) -> models.Tokens:
     """Обновление токенов"""
-    auth_metrics.REFRESH_TOKENS_CNT.inc()
+    auth_metrics.REFRESH_TOKENS_COUNTER.inc()
 
     tokens = auth_service.refresh_tokens(
         refresh_token=refresh_token,
@@ -115,7 +115,7 @@ def logout(
         refresh_token: str = Cookie(None, alias=REFRESH_TOKEN_COOKIE_KEY),
 ):
     """Выход из системы"""
-    auth_metrics.LOGOUT_CNT.inc()
+    auth_metrics.LOGOUT_COUNTER.inc()
 
     auth_service.logout(
         refresh_token=refresh_token,

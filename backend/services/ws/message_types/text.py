@@ -11,7 +11,8 @@ from backend.services.ws.constants import MessageType
 class TextMessage(InWSMessageMixin, BaseChatWSMessage):
     """Текстовое сообщение всем участникам чата"""
     message_type = MessageType.TEXT
-    in_metrics_counter = ws_metrics.TEXT_IN_WS_MESSAGE_CNT
+    in_metrics_counter = ws_metrics.TEXT_IN_WS_MESSAGE_COUNTER
+    out_metrics_counter = ws_metrics.TEXT_OUT_WS_MESSAGE_COUNTER
 
     def __init__(self, login: str, **kwargs):
         in_text_message_data: models.InTextMessageData = models.InTextMessageData.parse_obj(kwargs)

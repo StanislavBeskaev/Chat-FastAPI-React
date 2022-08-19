@@ -5,7 +5,6 @@ from loguru import logger
 
 from backend import models
 from backend.dao.chat_members import ChatMembersDAO
-from backend.metrics import OutWSCounter, InWSCounter
 from backend.services.ws_connection_manager import WSConnectionManager
 
 
@@ -18,19 +17,19 @@ class WSMessageInterface(ABC):
         pass
 
 
-class InWSMessageMixin:
+class InWSMessageMixin(ABC):
     """Mixin для метрики входящих ws сообщений"""
-    in_metrics_counter = InWSCounter("ws_in", "Входящее ws сообщение")
+    in_metrics_counter = None
 
     def __init__(self, *args, **kwargs):
         self.in_metrics_counter.inc()
         super().__init__(*args, **kwargs)
 
 
-class BaseWSMessage(WSMessageInterface, ABC):
-    """Базовый класс для работы с сообщением WS"""
+class BaseOutWSMessage(WSMessageInterface, ABC):
+    """Базовый класс для работы с исходящим сообщением WS"""
     message_type = None
-    out_metrics_counter = OutWSCounter("ws_out", "Исходящее ws сообщение")
+    out_metrics_counter = None
 
     def __init__(self, login: str):
         self._login = login
@@ -55,7 +54,7 @@ class BaseWSMessage(WSMessageInterface, ABC):
         return json.dumps(self._content)
 
 
-class BaseChatWSMessage(BaseWSMessage, ABC):
+class BaseChatWSMessage(BaseOutWSMessage, ABC):
     """Базовый класс для работы с сообщениями в привязке к чатам"""
 
     async def send_all(self) -> None:

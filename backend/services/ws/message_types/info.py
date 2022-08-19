@@ -1,4 +1,5 @@
 from backend import models
+from backend.metrics import ws as ws_metrics
 from backend.services.ws.base_messages import BaseChatWSMessage
 from backend.services.ws.constants import MessageType
 
@@ -6,6 +7,7 @@ from backend.services.ws.constants import MessageType
 class InfoMessage(BaseChatWSMessage):
     """Информационное сообщение всем участникам чата"""
     message_type = MessageType.TEXT
+    out_metrics_counter = ws_metrics.INFO_OUT_WS_MESSAGE_COUNTER
 
     def __init__(self, login: str, info_message: models.Message):
         self._info_message = info_message
