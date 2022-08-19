@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  prometheus:
+    image: quay.io/prometheus/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker-compose/prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:latest
+    user: root
+    restart: always
+    ports:
+      - "3421:3000"
+    volumes:
+      - ./docker-compose/grafana-data/data:/var/lib/grafana
+      - ./docker-compose/grafana-data/certs:/certs
+      - ./docker-compose/grafana/provisioning:/etc/grafana/provisioning
+      - ./docker-compose/grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin

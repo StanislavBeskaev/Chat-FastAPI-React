@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, status
 
 from backend import models
 from backend.dependencies import get_current_user
+from backend.metrics import messages as messages_metrics
 from backend.services.messages import MessageService
 
 
@@ -22,6 +23,7 @@ def get_all_messages(
         message_service: MessageService = Depends(),
 ):
     """Получение сообщений текущего пользователя"""
+    messages_metrics.GET_ALL_MESSAGES_CNT.inc()
 
     return message_service.get_many(user=user)
 
@@ -38,6 +40,7 @@ def get_chat_messages(
         message_service: MessageService = Depends(),
 ):
     """Получение сообщений по чату"""
+    messages_metrics.GET_CHAT_MESSAGES_CNT.inc()
 
     return message_service.get_chat_messages(user=user, chat_id=chat_id)
 
@@ -54,6 +57,7 @@ def change_message_text(
         message_service: MessageService = Depends()
 ):
     """Изменение текста сообщения"""
+    messages_metrics.CHANGE_MESSAGE_TEXT_CNT.inc()
 
     message_service.change_message_text(
         message_id=message_id,
@@ -73,5 +77,6 @@ def delete_message(
     message_service: MessageService = Depends()
 ):
     """Удаление сообщения"""
+    messages_metrics.DELETE_MESSAGE_CNT.inc()
 
     message_service.delete_message(message_id=message_id, user=user)

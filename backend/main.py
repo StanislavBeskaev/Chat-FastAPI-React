@@ -4,6 +4,7 @@ from fastapi import FastAPI, WebSocketDisconnect, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
+from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 from backend import api
 from backend.init_db import init_db
@@ -32,12 +33,13 @@ app.add_middleware(
 )
 
 app.include_router(api.router)
+app.add_middleware(PrometheusMiddleware)
+app.add_route("/metrics", handle_metrics)
 
 
 @app.on_event("startup")
 def start():
     logger.info("Старт API")
-    # TODO тесты на инициализацию базы
     init_db()
 
 

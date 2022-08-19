@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, status
 
 from backend import models
 from backend.dependencies import get_current_user
+from backend.metrics import chat_members as chat_members_metrics
 from backend.services.chat_members import ChatMembersService
 
 
@@ -23,6 +24,8 @@ def get_chat_members(
         current_user: models.User = Depends(get_current_user)
 ):
     """Получение списка участников чата с онлайн статусом"""
+    chat_members_metrics.GET_CHAT_MEMBERS_CNT.inc()
+
     return chat_members_service.get_chat_members_with_online_status(chat_id=chat_id, user=current_user)
 
 
@@ -38,6 +41,8 @@ def add_chat_member(
         current_user: models.User = Depends(get_current_user)
 ):
     """Добавление участника к чату"""
+    chat_members_metrics.ADD_CHAT_MEMBER_CNT.inc()
+
     chat_members_service.add_login_to_chat(
         action_user=current_user,
         login=chat_member.login,
@@ -59,6 +64,8 @@ def delete_chat_member(
         current_user: models.User = Depends(get_current_user)
 ):
     """Удаление участника из чата"""
+    chat_members_metrics.DELETE_CHAT_MEMBERS_CNT.inc()
+
     chat_members_service.delete_login_from_chat(
         action_user=current_user,
         login=chat_member.login,

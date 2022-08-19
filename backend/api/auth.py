@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, Response, status, Cookie, Request
 from fastapi.security import OAuth2PasswordRequestForm
-from loguru import logger
 
 from backend import models
+from backend.metrics import auth as auth_metrics
 from backend.services.auth import AuthService
 from backend.settings import get_settings, Settings
 
@@ -29,6 +29,8 @@ def registration(
         settings: Settings = Depends(get_settings)
 ) -> models.Tokens:
     """Регистрация нового пользователя"""
+    auth_metrics.REGISTRATION_CNT.inc()
+
     tokens = auth_service.register_new_user(
         user_data=user_data,
         user_agent=request.headers.get('user-agent')
@@ -56,6 +58,8 @@ def login(
         settings: Settings = Depends(get_settings)
 ) -> models.Tokens:
     """Авторизация пользователя"""
+    auth_metrics.LOGIN_CNT.inc()
+
     tokens = auth_service.login_user(
         login=user_data.username,
         password=user_data.password,
@@ -84,6 +88,8 @@ def refresh_tokens(
         settings: Settings = Depends(get_settings)
 ) -> models.Tokens:
     """Обновление токенов"""
+    auth_metrics.REFRESH_TOKENS_CNT.inc()
+
     tokens = auth_service.refresh_tokens(
         refresh_token=refresh_token,
         user_agent=request.headers.get('user-agent')
@@ -109,6 +115,8 @@ def logout(
         refresh_token: str = Cookie(None, alias=REFRESH_TOKEN_COOKIE_KEY),
 ):
     """Выход из системы"""
+    auth_metrics.LOGOUT_CNT.inc()
+
     auth_service.logout(
         refresh_token=refresh_token,
         user_agent=request.headers.get('user-agent')
