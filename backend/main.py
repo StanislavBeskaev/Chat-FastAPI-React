@@ -8,6 +8,7 @@ from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 from backend import api
 from backend.init_db import init_db
+from backend.metrics import InWSCounter
 from backend.services.ws import (
     OnlineMessage,
     OfflineMessage,
@@ -44,6 +45,7 @@ def start():
 
 
 app.mount("/api/static", StaticFiles(directory="files"), name="static")
+COMMON_IN_WS_CNT = InWSCounter("ws_in", "Входящее ws сообщение")  # TODO подумать надо ли тут это?
 
 
 @app.websocket("/ws/{login}")
@@ -59,6 +61,7 @@ async def websocket_endpoint(websocket: WebSocket, login: str):
         while True:
             raw_message = await websocket.receive_text()
             logger.debug(f"Message from {login}: {raw_message}")
+            COMMON_IN_WS_CNT.inc()  # TODO  сделать класс для входящих сообщений, что бы в конструкторе было inc
 
             message_dict = json.loads(raw_message)
             new_message = create_message_by_type(

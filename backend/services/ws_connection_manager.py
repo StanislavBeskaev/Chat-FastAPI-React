@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
-from loguru import logger
 from fastapi import WebSocket
+from loguru import logger
+from prometheus_client import Counter
 
 
 @dataclass
@@ -39,14 +40,15 @@ class WSConnectionManager:
         """Отключение клиента"""
         self.active_clients.remove(ws_client)
 
-    async def broadcast(self, message: str):
+    async def broadcast(self, message: str, metrics_counter: Counter):
         """Рассылка сообщения на всех подключённых клиентов"""
         logger.debug(f"{self.__class__.__name__} broadcast на {len(self.active_clients)} соединений:"
                      f" {', '.join([client.login for client in self.active_clients])}")
         for ws_client in self.active_clients:
             await ws_client.websocket.send_text(message)
+            metrics_counter.inc()
 
-    async def send_message_to_logins(self, logins: list[str], message: str):
+    async def send_message_to_logins(self, logins: list[str], message: str, metrics_counter: Counter):
         """Отправка сообщения клиентам по списку логинов"""
         ws_clients_to_send = [ws_client for ws_client in self.active_clients if ws_client.login in logins]
         logins_to_send = [client.login for client in ws_clients_to_send]
@@ -54,6 +56,7 @@ class WSConnectionManager:
 
         for ws_client in ws_clients_to_send:
             await ws_client.websocket.send_text(message)
+            metrics_counter.inc()
 
     def get_active_logins(self) -> list[str]:
         """Получение списка активных логинов"""

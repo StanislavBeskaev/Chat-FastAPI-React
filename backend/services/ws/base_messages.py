@@ -5,6 +5,7 @@ from loguru import logger
 
 from backend import models
 from backend.dao.chat_members import ChatMembersDAO
+from backend.metrics import OutWSCounter
 from backend.services.ws_connection_manager import WSConnectionManager
 
 
@@ -20,6 +21,7 @@ class WSMessageInterface(ABC):
 class BaseWSMessage(WSMessageInterface, ABC):
     """Базовый класс для работы с сообщением WS"""
     message_type = None
+    metrics_counter = OutWSCounter("ws_out", "Исходящее ws сообщение")
 
     def __init__(self, login: str):
         self._login = login
@@ -34,7 +36,7 @@ class BaseWSMessage(WSMessageInterface, ABC):
         manager = WSConnectionManager()
         logger.debug(f"Отправка сообщения: {self._content}")
 
-        await manager.broadcast(self._get_message())
+        await manager.broadcast(message=self._get_message(), metrics_counter=self.metrics_counter)
 
     @abstractmethod
     def _get_data(self) -> models.WSMessageData:
@@ -55,7 +57,11 @@ class BaseChatWSMessage(BaseWSMessage, ABC):
         manager = WSConnectionManager()
         logger.debug(f"Отправка сообщения: {self._content}")
 
-        await manager.send_message_to_logins(logins=logins_to_send, message=self._get_message())
+        await manager.send_message_to_logins(
+            logins=logins_to_send,
+            message=self._get_message(),
+            metrics_counter=self.metrics_counter
+        )
 
     @abstractmethod
     def _get_data(self) -> models.ChatMessageData:
