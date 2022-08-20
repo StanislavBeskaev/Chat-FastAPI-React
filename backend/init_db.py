@@ -36,6 +36,10 @@ def create_admin_if_needed(session: Session, settings: Settings) -> None:
     session.add(admin)
     session.commit()
 
+    admin_profile = tables.Profile(user=admin.id)
+    session.add(admin_profile)
+    session.commit()
+
     logger.info("Создан админ")
 
 
@@ -48,16 +52,22 @@ def create_main_chat_if_needed(session: Session, settings: Settings) -> None:
         logger.info("Главный чат уже есть")
         return
 
+    admin = get_admin(session=session)
+
     main_chat = tables.Chat(
         id=settings.main_chat_id,
         name="Главная",
         is_public=True,
-        creator_id=get_admin(session=session).id
+        creator_id=admin.id
     )
     session.add(main_chat)
+    session.add(
+        tables.ChatMember(chat_id=settings.main_chat_id, user_id=admin.id)
+    )
     session.commit()
 
     logger.info(f"Создан главный чат с id: {settings.main_chat_id}")
+    logger.info(f"Админ добавлен в главный чат как участник")
 
 
 def is_main_chat_exist(session: Session, settings: Settings) -> bool:
