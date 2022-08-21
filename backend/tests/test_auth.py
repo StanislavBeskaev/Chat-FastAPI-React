@@ -2,7 +2,9 @@ from requests.cookies import RequestsCookieJar
 
 from backend import models, tables
 from backend.api.auth import REFRESH_TOKEN_COOKIE_KEY
+from backend.dao.chat_members import ChatMembersDAO
 from backend.services.auth import AuthService
+from backend.settings import get_settings
 from backend.tests.base import BaseTestCase
 
 test_users = [
@@ -61,6 +63,14 @@ class TestAuth(BaseTestCase):
         )
         self.assertIsNotNone(profile)
         self.assertIsNone(profile.avatar_file)
+
+        test_chat_members_dao = ChatMembersDAO(session=self.session)
+        settings = get_settings()
+        new_user_main_chat_member = test_chat_members_dao.find_chat_member(
+            user_id=new_user.id,
+            chat_id=settings.main_chat_id
+        )
+        self.assertIsNotNone(new_user_main_chat_member)
 
     def test_user_already_exist_registration(self):
         response = self.client.post(

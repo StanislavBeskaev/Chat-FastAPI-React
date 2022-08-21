@@ -116,7 +116,6 @@ class AuthService(BaseService):
 
         self._users_dao.create_user_profile(user_id=new_user.id)
 
-        # TODO тесты на это
         settings = get_settings()
         self._chat_members_service.add_user_to_chat(
             user=new_user,
