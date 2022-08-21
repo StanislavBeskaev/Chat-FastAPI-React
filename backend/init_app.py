@@ -9,7 +9,7 @@ from backend import tables
 from backend.database import get_session
 from backend.settings import get_settings, Settings
 from backend.services.auth import AuthService
-from backend.services.files import check_files_folder, IMAGES_FOLDER, FILES_FOLDER
+from backend.services.files import check_files_folder, IMAGES_FOLDER, FilesService
 
 
 ADMIN_AVATAR = "admin.png"
@@ -25,15 +25,17 @@ def init_app():
 
 
 def _copy_admin_avatar_to_files():
-    if os.path.exists(os.path.join(FILES_FOLDER, ADMIN_AVATAR)):
+    admin_avatar_in_files = FilesService.get_file_path(ADMIN_AVATAR)
+    if os.path.exists(admin_avatar_in_files):
         logger.info("Аватарка админа уже в files")
         return
 
+    settings = get_settings()
     shutil.copyfile(
-        src=os.path.join(IMAGES_FOLDER, ADMIN_AVATAR),
-        dst=os.path.join(FILES_FOLDER,  ADMIN_AVATAR)
+        src=os.path.join(settings.base_dir, IMAGES_FOLDER, ADMIN_AVATAR),
+        dst=admin_avatar_in_files
     )
-    logger.info("Аватарка админа скопирована в files")
+    logger.info(f"Аватарка админа скопирована в {admin_avatar_in_files}")
 
 
 def _init_db():

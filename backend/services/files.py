@@ -15,9 +15,10 @@ NO_AVATAR_FILE = "no_avatar.png"
 def check_files_folder(func):
     """Декоратор для создания папки под файлы, если папки нет"""
     def wrapper(*args, **kwargs):
-        if not os.path.exists(FILES_FOLDER):
-            logger.info(f"Создана папка под файлы {FILES_FOLDER}")
-            os.mkdir(FILES_FOLDER)
+        files_folder = os.path.join(get_settings().base_dir, FILES_FOLDER)
+        if not os.path.exists(files_folder):
+            logger.info(f"Создана папка под файлы {files_folder}")
+            os.mkdir(files_folder)
 
         return func(*args, **kwargs)
 
