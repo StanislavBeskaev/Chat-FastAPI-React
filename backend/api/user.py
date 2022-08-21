@@ -57,7 +57,6 @@ def upload_avatar(
 
 
 # TODO документация
-# TODO тесты как-то
 @router.get(
     "/avatar_file/{login}",
     status_code=status.HTTP_200_OK,

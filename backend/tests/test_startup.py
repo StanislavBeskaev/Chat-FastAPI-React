@@ -19,7 +19,7 @@ from backend.tests.base import override_get_session, drop_test_db, test_engine
 TEST_ADMIN_PASSWORD = "password"
 
 
-def new_get_settings() -> Settings:
+def new_admin_password_get_settings() -> Settings:
     return Settings(
         admin_password=TEST_ADMIN_PASSWORD
     )
@@ -44,11 +44,11 @@ class TestStartup(TestCase):
             self._check_admin_and_main_chat(test_session=test_session, settings=get_settings())
             self._check_all_tables_created(test_session=test_session)
 
-        get_settings_patcher = patch(target="backend.init_app.get_settings", new=new_get_settings)
+        get_settings_patcher = patch(target="backend.init_app.get_settings", new=new_admin_password_get_settings)
         get_settings_patcher.start()
         # Поменяли пароль у админа, проверяем что состояние системы такое же и пароль у админа новый
         with TestClient(app):
-            self._check_second_app_startup(test_session=test_session, settings=new_get_settings())
+            self._check_second_app_startup(test_session=test_session, settings=new_admin_password_get_settings())
         get_settings_patcher.stop()
 
     def _check_admin_and_main_chat(self, test_session: Session, settings: Settings):

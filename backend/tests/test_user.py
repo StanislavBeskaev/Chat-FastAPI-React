@@ -1,8 +1,11 @@
 import os
 from pathlib import Path
+from unittest.mock import patch
 
 from backend import tables
 from backend.services.auth import AuthService
+from backend.services.files import FilesService
+from backend.settings import Settings
 from backend.tests.base import BaseTestCase
 
 
@@ -12,7 +15,13 @@ test_users = [
     tables.User(login="user2", name="user2", surname="surname2", password_hash=AuthService.hash_password("password2")),
 ]
 
-TEST_FILES_FOLDER = os.path.join(Path(__file__).resolve().parent, "test_files")
+TEST_FILES_FOLDER = os.path.join(Path(__file__).resolve().parent, "files")
+
+
+def test_files_folder_get_settings() -> Settings:
+    return Settings(
+        base_dir=Path(__file__).resolve().parent
+    )
 
 
 class TestUser(BaseTestCase):
@@ -26,7 +35,7 @@ class TestUser(BaseTestCase):
             profiles.append(
                 tables.Profile(
                     user=user.id,
-                    avatar_file=f"{user.name}:{user.surname}.png" if user.login != "user2" else ""
+                    avatar_file=f"{user.name}:{user.surname}.jpeg" if user.login != "user2" else ""
                 )
             )
         self.session.bulk_save_objects(profiles)
@@ -194,7 +203,7 @@ class TestUser(BaseTestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"avatar_file": "user1:surname1.png"})
+        self.assertEqual(response.json(), {"avatar_file": "user1:surname1.jpeg"})
 
         response = self.client.get(
             url=f"{self.user_url}/avatar_file_name/user2",
@@ -222,9 +231,33 @@ class TestUser(BaseTestCase):
         self.assertEqual(response.json(), {"detail": f"Профиль пользователя с логином '{not_exist_login}' не найден"})
 
     def test_success_get_login_avatar_file(self):
-        tokens = self.login()
         response = self.client.get(
             url=f"{self.user_url}/avatar_file/user2",
-            headers=self.get_authorization_headers(access_token=tokens.access_token)
         )
         self.assertEqual(response.status_code, 200)
+
+        with open(FilesService.get_no_avatar_file_path(), mode="rb") as no_avatar_file:
+            no_avatar_file_content = no_avatar_file.read()
+            self.assertEqual(response.content, no_avatar_file_content)
+
+        get_settings_patcher = patch(target="backend.services.files.get_settings", new=test_files_folder_get_settings)
+        get_settings_patcher.start()
+
+        for user in test_users[:2]:
+            response = self.client.get(
+                url=f"{self.user_url}/avatar_file/{user.login}",
+            )
+            self.assertEqual(response.status_code, 200)
+            with open(os.path.join(TEST_FILES_FOLDER, f"{user.name}:{user.surname}.jpeg"), mode="rb") as avatar_file:
+                user_avatar_file = avatar_file.read()
+                self.assertEqual(response.content, user_avatar_file)
+
+        get_settings_patcher.stop()
+
+    def test_get_login_avatar_file_not_exist_login(self):
+        not_exist_login = "not_exist_login"
+        response = self.client.get(
+            url=f"{self.user_url}/avatar_file/{not_exist_login}",
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {"detail": f"Профиль пользователя с логином '{not_exist_login}' не найден"})
