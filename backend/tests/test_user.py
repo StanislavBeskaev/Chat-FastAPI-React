@@ -26,7 +26,7 @@ class TestUser(BaseTestCase):
             profiles.append(
                 tables.Profile(
                     user=user.id,
-                    avatar_file=f"{user.name}:{user.surname}" if user.login != "user2" else ""
+                    avatar_file=f"{user.name}:{user.surname}.png" if user.login != "user2" else ""
                 )
             )
         self.session.bulk_save_objects(profiles)
@@ -194,7 +194,7 @@ class TestUser(BaseTestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"avatar_file": "user1:surname1"})
+        self.assertEqual(response.json(), {"avatar_file": "user1:surname1.png"})
 
         response = self.client.get(
             url=f"{self.user_url}/avatar_file_name/user2",
@@ -220,3 +220,11 @@ class TestUser(BaseTestCase):
         )
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json(), {"detail": f"Профиль пользователя с логином '{not_exist_login}' не найден"})
+
+    def test_success_get_login_avatar_file(self):
+        tokens = self.login()
+        response = self.client.get(
+            url=f"{self.user_url}/avatar_file/user2",
+            headers=self.get_authorization_headers(access_token=tokens.access_token)
+        )
+        self.assertEqual(response.status_code, 200)

@@ -1,3 +1,5 @@
+from pathlib import Path, PosixPath
+
 from pydantic import BaseSettings
 
 
@@ -16,6 +18,7 @@ class Settings(BaseSettings):
 
     main_chat_id = "MAIN"
     admin_password = "admin"
+    base_dir: str | PosixPath = Path(__file__).resolve().parent.parent
 
 
 def get_settings() -> Settings:

@@ -4,6 +4,7 @@ from loguru import logger
 
 from backend import tables
 from backend.database import get_session
+from backend.settings import get_settings
 
 
 FILES_FOLDER = "files"
@@ -47,12 +48,14 @@ class FilesService:
     @classmethod
     def get_file_path(cls, file_name: str) -> str:
         """Получение пути до файла в папке с файлами"""
-        return os.path.join(FILES_FOLDER, file_name)
+        settings = get_settings()
+        return os.path.join(settings.base_dir, FILES_FOLDER, file_name)
 
     @classmethod
     def get_no_avatar_file_path(cls) -> str:
         """Путь до файла"""
-        return os.path.join(IMAGES_FOLDER, NO_AVATAR_FILE)
+        settings = get_settings()
+        return os.path.join(settings.base_dir, IMAGES_FOLDER, NO_AVATAR_FILE)
 
     def delete_not_used_avatar_files(self) -> None:
         """Удаление не используемых файлов аватарок"""
