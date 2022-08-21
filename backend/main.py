@@ -7,7 +7,7 @@ from loguru import logger
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 from backend import api
-from backend.init_db import init_db
+from backend.init_app import init_app
 from backend.services.ws import (
     OnlineMessage,
     OfflineMessage,
@@ -40,10 +40,8 @@ app.add_route("/metrics", handle_metrics)
 @app.on_event("startup")
 def start():
     logger.info("Старт API")
-    init_db()
-
-
-app.mount("/api/static", StaticFiles(directory="files"), name="static")
+    init_app()
+    app.mount("/api/static", StaticFiles(directory="files"), name="static")
 
 
 @app.websocket("/ws/{login}")

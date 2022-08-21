@@ -1,3 +1,6 @@
+import os
+import shutil
+
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -6,20 +9,46 @@ from backend import tables
 from backend.database import get_session
 from backend.settings import get_settings, Settings
 from backend.services.auth import AuthService
+from backend.services.files import check_files_folder, IMAGES_FOLDER, FILES_FOLDER
 
 
-def init_db():
+ADMIN_AVATAR = "admin.png"
+
+
+@check_files_folder
+def init_app():
+    """Инициализация приложения"""
+    logger.info("init_app start")
+    _copy_admin_avatar_to_files()
+    _init_db()
+    logger.info("Инициализация приложения выполнена")
+
+
+def _copy_admin_avatar_to_files():
+    if os.path.exists(os.path.join(FILES_FOLDER, ADMIN_AVATAR)):
+        logger.info("Аватарка админа уже в files")
+        return
+
+    shutil.copyfile(
+        src=os.path.join(IMAGES_FOLDER, ADMIN_AVATAR),
+        dst=os.path.join(FILES_FOLDER,  ADMIN_AVATAR)
+    )
+    logger.info("Аватарка админа скопирована в files")
+
+
+def _init_db():
+    logger.info("_init_db start")
     tables.Base.metadata.create_all(bind=engine)
 
     session = next(get_session())
     settings = get_settings()
 
-    create_admin_if_needed(session=session, settings=settings)
-    create_main_chat_if_needed(session=session, settings=settings)
+    _create_admin_if_needed(session=session, settings=settings)
+    _create_main_chat_if_needed(session=session, settings=settings)
 
 
-def create_admin_if_needed(session: Session, settings: Settings) -> None:
-    if admin := get_admin(session=session):
+def _create_admin_if_needed(session: Session, settings: Settings) -> None:
+    if admin := _get_admin(session=session):
         logger.info("Админ уже существует")
         admin.password_hash = AuthService.hash_password(password=settings.admin_password)
         session.commit()
@@ -36,23 +65,23 @@ def create_admin_if_needed(session: Session, settings: Settings) -> None:
     session.add(admin)
     session.commit()
 
-    admin_profile = tables.Profile(user=admin.id)
+    admin_profile = tables.Profile(user=admin.id, avatar_file=ADMIN_AVATAR)
     session.add(admin_profile)
     session.commit()
 
     logger.info("Создан админ")
 
 
-def get_admin(session: Session) -> tables.User | None:
+def _get_admin(session: Session) -> tables.User | None:
     return session.query(tables.User).where(tables.User.login == "admin").first()
 
 
-def create_main_chat_if_needed(session: Session, settings: Settings) -> None:
-    if is_main_chat_exist(session=session, settings=settings):
+def _create_main_chat_if_needed(session: Session, settings: Settings) -> None:
+    if _is_main_chat_exist(session=session, settings=settings):
         logger.info("Главный чат уже есть")
         return
 
-    admin = get_admin(session=session)
+    admin = _get_admin(session=session)
 
     main_chat = tables.Chat(
         id=settings.main_chat_id,
@@ -70,9 +99,5 @@ def create_main_chat_if_needed(session: Session, settings: Settings) -> None:
     logger.info(f"Админ добавлен в главный чат как участник")
 
 
-def is_main_chat_exist(session: Session, settings: Settings) -> bool:
+def _is_main_chat_exist(session: Session, settings: Settings) -> bool:
     return bool(session.query(tables.Chat).where(tables.Chat.id == settings.main_chat_id).first())
-
-
-if __name__ == '__main__':
-    init_db()

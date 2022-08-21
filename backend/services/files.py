@@ -15,7 +15,7 @@ def check_files_folder(func):
     """Декоратор для создания папки под файлы, если папки нет"""
     def wrapper(*args, **kwargs):
         if not os.path.exists(FILES_FOLDER):
-            logger.debug(f"Создана папка под файлы {FILES_FOLDER}")
+            logger.info(f"Создана папка под файлы {FILES_FOLDER}")
             os.mkdir(FILES_FOLDER)
 
         return func(*args, **kwargs)
