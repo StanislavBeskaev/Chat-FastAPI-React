@@ -12,6 +12,8 @@ test_users = [
     tables.User(login="user2", name="user2", surname="surname2", password_hash=AuthService.hash_password("password2")),
 ]
 
+TEST_FILES_FOLDER = os.path.join(Path(__file__).resolve().parent, "test_files")
+
 
 class TestUser(BaseTestCase):
     user_url = "/api/user"
@@ -21,7 +23,12 @@ class TestUser(BaseTestCase):
         users = self.session.query(tables.User).all()
         profiles = []
         for user in users:
-            profiles.append(tables.Profile(user=user.id, avatar_file=f"{user.name}:{user.surname}"))
+            profiles.append(
+                tables.Profile(
+                    user=user.id,
+                    avatar_file=f"{user.name}:{user.surname}" if user.login != "user2" else ""
+                )
+            )
         self.session.bulk_save_objects(profiles)
         self.session.commit()
 
@@ -138,7 +145,7 @@ class TestUser(BaseTestCase):
 
     def test_success_upload_avatar(self):
         tokens = self.login()
-        with open(os.path.join(Path(__file__).resolve().parent, "files", "avatar_1.jpeg"), mode="rb") as file:
+        with open(os.path.join(TEST_FILES_FOLDER, "avatar_1.jpeg"), mode="rb") as file:
             response = self.client.post(
                 f"{self.user_url}/avatar",
                 headers=self.get_authorization_headers(access_token=tokens.access_token),
@@ -158,7 +165,7 @@ class TestUser(BaseTestCase):
         self.assertEqual(our_user_profile.avatar_file, avatar_file)
 
     def test_upload_avatar_without_auth(self):
-        with open(os.path.join(Path(__file__).resolve().parent, "files", "avatar_1.jpeg"), mode="rb") as file:
+        with open(os.path.join(TEST_FILES_FOLDER, "avatar_1.jpeg"), mode="rb") as file:
             response = self.client.post(
                 f"{self.user_url}/avatar",
                 files={"file": file}
@@ -168,7 +175,7 @@ class TestUser(BaseTestCase):
         self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
 
     def test_upload_avatar_bad_access_token(self):
-        with open(os.path.join(Path(__file__).resolve().parent, "files", "avatar_1.jpeg"), mode="rb") as file:
+        with open(os.path.join(TEST_FILES_FOLDER, "avatar_1.jpeg"), mode="rb") as file:
             response = self.client.post(
                 f"{self.user_url}/avatar",
                 headers=self.get_authorization_headers(access_token="bad.access.token"),
@@ -177,3 +184,39 @@ class TestUser(BaseTestCase):
 
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.json(), self.BAD_TOKEN_RESPONSE)
+
+    def test_success_get_login_avatar_filename(self):
+        tokens = self.login()
+
+        response = self.client.get(
+            url=f"{self.user_url}/avatar_file_name/user1",
+            headers=self.get_authorization_headers(access_token=tokens.access_token)
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"avatar_file": "user1:surname1"})
+
+        response = self.client.get(
+            url=f"{self.user_url}/avatar_file_name/user2",
+            headers=self.get_authorization_headers(access_token=tokens.access_token)
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"avatar_file": ""})
+
+    def test_get_login_avatar_filename_not_auth(self):
+        response = self.client.get(
+            url=f"{self.user_url}/avatar_file_name/user1",
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
+
+    def test_get_login_avatar_filename_not_exist_login(self):
+        tokens = self.login()
+        not_exist_login = "not_exist_login"
+        response = self.client.get(
+            url=f"{self.user_url}/avatar_file_name/{not_exist_login}",
+            headers=self.get_authorization_headers(access_token=tokens.access_token)
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {"detail": f"Профиль пользователя с логином '{not_exist_login}' не найден"})
