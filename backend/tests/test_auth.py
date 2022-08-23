@@ -23,6 +23,7 @@ class TestAuth(BaseTestCase):
     def tearDown(self) -> None:
         self.session.query(tables.User).delete()
         self.session.query(tables.RefreshToken).delete()
+        self.session.query(tables.ChatMember).delete()
         self.session.commit()
 
     def test_success_registration(self):
