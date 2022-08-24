@@ -41,19 +41,25 @@ const NewChatModal = () => {
               value={name}
               onChange={changeName}
             />
-            <div className="m-1 fs-5">Участники:</div>
-            <div className="d-flex gap-3 ms-3 mt-2 flex-wrap">
-              {contactStore.contacts.map(contact => (
-                <Form.Group controlId={contact.login} key={contact.login}>
-                  <Form.Check
-                    type="checkbox"
-                    value={logins.includes(contact.login)}
-                    label={contact.login}
-                    onChange={() => handleCheckboxChange(contact.login)}
-                  />
-                </Form.Group>
-              ))}
-            </div>
+            {
+              contactStore.contacts.length > 0
+                ? <div>
+                    <div className="m-1 fs-5">Участники:</div>
+                    <div className="d-flex gap-3 ms-3 mt-2 flex-wrap">
+                      {contactStore.contacts.map(contact => (
+                        <Form.Group controlId={contact.login} key={contact.login}>
+                          <Form.Check
+                            type="checkbox"
+                            value={logins.includes(contact.login)}
+                            label={contact.login}
+                            onChange={() => handleCheckboxChange(contact.login)}
+                          />
+                        </Form.Group>
+                      ))}
+                    </div>
+                  </div>
+                : <div className="m-1 fs-4 text-danger">У вас нет контактов для добавления в чат</div>
+            }
             <div className="mt-4 align-self-center">
               {
                 success
