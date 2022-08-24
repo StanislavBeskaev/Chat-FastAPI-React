@@ -5,7 +5,7 @@ import {observer} from 'mobx-react-lite'
 import messagesStore from '../../stores/messagesStore'
 
 
-const STOP_TYPING_DELAY = 5_000
+const STOP_TYPING_DELAY = 3_000
 
 const TextForm = ({sendTextMessage, sendStartTyping, sendStopTyping}) => {
   const {selectedChatText, selectedChatTyping} = messagesStore

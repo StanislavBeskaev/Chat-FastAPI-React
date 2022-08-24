@@ -324,6 +324,13 @@ class MessagesStore {
     this.chats[chatId].typingLogins = this.chats[chatId].typingLogins.filter(typingLogin => typingLogin !== login)
   }
 
+  deleteTypingLoginFromAllChats(login) {
+    console.log(`Удаляем печатающий логин ${login} из всех чатов`)
+    for (let chatId of Object.keys(this.chats)) {
+      this.deleteTypingLogin(chatId, login)
+    }
+  }
+
   selectedChatMessages() {
     return this.chats[this.selectedChatId].messages
   }

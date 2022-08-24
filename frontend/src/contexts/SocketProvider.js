@@ -34,7 +34,7 @@ export function SocketProvider({ login, children }) {
           messagesStore.addMessage(msg.data, sendReadMessage)
           break
         case 'STATUS':
-          await addStatusNotification(msg.data)
+          await handleStatusMessage(msg.data)
           break
         case 'START_TYPING':
           messagesStore.addTypingLogin(msg.data.chat_id, msg.data.login)
@@ -148,7 +148,7 @@ export function SocketProvider({ login, children }) {
     }
   }
 
-  const addStatusNotification = async data => {
+  const handleStatusMessage = async data => {
     const {login: msgLogin, text, online_status: onlineStatus} = data
 
     if (login === msgLogin) return
@@ -157,6 +157,8 @@ export function SocketProvider({ login, children }) {
       toast.success(text)
     } else {
       toast.error(text)
+      // Для случая, что бы не зависало печатание для этого логина, если он ещё печатал и внезапно отключился
+      messagesStore.deleteTypingLoginFromAllChats(msgLogin)
     }
 
     if (chatMembersModalStore.show) {
