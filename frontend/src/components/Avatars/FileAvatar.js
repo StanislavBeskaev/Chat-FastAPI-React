@@ -6,7 +6,7 @@ import noAvatar from '../../img/no_avatar.png'
 
 
 const FileAvatar = ({fileName, size = "sm"}) => {
-  const avatarSrc = fileName ? `${API_URL}/static/${fileName}` : noAvatar
+  const avatarSrc = fileName ? `${API_URL}/files/${fileName}` : noAvatar
   const sizeMapping = {
     sm: 40,
     md: 100,

@@ -1,13 +1,18 @@
 import json
+import os
+from pathlib import Path
 
-from fastapi import FastAPI, WebSocketDisconnect, WebSocket
+from fastapi import FastAPI, Request, WebSocketDisconnect, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from loguru import logger
+from starlette.responses import FileResponse
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 from backend import api
 from backend.init_app import init_app
+from backend.services.files import FilesService
 from backend.services.ws import (
     OnlineMessage,
     OfflineMessage,
@@ -41,7 +46,6 @@ app.add_route("/metrics", handle_metrics)
 def start():
     logger.info("Старт API")
     init_app()
-    app.mount("/api/static", StaticFiles(directory="files"), name="static")
 
 
 @app.websocket("/ws/{login}")
@@ -74,3 +78,25 @@ async def websocket_endpoint(websocket: WebSocket, login: str):
         await offline_message.send_all()
     except Exception as e:
         logger.error(f"Возникла ошибка в ходе работы с ws: {str(e)}")
+
+
+fronted_build_folder = Path(os.path.join(Path(__file__).resolve().parent.parent, "frontend", "build"))
+templates = Jinja2Templates(directory=fronted_build_folder.as_posix())
+
+app.mount(
+    "/static/",
+    StaticFiles(directory=os.path.join(fronted_build_folder, "static")),
+    name="React App static files",
+)
+
+
+@app.get("/{full_path:path}", include_in_schema=False)
+async def serve_react_app_and_files(full_path: str, request: Request):
+    """Endpoint для отрисовки React приложения и раздачи файлов"""
+    logger.debug(f"serve_react_app, full_path: {full_path}")
+    if full_path.startswith("api/files"):
+        logger.debug("files hit")
+        avatar_file_name = full_path.split("/")[-1]
+        logger.debug(f"{avatar_file_name=}")
+        return FileResponse(path=FilesService.get_file_path(file_name=avatar_file_name), media_type="image/png")
+    return templates.TemplateResponse("index.html", {"request": request})

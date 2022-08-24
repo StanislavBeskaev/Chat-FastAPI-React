@@ -1,6 +1,19 @@
 version: '3'
 
 services:
+  app:
+    container_name: "fastapi_chat_app"
+    restart: always
+    env_file:
+      - .env
+    build:
+      context: .
+    ports:
+      - "8002:8000"
+    volumes:
+      - ./files/:/app/files/
+      - ./data/:/app/data/
+
   prometheus:
     image: quay.io/prometheus/prometheus:latest
     ports:
@@ -19,5 +32,5 @@ services:
       - ./docker-compose/grafana-data/certs:/certs
       - ./docker-compose/grafana/provisioning:/etc/grafana/provisioning
       - ./docker-compose/grafana/dashboards:/var/lib/grafana/dashboards
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+    env_file:
+      - .env

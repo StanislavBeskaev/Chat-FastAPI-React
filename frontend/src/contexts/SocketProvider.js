@@ -16,7 +16,8 @@ export function SocketProvider({ login, children }) {
   const [socket, setSocket] = useState()
 
   useEffect(() => {
-    const ws = new WebSocket(`ws://localhost:8000/ws/${login}`)
+    const serverUrl = process.env.NODE_ENV === 'development' ? 'localhost:8000' : process.env.REACT_APP_WS_ADDRESS
+    const ws = new WebSocket(`ws://${serverUrl}/ws/${login}`)
     setSocket(ws)
     return () => ws.close()
   }, [login])
@@ -59,6 +60,9 @@ export function SocketProvider({ login, children }) {
           break
         case 'DELETE_MESSAGE':
           messagesStore.deleteMessage(msg.data)
+          break
+        default:
+          console.log(`Неожиданное сообщение из ws: ${msg}`)
       }
     }
   }, [socket])

@@ -4,7 +4,7 @@ from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
-    sqlalchemy_connection_url: str = "sqlite:///./chat.db"
+    sqlalchemy_connection_url: str = "sqlite:///./data/chat.db"
 
     jwt_algorithm: str = 'HS256'
 
