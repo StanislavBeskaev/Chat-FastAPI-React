@@ -54,13 +54,14 @@ async def websocket_endpoint(websocket: WebSocket, login: str):
     manager = WSConnectionManager()
     ws_client = WebsocketClient(login=login, websocket=websocket)
     await manager.connect(ws_client)
-    logger.debug(f"Новое ws соединение от пользователя {login} {websocket.__dict__}")
+    logger.info(f"Новое ws соединение от пользователя {login}")
+    logger.debug(f"Параметры соединения: {websocket.__dict__}")
     online_message = OnlineMessage(login=login)
     await online_message.send_all()
     try:
         while True:
             raw_message = await websocket.receive_text()
-            logger.debug(f"Message from {login}: {raw_message}")
+            logger.info(f"Message from {login}: {raw_message}")
 
             message_dict = json.loads(raw_message)
             new_message = create_message_by_type(
@@ -72,7 +73,7 @@ async def websocket_endpoint(websocket: WebSocket, login: str):
             await new_message.send_all()
     except WebSocketDisconnect:
         manager.disconnect(ws_client)
-        logger.debug(f"disconnect ws: {login}")
+        logger.info(f"disconnect ws: {login}")
 
         offline_message = OfflineMessage(login=login)
         await offline_message.send_all()

@@ -3,19 +3,17 @@ import {observer} from 'mobx-react-lite'
 import {useInView} from 'react-intersection-observer'
 import {ContextMenuTrigger} from 'react-contextmenu'
 
-import {useSocket} from '../../../contexts/SocketProvider'
-
 import addContactModalStore from '../../../stores/modals/addContactModalStore'
 import contactStore from '../../../stores/contactStore'
 import messagesStore from '../../../stores/messagesStore'
 import messageContextMenuStore from '../../../stores/messageContextMenuStore'
 
 import UserAvatar from '../../Avatars/UserAvatar'
+import socketStore from '../../../stores/socketStore'
 
 
 const TextMessage = ({message, fromMe}) => {
   const {text, time, login, is_view: isView, message_id: messageId, change_time: changeTime} = message
-  const {sendReadMessage} = useSocket()
   const { ref, inView, entry } = useInView({
     threshold: 1
   })
@@ -32,7 +30,7 @@ const TextMessage = ({message, fromMe}) => {
 
   if (isView === false) {
     if (inView) {
-      messagesStore.markMessageAsView(messageId, sendReadMessage)
+      messagesStore.markMessageAsView(messageId, socketStore.sendReadMessage.bind(socketStore))
       console.log('viewed', messageId)
     }
   }

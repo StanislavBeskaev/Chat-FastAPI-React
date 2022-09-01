@@ -6,6 +6,7 @@ import AuthService from '../services/AuthService'
 import UserService from '../services/UserService'
 import messagesStore from './messagesStore'
 import contactStore from './contactStore'
+import socketStore from './socketStore'
 
 
 const LOCAL_STORAGE_ACCESS_TOKEN_KEY = 'token'
@@ -69,6 +70,7 @@ class AuthStore {
     console.log("setAuth = true")
     this.setUser(response.data.user)
     await this.loadInitialData()
+    await socketStore.connect(response.data.user.login)
   }
 
   async loadInitialData() {
@@ -91,6 +93,7 @@ class AuthStore {
   async logout() {
     this.setLoading(true)
     try {
+      socketStore.disconnect()
       messagesStore.setDefaultState()
       await AuthService.logout()
       this.setUser(null)

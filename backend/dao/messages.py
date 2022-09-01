@@ -45,7 +45,9 @@ class MessagesDAO(BaseDAO):
 
         self.session.bulk_save_objects(unread_messages)
         self.session.commit()
-        logger.info(f"В базу сохранено непрочитанное сообщения {message.id} для пользователей {chat_members}")
+
+        chat_members_logins = [user.login for user in chat_members]
+        logger.info(f"В базу сохранено непрочитанное сообщения {message.id} для пользователей {chat_members_logins}")
 
     def mark_message_as_read(self, message_id: str, user_id: int) -> None:
         """Пометить, что пользователь прочитал сообщение"""

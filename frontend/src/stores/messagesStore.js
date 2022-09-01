@@ -7,6 +7,7 @@ import searchMessagesStore from './searchMessagesStore'
 
 const DEFAULT_CHAT_ID = 'MAIN'
 
+// TODO придумать упорядочивание чатов по новым сообщениям
 class MessagesStore {
   chats = {}
   selectedChatId = DEFAULT_CHAT_ID

@@ -2,11 +2,10 @@ import React, {useContext} from 'react'
 import {Redirect, Route, Switch} from 'react-router-dom'
 import {observer} from 'mobx-react-lite'
 
-import {AuthContext} from '../context'
-import {privateRoutes, publicRoutes} from '../router'
 import authStore from '../stores/authStore'
+import {AuthContext} from '../context'
 import Loader from './UI/Loader/Loader'
-import {SocketProvider} from '../contexts/SocketProvider'
+import {privateRoutes, publicRoutes} from '../router'
 import Sidebar from './Sidebar/Sidebar'
 
 
@@ -22,22 +21,20 @@ const AppRouter = () => {
   return (
     authStore.isAuth
       ?
-      <SocketProvider login={authStore.user.login}>
-        <div className="d-flex" style={{height: '100vh'}}>
-          <Sidebar login={authStore.user.login}/>
-          <Switch>
-            {privateRoutes.map(route =>
-              <Route
-                component={route.component}
-                path={route.path}
-                exact={route.exact}
-                key={route.path}
-              />
-            )}
-            <Redirect to='/'/>
-          </Switch>
-        </div>
-      </SocketProvider>
+      <div className="d-flex" style={{height: '100vh'}}>
+        <Sidebar login={authStore.user.login}/>
+        <Switch>
+          {privateRoutes.map(route =>
+            <Route
+              component={route.component}
+              path={route.path}
+              exact={route.exact}
+              key={route.path}
+            />
+          )}
+          <Redirect to='/'/>
+        </Switch>
+      </div>
       :
       <Switch>
         {publicRoutes.map(route =>

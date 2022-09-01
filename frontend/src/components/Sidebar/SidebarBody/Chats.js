@@ -1,21 +1,20 @@
 import React from 'react'
+import {useHistory} from 'react-router-dom'
 import {ListGroup, Badge} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
 import messagesStore from '../../../stores/messagesStore'
-import {useSocket} from '../../../contexts/SocketProvider'
-import {useHistory} from 'react-router-dom'
+import socketStore from '../../../stores/socketStore'
 
 
 const Chats = () => {
-  const {sendStopTyping} = useSocket()
   const {chats, selectedChatId, selectedChatTyping} = messagesStore
 
   const history = useHistory()
 
   const changeChat = (chatId) => {
     if (selectedChatTyping) {
-      sendStopTyping(selectedChatId)
+      socketStore.sendStopTyping(selectedChatId)
     }
 
     if (history.location.pathname !== '/') {

@@ -2,38 +2,39 @@ import React from 'react'
 import {observer} from 'mobx-react-lite'
 import {Modal} from 'react-bootstrap'
 
-import {useSocket} from '../../contexts/SocketProvider'
-
 import authStore from '../../stores/authStore'
 import addContactModalStore from '../../stores/modals/addContactModalStore'
-import AddContactModal from '../Modals/AddContactModal'
 import changeChatNameModalStore from '../../stores/modals/changeChatNameModalStore'
-import ChangeChatNameModal from '../Modals/ChangeChatNameModal'
-import messagesStore from '../../stores/messagesStore'
-
-import Messages from './Messages/Messages'
-import TextForm from './TextForm'
-import Loader from '../UI/Loader/Loader'
-import TypingInfo from './TypingInfo'
-import ChatHeader from './ChatHeader'
-import ChatMembersModal from '../Modals/ChatMembersModal/ChatMembersModal'
 import chatMembersModalStore from '../../stores/modals/chatMembersModalStore'
-import messageContextMenuStore from '../../stores/messageContextMenuStore'
-import MessageContextMenu from './MessageContextMenu/MessageContextMenu'
-import MessageEditModal from '../Modals/MessageEditModal'
-import ConfirmDeleteModal from '../Modals/ConfirmDeleteModal'
 import confirmDeleteModalStore from '../../stores/modals/confirmDeleteModalStore'
+import messagesStore from '../../stores/messagesStore'
+import messageContextMenuStore from '../../stores/messageContextMenuStore'
+import socketStore from '../../stores/socketStore'
+
+
+import AddContactModal from '../Modals/AddContactModal'
+import ChangeChatNameModal from '../Modals/ChangeChatNameModal'
+import ChatMembersModal from '../Modals/ChatMembersModal/ChatMembersModal'
+import ConfirmDeleteModal from '../Modals/ConfirmDeleteModal'
+import MessageEditModal from '../Modals/MessageEditModal'
+
+import ChatHeader from './ChatHeader'
+import Loader from '../UI/Loader/Loader'
+import Messages from './Messages/Messages'
+import MessageContextMenu from './MessageContextMenu/MessageContextMenu'
 import ScrollButton from './Messages/ScrollButton'
+import TextForm from './TextForm'
+import TypingInfo from './TypingInfo'
+
 
 
 function SimpleChat() {
-  const {sendStartTyping, sendStopTyping, sendText} = useSocket()
 
   const {loading, selectedChatId, isLoadMessages, loadError} = messagesStore
   const {login} = authStore.user
 
   const sendTextMessage = (text) => {
-   sendText(text, selectedChatId)
+    socketStore.sendText(text, selectedChatId)
   }
 
   const closeAddContactModal = () => {
@@ -62,9 +63,10 @@ function SimpleChat() {
       </div>
       <TextForm
         sendTextMessage={sendTextMessage}
-        sendStartTyping={() => sendStartTyping(selectedChatId)}
-        sendStopTyping={() => sendStopTyping(selectedChatId)}
+        sendStartTyping={() => socketStore.sendStartTyping(selectedChatId)}
+        sendStopTyping={() => socketStore.sendStopTyping(selectedChatId)}
       />
+      <MessageContextMenu />
       <Modal
         show={addContactModalStore.show}
         onHide={closeAddContactModal}
@@ -83,7 +85,6 @@ function SimpleChat() {
       >
         <ChatMembersModal />
       </Modal>
-      <MessageContextMenu />
       <Modal
         show={messageContextMenuStore.showMessageEditModal}
         onHide={() => messageContextMenuStore.closeMessageEditModal()}

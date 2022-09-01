@@ -6,17 +6,16 @@ import {observer} from 'mobx-react-lite'
 import authStore from '../../stores/authStore'
 import messagesStore from '../../stores/messagesStore'
 import newChatModalStore from '../../stores/modals/newChatModalStore'
-import {useSocket} from '../../contexts/SocketProvider'
+import socketStore from '../../stores/socketStore'
 import FileAvatar from '../Avatars/FileAvatar'
 
 
 const SidebarFooter = ({login}) => {
-  const {sendStopTyping} = useSocket()
   const {selectedChatTyping, selectedChatId} = messagesStore
 
   const logout = async () => {
     if (selectedChatTyping) {
-      sendStopTyping(selectedChatId)
+      socketStore.sendStopTyping(selectedChatId)
     }
     await authStore.logout()
   }

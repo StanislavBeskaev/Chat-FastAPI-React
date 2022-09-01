@@ -23,7 +23,8 @@ class ChatMembersDAO(BaseDAO):
         )
 
         users = [models.User.from_orm(user) for user in users_in_chat]
-        logger.debug(f"Участники чата {chat_id}: {users}")
+        user_logins = [user.login for user in users]
+        logger.debug(f"Участники чата {chat_id}: {user_logins}")
         return users
 
     def find_chat_member(self, user_id: int, chat_id: str) -> tables.ChatMember | None:
