@@ -61,3 +61,7 @@ class WSConnectionManager:
     def get_active_logins(self) -> list[str]:
         """Получение списка активных логинов"""
         return [client.login for client in self.active_clients]
+
+    def has_user_active_connection(self, login: str) -> bool:
+        """Есть ли у пользователя с логином login активное подключение"""
+        return login in self.get_active_logins()

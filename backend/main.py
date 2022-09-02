@@ -52,12 +52,20 @@ def start():
 async def websocket_endpoint(websocket: WebSocket, login: str):
     """Endpoint для ws соединений от пользователей"""
     manager = WSConnectionManager()
+    need_send_online_status_message = not manager.has_user_active_connection(login=login)
+
     ws_client = WebsocketClient(login=login, websocket=websocket)
     await manager.connect(ws_client)
     logger.info(f"Новое ws соединение от пользователя {login}")
     logger.debug(f"Параметры соединения: {websocket.__dict__}")
-    online_message = OnlineMessage(login=login)
-    await online_message.send_all()
+
+    if need_send_online_status_message:
+        logger.info(f"У пользователя {login} ещё не было активного соединения, посылаем OnlineMessage")
+        online_message = OnlineMessage(login=login)
+        await online_message.send_all()
+    else:
+        logger.info(f"У пользователя {login} уже есть активное соединение, OnlineMessage не посылается")
+
     try:
         while True:
             raw_message = await websocket.receive_text()
@@ -75,8 +83,12 @@ async def websocket_endpoint(websocket: WebSocket, login: str):
         manager.disconnect(ws_client)
         logger.info(f"disconnect ws: {login}")
 
-        offline_message = OfflineMessage(login=login)
-        await offline_message.send_all()
+        if not manager.has_user_active_connection(login=login):
+            logger.info(f"У пользователя {login} нет больше активных соединений, посылаем OfflineMessage")
+            offline_message = OfflineMessage(login=login)
+            await offline_message.send_all()
+        else:
+            logger.info(f"У пользователя {login} ещё есть активные соединения, OfflineMessage не посылается")
     except Exception as e:
         logger.error(f"Возникла ошибка в ходе работы с ws: {str(e)}")
 

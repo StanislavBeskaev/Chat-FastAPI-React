@@ -47,9 +47,9 @@ class SocketStore {
       return
     }
     console.log('SocketStore, disconnect')
+    this.login = null
     this.socket.close()
     this.socket = null
-    this.login = null
   }
 
   sendText(text, chatId) {

@@ -93,12 +93,13 @@ class AuthStore {
   async logout() {
     this.setLoading(true)
     try {
-      socketStore.disconnect()
       messagesStore.setDefaultState()
       await AuthService.logout()
       this.setUser(null)
       this.setAuth(false)
-      localStorage.removeItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY);
+      localStorage.removeItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY)
+      // disconnect в конце, потому что на авторизации завязана логика reconnect к сокету
+      socketStore.disconnect()
     } catch (e) {
       const errorText = e?.response?.data?.detail
       console.log(errorText)
