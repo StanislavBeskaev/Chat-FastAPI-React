@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Response, status, Cookie, Request
 from fastapi.security import OAuth2PasswordRequestForm
 
 from backend import models
+from backend.api.docs import auth as auth_responses
 from backend.metrics import auth as auth_metrics
 from backend.services.auth import AuthService
 from backend.settings import get_settings, Settings
@@ -15,11 +16,11 @@ router = APIRouter(
 REFRESH_TOKEN_COOKIE_KEY = "refreshToken"
 
 
-# TODO документация
 @router.post(
     "/registration",
     response_model=models.Tokens,
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
+    responses=auth_responses.registration_responses
 )
 def registration(
         request: Request,
@@ -44,11 +45,11 @@ def registration(
     return tokens
 
 
-# TODO документация
 @router.post(
     "/login",
     response_model=models.Tokens,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    responses=auth_responses.login_responses
 )
 def login(
         request: Request,
@@ -74,11 +75,11 @@ def login(
     return tokens
 
 
-# TODO документация
 @router.get(
     "/refresh",
     response_model=models.Tokens,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    responses=auth_responses.refresh_responses
 )
 def refresh_tokens(
         request: Request,
@@ -103,10 +104,10 @@ def refresh_tokens(
     return tokens
 
 
-# TODO документация
 @router.post(
     "/logout",
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    responses=auth_responses.logout_responses
 )
 def logout(
         request: Request,

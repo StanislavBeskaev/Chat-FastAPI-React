@@ -124,7 +124,7 @@ class TestAuth(BaseTestCase):
             }
         )
 
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json(), {"detail": "Пользователь с таким логином не найден"})
 
     def test_wrong_password_login(self):

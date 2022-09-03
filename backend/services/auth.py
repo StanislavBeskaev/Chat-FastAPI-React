@@ -58,7 +58,7 @@ class AuthService(BaseService):
         if not user:
             message = "Пользователь с таким логином не найден"
             logger.warning(message)
-            raise HTTPException(status_code=401, detail=message)
+            raise HTTPException(status_code=404, detail=message)
 
         if not self.verify_password(plain_password=password, hashed_password=user.password_hash):
             logger.warning(f"Попытка авторизации с неверным паролем для пользователя {user.id}")
