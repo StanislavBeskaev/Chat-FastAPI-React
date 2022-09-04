@@ -16,7 +16,7 @@ _not_creator_error_change_chat_name_example = {"detail": "Изменить на�
 
 _chat_not_found_example = {"detail": f"Чата с id chat_id не существует"}
 
-create_new_chat_responses = DocResponses.get_instance_with_not_auth_response(
+create_new_chat_responses = DocResponses.create_instance_with_not_auth_response(
     responses=[
         StatusCodeDocResponseExample(
             status_code=status.HTTP_201_CREATED,
@@ -35,7 +35,7 @@ create_new_chat_responses = DocResponses.get_instance_with_not_auth_response(
     ]
 ).to_openapi()
 
-change_chat_name_responses = DocResponses.get_instance_with_not_auth_response(
+change_chat_name_responses = DocResponses.create_instance_with_not_auth_response(
     responses=[
         StatusCodeDocResponseExample(
             status_code=status.HTTP_200_OK,

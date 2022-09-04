@@ -44,6 +44,7 @@ class ContactService(BaseService):
                 detail=f"Такой контакт уже существует"
             )
 
+        # Тут будет 404 если пользователь не найден
         contact_user_info = self._users_dao.get_user_info(login=contact_login)
 
         self._contacts_dao.create_contact(

@@ -28,7 +28,7 @@ _success_delete_chat_member_example = {"message": f"Пользователь log
 _user_is_not_chat_creator_example = {"detail": "Только создатель может удалять из чата"}
 _login_is_not_chat_member_example = {"detail": "Пользователя login нет в чате"}
 
-get_chat_members_responses = DocResponses.get_instance_with_not_auth_response(
+get_chat_members_responses = DocResponses.create_instance_with_not_auth_response(
     responses=[
         StatusCodeDocResponseExample(
             status_code=status.HTTP_200_OK,
@@ -55,7 +55,7 @@ get_chat_members_responses = DocResponses.get_instance_with_not_auth_response(
 ).to_openapi()
 
 
-add_chat_member_responses = DocResponses.get_instance_with_not_auth_response(
+add_chat_member_responses = DocResponses.create_instance_with_not_auth_response(
     responses=[
         StatusCodeDocResponseExample(
             status_code=status.HTTP_201_CREATED,
@@ -81,7 +81,7 @@ add_chat_member_responses = DocResponses.get_instance_with_not_auth_response(
     ]
 ).to_openapi()
 
-delete_chat_member_responses = DocResponses.get_instance_with_not_auth_response(
+delete_chat_member_responses = DocResponses.create_instance_with_not_auth_response(
     responses=[
         StatusCodeDocResponseExample(
             status_code=status.HTTP_200_OK,

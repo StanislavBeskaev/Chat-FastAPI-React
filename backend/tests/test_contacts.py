@@ -349,6 +349,7 @@ class TestContact(BaseTestCase):
         )
 
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"message": f"Контакт user1 изменён"})
 
         our_user = self.find_user_by_login(login="user")
         self.assertIsNotNone(our_user)

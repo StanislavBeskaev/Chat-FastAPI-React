@@ -35,7 +35,7 @@ _not_auth_status_code_response_example = StatusCodeDocResponseExample(
     status_code=status.HTTP_401_UNAUTHORIZED,
     response_example=DocResponseExample(
         description="Не авторизован",
-        example={"detail": "Не валидный токен доступа"}
+        example={"detail": "Not authenticated"}
     )
 )
 
@@ -47,7 +47,7 @@ class DocResponses:
         self._responses = responses
 
     @classmethod
-    def get_instance_with_not_auth_response(cls, responses: list[StatusCodeDocResponseExample]) -> "DocResponses":
+    def create_instance_with_not_auth_response(cls, responses: list[StatusCodeDocResponseExample]) -> "DocResponses":
         """Создание объекта с ответом по 401 статусу(не авторизован) и переданными ответами"""
         return cls(responses=[_not_auth_status_code_response_example, *responses])
 

@@ -41,7 +41,8 @@ def get_chat_messages(
 ):
     """Получение сообщений по чату"""
     messages_metrics.GET_CHAT_MESSAGES_COUNTER.inc()
-
+    # TODO 404 если чата нет
+    # TODO тест на неправильный чат
     return message_service.get_chat_messages(user=user, chat_id=chat_id)
 
 
