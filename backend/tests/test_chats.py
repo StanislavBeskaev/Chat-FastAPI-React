@@ -62,7 +62,8 @@ class TestChats(BaseTestCase):
                 json={"chat_name": new_chat_name, "members": ["user1", "user", "new"]}
             )
 
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(response.json(), {"message": f"Чат {new_chat_name} успешно создан"})
 
             # Необходимо указывать пользователей в порядке подключения
             ws_users = ["user", "user1", "new"]

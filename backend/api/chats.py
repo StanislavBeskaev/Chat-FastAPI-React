@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, status
 
 from backend import models
+from backend.api.docs import chats as chats_responses
 from backend.dependencies import get_current_user
 from backend.metrics import chats as chats_metrics
 from backend.services.chat import ChatService
@@ -12,10 +13,10 @@ router = APIRouter(
 )
 
 
-# TODO Документация
 @router.post(
     "/",
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_201_CREATED,
+    responses=chats_responses.create_new_chat_responses
 )
 def create_new_chat(
         new_chat_data: models.ChatCreate,
@@ -27,11 +28,13 @@ def create_new_chat(
 
     chat_service.create_chat(chat_data=new_chat_data, user=user)
 
+    return {"message": f"Чат {new_chat_data.chat_name} успешно создан"}
 
-# TODO Документация
+
 @router.put(
     "/{chat_id}",
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    responses=chats_responses.change_chat_name_responses
 )
 def change_chat_name(
         chat_id: str,
