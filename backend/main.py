@@ -108,8 +108,11 @@ async def serve_react_app_and_files(full_path: str, request: Request):
     """Endpoint для отрисовки React приложения и раздачи файлов"""
     logger.debug(f"serve_react_app, full_path: {full_path}")
     if full_path.startswith("api/files"):
-        logger.debug("files hit")
+        logger.debug("api/files hit")
         avatar_file_name = full_path.split("/")[-1]
         logger.debug(f"{avatar_file_name=}")
         return FileResponse(path=FilesService.get_file_path(file_name=avatar_file_name), media_type="image/png")
+    elif "." in full_path:
+        logger.debug("build file hit")
+        return FileResponse(path=os.path.join(fronted_build_folder, full_path))
     return templates.TemplateResponse("index.html", {"request": request})

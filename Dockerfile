@@ -14,12 +14,15 @@ COPY frontend/package.json /app/frontend
 COPY frontend/package-lock.json /app/frontend
 WORKDIR /app/frontend
 RUN npm install
+RUN npm run build
 
 COPY backend /app/backend
 COPY images /app/images
 COPY poetry.lock pyproject.toml entrypoint.sh /app/
 
 RUN pip install "poetry==$POETRY_VERSION"
+RUN apt-get update
+RUN apt-get install gettext-base
 
 WORKDIR /app
 

@@ -21,7 +21,7 @@ class SocketStore {
       return
     }
 
-    const serverUrl = process.env.NODE_ENV === 'development' ? 'localhost:8000' : process.env.REACT_APP_WS_ADDRESS
+    const serverUrl = process.env.NODE_ENV === 'development' ? 'localhost:8000' : window.__ENV__.APP_WS_ADDRESS
     console.log(`SocketStore, устанавливаем ws соединение, адрес сервера: ${serverUrl}, login=${login}`)
     const ws = new WebSocket(`ws://${serverUrl}/ws/${login}`)
     this.setSocket(ws)
