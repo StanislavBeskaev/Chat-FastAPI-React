@@ -1,4 +1,5 @@
 import axiosInstance from '../axios/axios'
+import logMessages from '../log'
 
 export default class UserService {
   static async changeData(name, surname) {
@@ -7,7 +8,7 @@ export default class UserService {
 
   static async getUserInfo(login) {
     const response = await axiosInstance.get(`/user/info/${login}`)
-    console.log('getUserInfo:', response)
+    logMessages('getUserInfo:', response)
     return response.data
   }
 

@@ -1,4 +1,5 @@
 import {makeAutoObservable} from "mobx"
+import logMessages from '../../log'
 
 
 class ConfirmDeleteModalStore {
@@ -9,11 +10,11 @@ class ConfirmDeleteModalStore {
 
   constructor() {
     makeAutoObservable(this)
-    console.log("Создан ConfirmDeleteModalStore")
+    logMessages("Создан ConfirmDeleteModalStore")
   }
 
   open(text, onYes, onNo) {
-    console.log('open ConfirmDeleteModal')
+    logMessages('open ConfirmDeleteModal')
     this.text = text
     this.onYes = () => {
       onYes()
@@ -27,7 +28,7 @@ class ConfirmDeleteModalStore {
   }
 
   close() {
-    console.log('close ConfirmDeleteModal')
+    logMessages('close ConfirmDeleteModal')
     this.show = false
     setTimeout(() => {
       this.text = ''

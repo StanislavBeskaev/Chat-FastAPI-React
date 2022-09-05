@@ -1,6 +1,7 @@
 import {makeAutoObservable} from "mobx"
 import messagesStore from '../messagesStore'
 import ChatService from "../../services/ChatService"
+import logMessages from '../../log'
 
 
 class ChangeChatNameModalStore {
@@ -14,7 +15,7 @@ class ChangeChatNameModalStore {
 
   constructor() {
     makeAutoObservable(this)
-    console.log("Создан NewChatModalStore")
+    logMessages("Создан NewChatModalStore")
   }
 
 
@@ -29,7 +30,7 @@ class ChangeChatNameModalStore {
   }
 
   async changeChatName() {
-    console.log("Попытка изменения названия чата")
+    logMessages("Попытка изменения названия чата")
     try {
       await ChatService.changeChatName(this.chatId, this.name)
       this.setSuccess(true)
@@ -39,8 +40,8 @@ class ChangeChatNameModalStore {
         this.close()
       }, 2000)
     } catch (e) {
-      console.log('Ошибка при изменении названия чата')
-      console.log(e.response)
+      logMessages('Ошибка при изменении названия чата')
+      logMessages(e.response)
       this.setError(e.response.data.detail)
     }
   }

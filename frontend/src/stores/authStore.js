@@ -7,6 +7,7 @@ import UserService from '../services/UserService'
 import messagesStore from './messagesStore'
 import contactStore from './contactStore'
 import socketStore from './socketStore'
+import logMessages from '../log'
 
 
 const LOCAL_STORAGE_ACCESS_TOKEN_KEY = 'token'
@@ -20,13 +21,13 @@ class AuthStore {
 
   constructor() {
     makeAutoObservable(this)
-    console.log("Создан authStore")
+    logMessages("Создан authStore")
   }
 
   async changeAvatar(file) {
-    console.log("Попытка изменения аватара")
+    logMessages("Попытка изменения аватара")
     const response = await UserService.changeAvatar(file)
-    console.log(response)
+    logMessages(response)
     this.setAvatarFile(response.data.avatar_file)
   }
 
@@ -42,11 +43,11 @@ class AuthStore {
     try {
       this.setError('')
       const response = await service(...args)
-      console.log(response)
+      logMessages(response)
       await this.handleSuccessAuth(response)
     } catch (e) {
       const errorText = e?.response?.data?.detail
-      console.log(errorText)
+      logMessages(errorText)
       this.setError(errorText)
       this.setAuth(false)
       this.setUser({})
@@ -55,19 +56,19 @@ class AuthStore {
 
   async checkAuth() {
     try {
-      console.log("checkAuth")
+      logMessages("checkAuth")
       const response = await axios.get(`${API_URL}/auth/refresh`, {withCredentials: true})
-      console.log('checkAuth response', response)
+      logMessages('checkAuth response', response)
       await this.handleSuccessAuth(response)
     } catch (e) {
-      console.log('checkAuth error', e?.response?.data?.detail)
+      logMessages('checkAuth error', e?.response?.data?.detail)
     }
   }
 
   async handleSuccessAuth(response) {
     localStorage.setItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY, response.data['access_token'])
     this.setAuth(true)
-    console.log("setAuth = true")
+    logMessages("setAuth = true")
     this.setUser(response.data.user)
     await this.loadInitialData()
     await socketStore.connect(response.data.user.login)
@@ -81,12 +82,12 @@ class AuthStore {
 
   async loadAvatarFileName() {
     try {
-      console.log("Грузим название файла своего аватара")
+      logMessages("Грузим название файла своего аватара")
       const response = await UserService.getAvatarFileName(this.user.login)
-      console.log("Свой аватар:", response)
+      logMessages("Свой аватар:", response)
       this.setAvatarFile(response.data.avatar_file)
     } catch (e) {
-      console.log("Ошибка при зарузке имени файла своего аватара", e.res)
+      logMessages("Ошибка при зарузке имени файла своего аватара", e.res)
     }
   }
 
@@ -102,7 +103,7 @@ class AuthStore {
       socketStore.disconnect()
     } catch (e) {
       const errorText = e?.response?.data?.detail
-      console.log(errorText)
+      logMessages(errorText)
       this.setError(errorText)
     } finally {
       this.setLoading(false)
@@ -116,7 +117,7 @@ class AuthStore {
       this.setUser((await response).data)
     } catch (e) {
       const errorText = e?.response?.data?.detail
-      console.log(errorText)
+      logMessages(errorText)
       this.setError(errorText)
     } finally {
       this.setLoading(false)
@@ -140,7 +141,7 @@ class AuthStore {
   }
 
   setAvatarFile(avatarFile) {
-    console.log("setAvatarFile", avatarFile)
+    logMessages("setAvatarFile", avatarFile)
     this.avatarFile = avatarFile
   }
 }

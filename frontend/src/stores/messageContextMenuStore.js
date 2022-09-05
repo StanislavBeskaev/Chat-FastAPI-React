@@ -2,6 +2,7 @@ import {makeAutoObservable} from 'mobx'
 import messagesStore from './messagesStore'
 import MessageService from '../services/MessageService'
 import confirmDeleteModalStore from './modals/confirmDeleteModalStore'
+import logMessages from '../log'
 
 
 class MessageContextMenuStore {
@@ -12,12 +13,12 @@ class MessageContextMenuStore {
 
   constructor() {
     makeAutoObservable(this)
-    console.log("Создан MessageContextMenuStore")
+    logMessages("Создан MessageContextMenuStore")
   }
 
   // установка id сообщения, вызывается из компонента сообщения при событии contextmenu
   setMessageId(id) {
-    console.log('MessageContextMenuStore setMessageId', id)
+    logMessages('MessageContextMenuStore setMessageId', id)
     this.messageId = id
     const message = messagesStore.getMessageInCurrentChatById(id)
     this.messageText = message.text
@@ -25,19 +26,19 @@ class MessageContextMenuStore {
   }
 
   unsetMessageId() {
-    console.log('MessageContextMenuStore unsetMessageId')
+    logMessages('MessageContextMenuStore unsetMessageId')
     this.messageId = null
     this.messageText = ''
     this.beforeChangeMessageText = ''
   }
 
   async changeMessageText() {
-    console.log('Попытка изменения текста сообщения', this.messageId)
+    logMessages('Попытка изменения текста сообщения', this.messageId)
     try {
       await MessageService.changeMessageText(this.messageId, this.messageText)
       this.closeMessageEditModal()
     } catch (e) {
-      console.log('Ошибка при изменении текста сообщения:', e.response)
+      logMessages('Ошибка при изменении текста сообщения:', e.response)
     }
   }
 
@@ -54,11 +55,11 @@ class MessageContextMenuStore {
   }
 
   async deleteMessage() {
-    console.log('Попытка удалить сообщение', this.messageId, this.messageText)
+    logMessages('Попытка удалить сообщение', this.messageId, this.messageText)
     try {
       await MessageService.deleteMessage(this.messageId)
     } catch (e) {
-      console.log('Ошибка при удалении сообшения', e.response)
+      logMessages('Ошибка при удалении сообшения', e.response)
     }
   }
 

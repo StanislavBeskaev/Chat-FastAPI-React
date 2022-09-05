@@ -10,6 +10,7 @@ import messageContextMenuStore from '../../../stores/messageContextMenuStore'
 
 import UserAvatar from '../../Avatars/UserAvatar'
 import socketStore from '../../../stores/socketStore'
+import logMessages from '../../../log'
 
 
 const TextMessage = ({message, fromMe}) => {
@@ -31,7 +32,7 @@ const TextMessage = ({message, fromMe}) => {
   if (isView === false) {
     if (inView) {
       messagesStore.markMessageAsView(messageId, socketStore.sendReadMessage.bind(socketStore))
-      console.log('viewed', messageId)
+      logMessages('viewed', messageId)
     }
   }
 

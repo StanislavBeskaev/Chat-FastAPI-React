@@ -2,6 +2,7 @@ import {makeAutoObservable} from "mobx"
 
 import authStore from '../authStore'
 import ChatService from "../../services/ChatService"
+import logMessages from '../../log'
 
 
 class NewChatModalStore {
@@ -14,11 +15,11 @@ class NewChatModalStore {
 
   constructor() {
     makeAutoObservable(this)
-    console.log("Создан NewChatModalStore")
+    logMessages("Создан NewChatModalStore")
   }
 
   async createNewChat() {
-    console.log("Попытка создания нового чата")
+    logMessages("Попытка создания нового чата")
     try {
       await ChatService.createNewChat(this.name, this.logins)
       this.setSuccess(true)
@@ -29,8 +30,8 @@ class NewChatModalStore {
       }, 2000)
     } catch (e) {
       const error = e
-      console.log('Ошибка при создании нового чата')
-      console.log(error.response)
+      logMessages('Ошибка при создании нового чата')
+      logMessages(error.response)
       this.setError(error.response.data.detail)
     }
   }

@@ -7,12 +7,13 @@ import {AuthContext} from '../context'
 import Loader from './UI/Loader/Loader'
 import {privateRoutes, publicRoutes} from '../router'
 import Sidebar from './Sidebar/Sidebar'
+import logMessages from '../log'
 
 
 const AppRouter = () => {
   const {fetchUserInfo} = useContext(AuthContext)
 
-  console.log("fetchUserInfo", fetchUserInfo)
+  logMessages("fetchUserInfo", fetchUserInfo)
 
   if (fetchUserInfo) {
     return <Loader />

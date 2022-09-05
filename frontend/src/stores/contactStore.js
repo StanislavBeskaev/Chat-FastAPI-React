@@ -1,6 +1,7 @@
 import {makeAutoObservable} from 'mobx'
 
 import ContactService from '../services/ContactService'
+import logMessages from '../log'
 
 
 class ContactStore {
@@ -10,18 +11,18 @@ class ContactStore {
 
   constructor() {
     makeAutoObservable(this)
-    console.log("Создан ContactStore")
+    logMessages("Создан ContactStore")
   }
 
   async loadContacts() {
-    console.log("Загружаем контакты")
+    logMessages("Загружаем контакты")
     this.setLoading(true)
     try {
       const response = await ContactService.getContacts()
-      console.log("loadContacts response", response)
+      logMessages("loadContacts response", response)
       this.setContacts(response.data)
     } catch (e) {
-      console.log("Возникла ошибка при загрузке контактов", e)
+      logMessages("Возникла ошибка при загрузке контактов", e)
     } finally {
       this.setLoading(false)
     }
@@ -29,17 +30,17 @@ class ContactStore {
 
    addContact(contact) {
     this.contacts.push(contact)
-    console.log("ContactStore, добавлен новый контакт:", contact)
+    logMessages("ContactStore, добавлен новый контакт:", contact)
   }
 
   async deleteContact(login) {
-    console.log("Попытка удалить контакт:", login)
+    logMessages("Попытка удалить контакт:", login)
     try {
       await ContactService.deleteContact(login)
       this.setContacts(this.contacts.filter(contact => contact.login !== login))
-      console.log("Удалён контакт ", login)
+      logMessages("Удалён контакт ", login)
     } catch (e) {
-      console.log(`Не удалось удалить контакт ${login}`, e)
+      logMessages(`Не удалось удалить контакт ${login}`, e)
     }
   }
 
@@ -84,7 +85,7 @@ class ContactStore {
   }
 
   setError(error) {
-    console.log("ContactStore setError", error)
+    logMessages("ContactStore setError", error)
     this.error = error
   }
 }

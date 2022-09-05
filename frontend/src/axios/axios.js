@@ -1,4 +1,5 @@
 import axios from 'axios'
+import logMessages from '../log'
 
 export const API_URL = process.env.NODE_ENV === 'development' ? `http://localhost:8000/api` : '/api'
 
@@ -23,7 +24,7 @@ axiosInstance.interceptors.response.use((config) => {
       localStorage.setItem('token', response.data['access_token'])
       return axiosInstance.request(originalRequest);
     } catch (e) {
-      console.log('НЕ АВТОРИЗОВАН')
+      logMessages('НЕ АВТОРИЗОВАН')
     }
   }
   throw error

@@ -1,6 +1,7 @@
 import {makeAutoObservable} from "mobx"
 
 import ChatMembersService from "../../services/chatMembersService"
+import logMessages from '../../log'
 
 
 class ChatMembersModalStore {
@@ -13,7 +14,7 @@ class ChatMembersModalStore {
 
   constructor() {
     makeAutoObservable(this)
-    console.log("ChatMembersModalStore NewChatModalStore")
+    logMessages("ChatMembersModalStore NewChatModalStore")
   }
 
   async openWithChatId(chatId) {
@@ -26,26 +27,26 @@ class ChatMembersModalStore {
 
   async loadChatMembers() {
     try {
-      console.log('Запрос участников чата', this.chatId)
+      logMessages('Запрос участников чата', this.chatId)
       const response = await ChatMembersService.getChatMembers(this.chatId)
       this.setMembers(response.data)
-      console.log(response)
+      logMessages(response)
     } catch (e) {
-      console.log('Ошибка при загрузке участников чата', this.chatId)
-      console.log(e.response)
+      logMessages('Ошибка при загрузке участников чата', this.chatId)
+      logMessages(e.response)
     }
   }
 
   async addChatMember(login) {
     try {
-      console.log(`Попытка добавить пользователя ${login} к чату ${this.chatId}`)
+      logMessages(`Попытка добавить пользователя ${login} к чату ${this.chatId}`)
       await ChatMembersService.addChatMember(this.chatId, login)
-      console.log('Пользователь добавлен к чату')
+      logMessages('Пользователь добавлен к чату')
       await this.loadChatMembers()
       this.addMessage(`Пользователь ${login} добавлен к чату`)
     } catch (e) {
-      console.log('Ошибка при добавлении пользователя к чату')
-      console.log(e.response)
+      logMessages('Ошибка при добавлении пользователя к чату')
+      logMessages(e.response)
       if (e.response.status === 409) {
         await this.loadChatMembers()
         this.addMessage("Этот пользователь уже добавлен")
@@ -55,14 +56,14 @@ class ChatMembersModalStore {
 
   async deleteChatMember(login) {
     try {
-      console.log(`Попытка удалить пользователя ${login} из чата:${this.chatId}`)
+      logMessages(`Попытка удалить пользователя ${login} из чата:${this.chatId}`)
       await ChatMembersService.deleteChatMember(this.chatId, login)
-      console.log('Пользователь удалён из чата')
+      logMessages('Пользователь удалён из чата')
       await this.loadChatMembers()
       this.addMessage(`Пользователь ${login} удалён из чата`)
     } catch (e) {
-      console.log('Ошибка при удалении пользователя из чата')
-      console.log(e.response)
+      logMessages('Ошибка при удалении пользователя из чата')
+      logMessages(e.response)
       if (e.response.status === 404) {
         await this.loadChatMembers()
         this.addMessage("Этот пользователь уже удалён из чата")
@@ -79,7 +80,7 @@ class ChatMembersModalStore {
   }
 
   close() {
-    console.log('Закрываем модальное окно с участниками чата')
+    logMessages('Закрываем модальное окно с участниками чата')
     this.show = false
   }
 

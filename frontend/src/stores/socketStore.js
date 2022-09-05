@@ -4,6 +4,7 @@ import {toast} from 'react-toastify'
 import authStore from './authStore'
 import messagesStore from './messagesStore'
 import chatMembersModalStore from './modals/chatMembersModalStore'
+import logMessages from '../log'
 
 
 class SocketStore {
@@ -12,17 +13,17 @@ class SocketStore {
 
   constructor() {
     makeAutoObservable(this)
-    console.log("Создан SocketStore")
+    logMessages("Создан SocketStore")
   }
 
   async connect(login) {
     if (!login) {
-      console.log("SocketStore, connect передан пустой login выходим")
+      logMessages("SocketStore, connect передан пустой login выходим")
       return
     }
 
     const serverUrl = process.env.NODE_ENV === 'development' ? 'localhost:8000' : window.__ENV__.APP_WS_ADDRESS
-    console.log(`SocketStore, устанавливаем ws соединение, адрес сервера: ${serverUrl}, login=${login}`)
+    logMessages(`SocketStore, устанавливаем ws соединение, адрес сервера: ${serverUrl}, login=${login}`)
     const ws = new WebSocket(`ws://${serverUrl}/ws/${login}`)
     this.setSocket(ws)
     this.setLogin(login)
@@ -32,21 +33,21 @@ class SocketStore {
     ws.onclose = () => {
       if (authStore.isAuth && this.login) {
         setTimeout(() => {
-          console.log(`SocketStore WS закрыт, авторизован, переподключаемся, login=${authStore.user.login}`)
+          logMessages(`SocketStore WS закрыт, авторизован, переподключаемся, login=${authStore.user.login}`)
           this.connect(this.login)
         }, 200)
       } else {
-        console.log('SocketStore WS закрыт, не авторизован, не переподключаемся')
+        logMessages('SocketStore WS закрыт, не авторизован, не переподключаемся')
       }
     }
   }
 
   disconnect() {
     if (!this.socket) {
-      console.log("SocketStore, disconnect не выполняется, сокет не определён")
+      logMessages("SocketStore, disconnect не выполняется, сокет не определён")
       return
     }
-    console.log('SocketStore, disconnect')
+    logMessages('SocketStore, disconnect')
     this.login = null
     this.socket.close()
     this.socket = null
@@ -75,14 +76,14 @@ class SocketStore {
         data: messageData
       }
     )
-    console.log(`SocketStore, отправка сообщения: ${message}`)
+    logMessages(`SocketStore, отправка сообщения: ${message}`)
     this.socket.send(message)
   }
 
   async _addWSMessagesListener() {
     this.socket.onmessage = async (e) => {
       const msg = JSON.parse(e.data)
-      console.log('SocketStore, сообщение из ws: ', msg)
+      logMessages('SocketStore, сообщение из ws: ', msg)
 
       switch (msg.type) {
         case 'TEXT':
@@ -117,7 +118,7 @@ class SocketStore {
           messagesStore.deleteMessage(msg.data)
           break
         default:
-          console.log('SocketStore, неожиданное сообщение из ws:', msg)
+          logMessages('SocketStore, неожиданное сообщение из ws:', msg)
       }
     }
   }
@@ -150,7 +151,7 @@ class SocketStore {
 
   async _handleAddToChatMessage(messageData) {
     if (messageData.login === this.login) {
-      console.log('Меня добавляют в чат')
+      logMessages('Меня добавляют в чат')
       this._showAddToChatNotification(messageData)
       await messagesStore.addChat(messageData.chat_id)
       return
@@ -164,7 +165,7 @@ class SocketStore {
   async _handleDeleteFromChatMessage(messageData){
     const messageChatId = messageData.chat_id
     if (messageData.login === this.login) {
-      console.log('Меня удаляют из чата')
+      logMessages('Меня удаляют из чата')
       if (messageChatId === messagesStore.selectedChatId) this.sendStopTyping(messageChatId)
       if (chatMembersModalStore.show && messageChatId === chatMembersModalStore.chatId) chatMembersModalStore.close()
       messagesStore.deleteChat(messageChatId)

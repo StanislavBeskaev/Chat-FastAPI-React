@@ -1,6 +1,7 @@
 import {makeAutoObservable} from 'mobx'
 
 import messagesStore from './messagesStore'
+import logMessages from '../log'
 
 
 class SearchMessagesStore {
@@ -8,7 +9,7 @@ class SearchMessagesStore {
 
   constructor() {
     makeAutoObservable(this)
-    console.log("Создан SearchMessagesStore")
+    logMessages("Создан SearchMessagesStore")
   }
 
   setDefaultState() {
@@ -73,7 +74,7 @@ class SearchMessagesStore {
       return
     }
 
-    console.log('Ищем текст:', text)
+    logMessages('Ищем текст:', text)
     const messagesIds = messagesStore.getMessagesIdsWithTextInCurrentChat(text)
     this.setMessagesIds(messagesIds)
     this.setCount(messagesIds.length)

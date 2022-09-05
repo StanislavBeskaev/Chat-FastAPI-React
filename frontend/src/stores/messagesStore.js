@@ -3,6 +3,7 @@ import {makeAutoObservable} from 'mobx'
 import authStore from './authStore'
 import MessageService from '../services/MessageService'
 import searchMessagesStore from './searchMessagesStore'
+import logMessages from '../log'
 
 
 const DEFAULT_CHAT_ID = 'MAIN'
@@ -21,7 +22,7 @@ class MessagesStore {
 
   constructor() {
     makeAutoObservable(this)
-    console.log("Создан MessagesStore")
+    logMessages("Создан MessagesStore")
   }
 
   setDefaultState() {
@@ -40,16 +41,16 @@ class MessagesStore {
 
   // Первоначальная загрузка информации о сообщениях, выделение чатов
   async loadMessages() {
-    console.log("load messages")
+    logMessages("load messages")
     this.setLoading(true)
     try{
       const response = await MessageService.getMessages()
-      console.log("success load, response:", response)
+      logMessages("success load, response:", response)
       this.setChats(response.data)
       this.setLoadError(false)
       this.setIsLoadMessages(true)
     } catch (e) {
-      console.log("Ошибка при зарузке сообщений:", e)
+      logMessages("Ошибка при зарузке сообщений:", e)
       this.setLoadError(true)
     } finally {
       this.setLoading(false)
@@ -90,7 +91,7 @@ class MessagesStore {
     }
 
     this.initChat(chatId)
-    console.log(`Добавлен новый чат: ${chatName}`)
+    logMessages(`Добавлен новый чат: ${chatName}`)
   }
 
   // количество не просмотренных сообщений в чате, для отображения в Sidebar
@@ -102,7 +103,7 @@ class MessagesStore {
   changeChatName(data) {
     const {chat_id: chatId, chat_name: chatName} = data
     this.chats[chatId]["chat_name"] = chatName
-    console.log(`Изменено название чата ${chatId} на ${chatName}`)
+    logMessages(`Изменено название чата ${chatId} на ${chatName}`)
   }
 
   getChatNameById(chatId) {
@@ -122,17 +123,17 @@ class MessagesStore {
   }
 
   deleteChat(chatId) {
-    console.log('Попытка удаления чата', chatId)
+    logMessages('Попытка удаления чата', chatId)
     if (this.selectedChatId === chatId) {
       this.setSelectedChatId(DEFAULT_CHAT_ID)
     }
     delete this.chats[chatId]
     searchMessagesStore.deleteChat(chatId)
-    console.log('Удалён чат', chatId)
+    logMessages('Удалён чат', chatId)
   }
 
   setSelectedChatId(chatId) {
-    console.log('setSelectedChatId', chatId)
+    logMessages('setSelectedChatId', chatId)
     this.selectedChatId = chatId
     this.selectedChatText = this.chats[chatId].text
     this.selectedChatTyping = false
@@ -141,19 +142,19 @@ class MessagesStore {
 
   // Метод для добавления чата, когда текущего пользователя добавляют в чат
   async addChat(chatId) {
-    console.log('Попытка добавления чата', chatId)
+    logMessages('Попытка добавления чата', chatId)
     try{
-      console.log(`Запрос данных чата`, chatId)
+      logMessages(`Запрос данных чата`, chatId)
       const response = await MessageService.getChatMessages(chatId)
-      console.log(response)
+      logMessages(response)
 
       this.chats[chatId] = response.data
       this.initChat(chatId)
     } catch (e) {
-      console.log('Ошибка при загрузке данных чата', chatId)
-      console.log(e.response)
+      logMessages('Ошибка при загрузке данных чата', chatId)
+      logMessages(e.response)
     }
-    console.log('Чат добавлен', chatId)
+    logMessages('Чат добавлен', chatId)
   }
 
   getMessageInCurrentChatById(messageId) {
@@ -169,14 +170,14 @@ class MessagesStore {
     const message = this.getMessageInChat(messageId, chatId)
     message.text = text
     message.change_time = changeTime
-    console.log(`Для сообщения ${messageId} из чата ${chatId} сменён текст на '${text}'`)
+    logMessages(`Для сообщения ${messageId} из чата ${chatId} сменён текст на '${text}'`)
   }
 
   deleteMessage(data) {
     this.needScrollToNewMessage = false
     const {message_id: messageId, chat_id: chatId} = data
     this.chats[chatId].messages = this.chats[chatId].messages.filter(message => message.message_id !== messageId )
-    console.log(`Из чата ${chatId} удалено сообщение ${messageId}`)
+    logMessages(`Из чата ${chatId} удалено сообщение ${messageId}`)
   }
 
   // is_read - пометка "прочитанности" для вычисления линии разделения новых и старых сообщений
@@ -193,7 +194,7 @@ class MessagesStore {
       // Если пользоватль сам написал сообщений в чате, то надо показать сообщение даже если чат промотан
       message.login === authStore.user.login && chatId === this.selectedChatId
     )
-    console.log('message store, addMessage, needScrollToNewMessage=', this.needScrollToNewMessage)
+    logMessages('message store, addMessage, needScrollToNewMessage=', this.needScrollToNewMessage)
 
     if (message.type === 'TEXT') {
       if (message.login === authStore.user.login) {
@@ -210,7 +211,7 @@ class MessagesStore {
       }
     }
 
-    console.log(`MessagesStore add message to chatId "${chatId}":`, message)
+    logMessages(`MessagesStore add message to chatId "${chatId}":`, message)
     this.chats[chatId].messages.push(message)
   }
 
@@ -227,7 +228,7 @@ class MessagesStore {
 
   // waitReadList - сообщения которые уже просмотрены, но не помечены на фронте как прочитанные
   readAllMessagesInWaitList() {
-    console.log("Помечаем прочитанными сообщения в waitReadList")
+    logMessages("Помечаем прочитанными сообщения в waitReadList")
     for (let messageId of this.waitReadList) {
       this.markMessageAsRead(messageId)
     }
@@ -236,7 +237,7 @@ class MessagesStore {
 
   markMessageAsRead(messageId) {
     this.setMessagePropertyValueInCurrentChat(messageId, "is_read", true)
-    console.log(messageId, "помечено прочитанным")
+    logMessages(messageId, "помечено прочитанным")
   }
 
   // при просмотре сообщения оно сразу помечание как is_view=true, а так же отправляется пометка о прочтении в базу
@@ -246,7 +247,7 @@ class MessagesStore {
     this.addMessageToWaitReadList(messageId)
     this.setMessagePropertyValueInCurrentChat(messageId, "is_view", true)
     socketSendReadMessage(messageId)
-    console.log('sendReadMessage for id:', messageId)
+    logMessages('sendReadMessage for id:', messageId)
   }
 
   addMessageToInView(message) {
@@ -255,9 +256,9 @@ class MessagesStore {
     this.chats[chatId].messagesInView.push(message)
 
     const messages = this.chats[chatId].messagesInView.map(message => message.text)
-    console.log(`addMessageToInView chatId=${this.getSelectedChatName()} message=${message.text}, messagesInView:`, messages)
-    console.log('isLastMessageInView:', this.isSelectedChatLastMessageInView())
-    console.log('selectedChatLastMessageInView:', this.getSelectedChatLastMessageInView()?.text)
+    logMessages(`addMessageToInView chatId=${this.getSelectedChatName()} message=${message.text}, messagesInView:`, messages)
+    logMessages('isLastMessageInView:', this.isSelectedChatLastMessageInView())
+    logMessages('selectedChatLastMessageInView:', this.getSelectedChatLastMessageInView()?.text)
   }
 
   deleteMessageFromInView(message) {
@@ -266,9 +267,9 @@ class MessagesStore {
     this.chats[chatId].messagesInView = this.chats[chatId].messagesInView.filter(message => message.message_id !== messageId)
 
     const messages = this.chats[chatId].messagesInView.map(message => message.text)
-    console.log(`deleteMessageFromInView chatId=${this.getSelectedChatName()} message=${message.text}, messagesInView:`, messages)
-    console.log('isLastMessageInView:', this.isSelectedChatLastMessageInView())
-    console.log('selectedChatLastMessageInView:', this.getSelectedChatLastMessageInView()?.text)
+    logMessages(`deleteMessageFromInView chatId=${this.getSelectedChatName()} message=${message.text}, messagesInView:`, messages)
+    logMessages('isLastMessageInView:', this.isSelectedChatLastMessageInView())
+    logMessages('selectedChatLastMessageInView:', this.getSelectedChatLastMessageInView()?.text)
   }
 
   getSelectedChatLastMessageId() {
@@ -310,7 +311,7 @@ class MessagesStore {
 
   addMessageToWaitReadList(messageId) {
     this.waitReadList.push(messageId)
-    console.log('Добавлено к waitReadList', messageId)
+    logMessages('Добавлено к waitReadList', messageId)
   }
 
   addTypingLogin(chatId, login) {
@@ -326,7 +327,7 @@ class MessagesStore {
   }
 
   deleteTypingLoginFromAllChats(login) {
-    console.log(`Удаляем печатающий логин ${login} из всех чатов`)
+    logMessages(`Удаляем печатающий логин ${login} из всех чатов`)
     for (let chatId of Object.keys(this.chats)) {
       this.deleteTypingLogin(chatId, login)
     }

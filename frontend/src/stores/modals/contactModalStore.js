@@ -2,6 +2,7 @@ import {makeAutoObservable} from "mobx"
 
 import ContactService from '../../services/ContactService'
 import contactStore from '../contactStore'
+import logMessages from '../../log'
 
 
 class ContactModalStore {
@@ -14,7 +15,7 @@ class ContactModalStore {
 
   constructor() {
     makeAutoObservable(this)
-    console.log("Создан ContactModalStore")
+    logMessages("Создан ContactModalStore")
   }
 
   close() {
@@ -31,27 +32,27 @@ class ContactModalStore {
   async loadContactInfo() {
     this.setLoading(true)
     try {
-      console.log(`Загружаем информацию о контакте ${this.login}`)
+      logMessages(`Загружаем информацию о контакте ${this.login}`)
       const response = await ContactService.getOne(this.login)
-      console.log(response)
+      logMessages(response)
       this.setName(response.data.name)
       this.setSurname(response.data.surname)
     } catch (e) {
-      console.log(`Ошибка при загрузке данных контакта: ${this.login}`, e)
+      logMessages(`Ошибка при загрузке данных контакта: ${this.login}`, e)
     } finally {
       this.setLoading(false)
     }
   }
 
   async changeContact() {
-    console.log(`Пробуем изменить контакт ${this.login}, имя=${this.name}, фамилия=${this.surname}`)
+    logMessages(`Пробуем изменить контакт ${this.login}, имя=${this.name}, фамилия=${this.surname}`)
     try {
       const response = await ContactService.changeContact(this.login, this.name, this.surname)
       await contactStore.loadContacts()
       this.setChanged(true)
-      console.log(response)
+      logMessages(response)
     } catch (e) {
-      console.log(`Ошибка при изменении контакт ${this.login}`, e)
+      logMessages(`Ошибка при изменении контакт ${this.login}`, e)
     }
   }
 

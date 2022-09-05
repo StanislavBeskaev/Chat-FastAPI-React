@@ -5,6 +5,7 @@ import {observer} from 'mobx-react-lite'
 
 import authStore from '../../stores/authStore'
 import FileAvatar from '../../components/Avatars/FileAvatar'
+import logMessages from '../../log'
 
 
 const UserData = () => {
@@ -35,7 +36,7 @@ const UserData = () => {
           id="file"
           onChange={e => {
             setFile(e.target.files[0])
-            console.log("file change")
+            logMessages("file change")
             setSuccessUpload(false)
           }}
           className="mb-3"
