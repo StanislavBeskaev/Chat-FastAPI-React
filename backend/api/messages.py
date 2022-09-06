@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, status
 
 from backend import models
+from backend.api.docs import messages as messages_responses
 from backend.dependencies import get_current_user
 from backend.metrics import messages as messages_metrics
 from backend.services.messages import MessageService
@@ -12,11 +13,11 @@ router = APIRouter(
 )
 
 
-# TODO Документация
 @router.get(
     "/",
     status_code=status.HTTP_200_OK,
-    response_model=dict[str, models.ChatMessages]
+    response_model=dict[str, models.ChatMessages],
+    responses=messages_responses.get_all_messages_responses
 )
 def get_all_messages(
         user: models.User = Depends(get_current_user),
