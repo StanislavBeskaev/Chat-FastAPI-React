@@ -332,8 +332,6 @@ class MessagesStore {
 
   getChatIds() {
     const chatIds = Object.keys(this.chats)
-    logMessages(`chatIds = ${chatIds}`)
-
     let chatDates = chatIds.map(chatId => ({
       chatId, chatName: this.getChatNameById(chatId) ,date: this.getChatLastMessageDate(chatId)
     }))
@@ -353,8 +351,10 @@ class MessagesStore {
   }
 
   getChatLastMessageDate(chatId) {
-    // TODO получать с бекенда дату со временем до секунд и показывать на фронте до минут
-    const lastChatMessage = this.getChatMessages(chatId).at(-1)
+    // TODO получать с бекенда дату со временем до секунд(что бы сортировка была точной) и показывать на фронте до минут
+    const chatMessages = this.getChatMessages(chatId)
+    if (!chatMessages) return undefined
+    const lastChatMessage = chatMessages[chatMessages.length - 1]
     if (!lastChatMessage?.time) return undefined
     const time = lastChatMessage.time
     // Формат даты дд.мм.гг чч:мм
