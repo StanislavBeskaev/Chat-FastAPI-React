@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from backend import models
 from backend.core.time import get_formatted_time
 from backend.dao.messages import MessagesDAO
+from backend.dao.chats import ChatsDAO
 from backend.database import get_session
 from backend.services import BaseService
 from backend.services.ws import ChangeMessageTextMessage, DeleteMessageMessage
@@ -20,6 +21,7 @@ class MessageService(BaseService):
         super().__init__(session=session)
 
         self._messages_dao = MessagesDAO(session=session)
+        self._chats_dao = ChatsDAO(session=session)
 
     def get_many(self, user: models.User) -> dict[str, models.ChatMessages]:
         """Получение всех сообщений пользователя по чатам, где пользователь участник"""
@@ -31,7 +33,9 @@ class MessageService(BaseService):
     def get_chat_messages(self, user: models.User, chat_id: str) -> models.ChatMessages:
         """Получение сообщений конкретного чата"""
         logger.debug(f"Запрос сообщений чата {chat_id} от пользователя {user}")
-        # TODO 404 если чата нет
+
+        # Тут будет 404 если чата с таким id нет
+        self._chats_dao.get_chat_by_id(chat_id=chat_id)
         chats_data = self._messages_dao.get_user_chat_messages(user_id=user.id, chat_id=chat_id)
         chat_messages = self._convert_messages_to_chats(chats_data=chats_data)[chat_id]
 

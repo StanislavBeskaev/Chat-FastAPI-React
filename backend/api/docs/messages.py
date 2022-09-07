@@ -36,3 +36,81 @@ get_all_messages_responses = DocResponses.create_instance_with_not_auth_response
         )
     ]
 ).to_openapi()
+
+get_chat_messages_responses = DocResponses.create_instance_with_not_auth_response(
+    responses=[
+        StatusCodeDocResponseExample(
+            status_code=status.HTTP_200_OK,
+            response_example=DocResponseExample(
+                description="Успешное получение сообщений чата",
+                example=_success_get_all_messages_example["MAIN"]
+            )
+        ),
+        StatusCodeDocResponseExample(
+            status_code=status.HTTP_404_NOT_FOUND,
+            response_example=DocResponseExample(
+                "Запрос сообщений не существующего чата",
+                example={"detail": f"Чата с id not_exist_chat_id не существует"}
+            )
+        )
+    ]
+).to_openapi()
+
+change_message_text_responses = DocResponses.create_instance_with_not_auth_response(
+    responses=[
+        StatusCodeDocResponseExample(
+            status_code=status.HTTP_200_OK,
+            response_example=DocResponseExample(
+                description="Успешное изменение текста сообщения",
+                example={"message": "Текст сообщения изменён"}
+            )
+        ),
+        StatusCodeDocResponseExample(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            response_example=DocResponseExample(
+                description="Не корректный запрос",
+                example={"detail": "Сообщение не может быть пустым/ У сообщения уже такой текст"}
+            )
+        ),
+        StatusCodeDocResponseExample(
+            status_code=status.HTTP_403_FORBIDDEN,
+            response_example=DocResponseExample(
+                description="Только автор может менять текст сообщения",
+                example={"detail": "Только автор может менять сообщение!"}
+            )
+        ),
+        StatusCodeDocResponseExample(
+            status_code=status.HTTP_404_NOT_FOUND,
+            response_example=DocResponseExample(
+                description="Попытка изменить не существующее сообщение",
+                example={"detail": "Сообщение с id message_id не найдено"}
+            )
+        )
+    ]
+).to_openapi()
+
+delete_message_responses = DocResponses.create_instance_with_not_auth_response(
+    responses=[
+        StatusCodeDocResponseExample(
+            status_code=status.HTTP_200_OK,
+            response_example=DocResponseExample(
+                description="Успешное удаление сообщения",
+                example={"message": "Сообщение удалено"}
+            )
+        ),
+        StatusCodeDocResponseExample(
+            status_code=status.HTTP_403_FORBIDDEN,
+            response_example=DocResponseExample(
+                description="Только автор может удалять сообщение",
+                example={"detail": "Только автор может удалять сообщение!"}
+            )
+        ),
+        StatusCodeDocResponseExample(
+            status_code=status.HTTP_404_NOT_FOUND,
+            response_example=DocResponseExample(
+                description="Попытка удалить не существующее сообщение",
+                example={"detail": "Сообщение с id message_id не найдено"}
+            )
+        )
+    ]
+).to_openapi()

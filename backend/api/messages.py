@@ -29,11 +29,11 @@ def get_all_messages(
     return message_service.get_many(user=user)
 
 
-# TODO Документация
 @router.get(
     "/{chat_id}",
     status_code=status.HTTP_200_OK,
-    response_model=models.ChatMessages
+    response_model=models.ChatMessages,
+    responses=messages_responses.get_chat_messages_responses
 )
 def get_chat_messages(
         chat_id: str,
@@ -42,15 +42,14 @@ def get_chat_messages(
 ):
     """Получение сообщений по чату"""
     messages_metrics.GET_CHAT_MESSAGES_COUNTER.inc()
-    # TODO 404 если чата нет
-    # TODO тест на неправильный чат
+
     return message_service.get_chat_messages(user=user, chat_id=chat_id)
 
 
-# TODO Документация
 @router.put(
     "/{message_id}",
     status_code=status.HTTP_200_OK,
+    responses=messages_responses.change_message_text_responses
 )
 def change_message_text(
         message_id: str,
@@ -67,11 +66,13 @@ def change_message_text(
         user=user
     )
 
+    return {"message": "Текст сообщения изменён"}
 
-# TODO Документация
+
 @router.delete(
     "/{message_id}",
     status_code=status.HTTP_200_OK,
+    responses=messages_responses.delete_message_responses
 )
 def delete_message(
     message_id: str,
@@ -82,3 +83,4 @@ def delete_message(
     messages_metrics.DELETE_MESSAGE_COUNTER.inc()
 
     message_service.delete_message(message_id=message_id, user=user)
+    return {"message": "Сообщение удалено"}

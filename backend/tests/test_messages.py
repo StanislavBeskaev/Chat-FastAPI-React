@@ -95,6 +95,7 @@ class TestMessages(BaseTestCase):
             )
 
             self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {"message": "Текст сообщения изменён"})
             self._check_ws_change_message_text_notification(
                 ws_list=[user_ws, user1_ws, new_ws, some_ws],
                 message_id=change_message_id,
@@ -197,6 +198,7 @@ class TestMessages(BaseTestCase):
             )
 
             self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {"message": "Сообщение удалено"})
             self._check_ws_delete_message_notification(
                 ws_list=[user_ws, user1_ws, new_ws, some_ws],
                 message_id=delete_message_id,
@@ -301,3 +303,14 @@ class TestMessages(BaseTestCase):
         response = self.client.get(url=f"{self.messages_url}{TEST_CHAT_ID}")
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
+
+    def test_get_chat_messages_not_exist_chat_id(self):
+        tokens = self.login()
+        not_exist_chat_id = "not_exist_chat_id"
+        response = self.client.get(
+            url=f"{self.messages_url}{not_exist_chat_id}",
+            headers=self.get_authorization_headers(access_token=tokens.access_token)
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {"detail": f"Чата с id {not_exist_chat_id} не существует"})
