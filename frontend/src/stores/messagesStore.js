@@ -8,7 +8,6 @@ import logMessages from '../log'
 
 const DEFAULT_CHAT_ID = 'MAIN'
 
-// TODO придумать упорядочивание чатов по новым сообщениям
 class MessagesStore {
   chats = {}
   selectedChatId = DEFAULT_CHAT_ID
@@ -254,22 +253,12 @@ class MessagesStore {
     const chatId = this.selectedChatId
     if (this.chats[chatId].messagesInView.indexOf(message) !== -1) return
     this.chats[chatId].messagesInView.push(message)
-
-    const messages = this.chats[chatId].messagesInView.map(message => message.text)
-    logMessages(`addMessageToInView chatId=${this.getSelectedChatName()} message=${message.text}, messagesInView:`, messages)
-    logMessages('isLastMessageInView:', this.isSelectedChatLastMessageInView())
-    logMessages('selectedChatLastMessageInView:', this.getSelectedChatLastMessageInView()?.text)
   }
 
   deleteMessageFromInView(message) {
     const chatId = this.selectedChatId
     const {message_id: messageId} = message
     this.chats[chatId].messagesInView = this.chats[chatId].messagesInView.filter(message => message.message_id !== messageId)
-
-    const messages = this.chats[chatId].messagesInView.map(message => message.text)
-    logMessages(`deleteMessageFromInView chatId=${this.getSelectedChatName()} message=${message.text}, messagesInView:`, messages)
-    logMessages('isLastMessageInView:', this.isSelectedChatLastMessageInView())
-    logMessages('selectedChatLastMessageInView:', this.getSelectedChatLastMessageInView()?.text)
   }
 
   getSelectedChatLastMessageId() {
@@ -339,6 +328,47 @@ class MessagesStore {
 
   selectedChatTypingLogins() {
     return this.chats[this.selectedChatId].typingLogins
+  }
+
+  getChatIds() {
+    const chatIds = Object.keys(this.chats)
+    logMessages(`chatIds = ${chatIds}`)
+
+    let chatDates = chatIds.map(chatId => ({
+      chatId, chatName: this.getChatNameById(chatId) ,date: this.getChatLastMessageDate(chatId)
+    }))
+    logMessages('chatDates до сортирвки', chatDates)
+    chatDates.sort((first, second) => {
+      // Сортировка по дате в убывающем порядке
+      if (first.date > second.date) return -1
+      if (first.date < second.date) return 1
+      if (!first.date && !second.date) return 1
+      if (!first.date) return 1
+      if (!second.date) return -1
+      return -1
+    })
+    logMessages('chatDates после сортирвки', chatDates)
+
+    return chatDates.map(chatDates => chatDates.chatId)
+  }
+
+  getChatLastMessageDate(chatId) {
+    // TODO получать с бекенда дату со временем до секунд и показывать на фронте до минут
+    const lastChatMessage = this.getChatMessages(chatId).at(-1)
+    if (!lastChatMessage?.time) return undefined
+    const time = lastChatMessage.time
+    // Формат даты дд.мм.гг чч:мм
+    const day = parseInt(time.slice(0, 2))
+    const month = parseInt(time.slice(3, 5)) - 1
+    const year = 2000 + parseInt(time.slice(6, 8))
+    const hour = parseInt(time.slice(9, 11))
+    const minute = parseInt(time.slice(12))
+
+    return new Date(year, month, day, hour, minute)
+  }
+
+  getChatMessages(chatId) {
+    return this.chats[chatId]?.messages
   }
 
   setSelectedChatText(text) {

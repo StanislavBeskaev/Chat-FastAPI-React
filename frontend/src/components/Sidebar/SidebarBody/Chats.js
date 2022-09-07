@@ -29,7 +29,7 @@ const Chats = () => {
 
   return (
     <ListGroup variant="flush">
-      {Object.keys(chats).map(chatId => {
+      {messagesStore.getChatIds().map(chatId => {
         const chatName = chats[chatId].chat_name
         const selected = selectedChatId === chatId
         const notViewedMessagesCount = messagesStore.getChatNotViewedMessagesCount(chatId)
