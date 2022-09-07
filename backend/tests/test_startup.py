@@ -65,7 +65,7 @@ class TestStartup(TestCase):
             hashed_password=admin.password_hash
         ))
 
-        admin_profile = test_users_dao.find_profile_by_login(login="admin")
+        admin_profile = test_users_dao.get_profile_by_login(login="admin")
         self.assertEqual(admin_profile.user, admin.id)
         self.assertEqual(admin_profile.avatar_file, ADMIN_AVATAR)
 

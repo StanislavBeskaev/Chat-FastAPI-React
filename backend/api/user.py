@@ -3,6 +3,7 @@ from fastapi.responses import FileResponse
 from loguru import logger
 
 from backend import models
+from backend.api.docs import user as user_responses
 from backend.dependencies import get_current_user
 from backend.metrics import user as user_metrics
 from backend.services.files import FilesService
@@ -15,11 +16,11 @@ router = APIRouter(
 )
 
 
-# TODO документация
 @router.put(
     "/change",
     response_model=models.User,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    responses=user_responses.change_user_data_responses
 )
 def change_user_data(
         user_data: models.UserUpdate,
@@ -33,10 +34,10 @@ def change_user_data(
     return updated_user
 
 
-# TODO документация
 @router.post(
     "/avatar",
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
+    responses=user_responses.upload_avatar_responses
 )
 def upload_avatar(
         file: UploadFile,
@@ -56,10 +57,10 @@ def upload_avatar(
     }
 
 
-# TODO документация
 @router.get(
     "/avatar_file/{login}",
     status_code=status.HTTP_200_OK,
+    responses=user_responses.get_login_avatar_file_responses
 )
 def get_login_avatar_file(
         login: str,
@@ -71,11 +72,11 @@ def get_login_avatar_file(
     return FileResponse(path=user_service.get_avatar_file_path_by_login(login=login), media_type="image/png")
 
 
-# TODO документация
 @router.get(
     "/avatar_file_name/{login}",
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(get_current_user)]
+    dependencies=[Depends(get_current_user)],
+    responses=user_responses.get_login_avatar_filename_responses
 )
 def get_login_avatar_filename(
         login: str,
@@ -88,12 +89,12 @@ def get_login_avatar_filename(
     return {"avatar_file": user_service.get_avatar_by_login(login=login)}
 
 
-# TODO документация
 @router.get(
     "/info/{login}",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(get_current_user)],
-    response_model=models.User
+    response_model=models.User,
+    responses=user_responses.get_user_info_responses
 )
 def get_user_info(
         login: str,

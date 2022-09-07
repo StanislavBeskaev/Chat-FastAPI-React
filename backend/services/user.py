@@ -45,7 +45,7 @@ class UserService(BaseService):
 
     def get_avatar_by_login(self, login: str) -> str | None:
         """Получение имени файла аватара пользователя по логину"""
-        user_profile = self._users_dao.find_profile_by_login(login=login)
+        user_profile = self._users_dao.get_profile_by_login(login=login)
 
         logger.debug(f"Для пользователя {user_profile.user}, файл аватара: {user_profile.avatar_file}")
         return user_profile.avatar_file

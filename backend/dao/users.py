@@ -74,7 +74,7 @@ class UsersDAO(BaseDAO):
 
         return models.User.from_orm(user)
 
-    def find_profile_by_login(self, login: str) -> models.Profile:
+    def get_profile_by_login(self, login: str) -> models.Profile:
         """Нахождение профайла пользователя по логину пользователя"""
         db_profile = (
             self.session
