@@ -351,20 +351,11 @@ class MessagesStore {
   }
 
   getChatLastMessageDate(chatId) {
-    // TODO получать с бекенда дату со временем до секунд(что бы сортировка была точной) и показывать на фронте до минут
     const chatMessages = this.getChatMessages(chatId)
     if (!chatMessages) return undefined
     const lastChatMessage = chatMessages[chatMessages.length - 1]
     if (!lastChatMessage?.time) return undefined
-    const time = lastChatMessage.time
-    // Формат даты дд.мм.гг чч:мм
-    const day = parseInt(time.slice(0, 2))
-    const month = parseInt(time.slice(3, 5)) - 1
-    const year = 2000 + parseInt(time.slice(6, 8))
-    const hour = parseInt(time.slice(9, 11))
-    const minute = parseInt(time.slice(12))
-
-    return new Date(year, month, day, hour, minute)
+    return new Date(lastChatMessage.time)
   }
 
   getChatMessages(chatId) {

@@ -11,6 +11,7 @@ import messageContextMenuStore from '../../../stores/messageContextMenuStore'
 import UserAvatar from '../../Avatars/UserAvatar'
 import socketStore from '../../../stores/socketStore'
 import logMessages from '../../../log'
+import formatDate from '../../../utils/time'
 
 
 const TextMessage = ({message, fromMe}) => {
@@ -77,7 +78,7 @@ const TextMessage = ({message, fromMe}) => {
         }
       </div>
       <div className={`text-muted small ${fromMe ? 'text-end' : ''}`}>
-        {fromMe ? 'Вы' : contactStore.getDisplayName(login)}, {time}
+        {fromMe ? 'Вы' : contactStore.getDisplayName(login)}, {formatDate(time)}
         {
           changeTime
             ? <span className="text-primary fst-italic" style={{marginLeft: 6}}>изменено</span>

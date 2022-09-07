@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react'
 import {useInView} from 'react-intersection-observer'
 import messagesStore from '../../../stores/messagesStore'
+import formatDate from '../../../utils/time'
 
 const InfoMessage = ({message}) => {
   const {text, time} = message
@@ -26,7 +27,7 @@ const InfoMessage = ({message}) => {
       className="p-1 align-self-center text-muted"
       style={{fontSize: 14}}
     >
-      {time} {text}
+      {formatDate(time)} {text}
     </div>
   )
 }

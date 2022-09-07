@@ -11,4 +11,5 @@ def get_current_time() -> datetime:
 
 
 def get_formatted_time(value: datetime = get_current_time()) -> str:
-    return value.strftime("%d.%m.%y %H:%M")
+    """Получение форматированного времени для корректного парсинга на фронте"""
+    return value.strftime("%Y-%m-%dT%H:%M:%S")
