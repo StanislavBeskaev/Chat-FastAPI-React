@@ -4,8 +4,8 @@ export default function formatDate(strDate) {
   const year = date.getFullYear().toString().slice(2)
   const day = withLeadZero(date.getDate())
   const month = withLeadZero(date.getMonth() + 1)
-  const hours = date.getHours()
-  const minutes = date.getMinutes()
+  const hours = withLeadZero(date.getHours())
+  const minutes = withLeadZero(date.getMinutes())
   return `${day}.${month}.${year} ${hours}:${minutes}`
 }
 
