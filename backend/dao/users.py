@@ -2,11 +2,32 @@ from fastapi import HTTPException
 from loguru import logger
 
 from backend import tables, models
+from backend.core.decorators import model_result
 from backend.dao import BaseDAO
 
 
 class UsersDAO(BaseDAO):
     """Класс для работы с пользователями в БД"""
+
+    @model_result(models.User)
+    def get_all_users(self) -> list[models.User]:
+        """Получение всех записей таблицы пользователей"""
+        db_users = (
+            self.session
+            .query(tables.User)
+            .all()
+        )
+        return db_users
+
+    @model_result(models.Profile)
+    def get_all_profiles(self) -> list[models.Profile]:
+        """Получение всех записей таблицы профилей"""
+        db_profiles = (
+            self.session
+            .query(tables.Profile)
+            .all()
+        )
+        return db_profiles
 
     def create_user(self, login: str, password_hash: str, name: str, surname: str) -> models.User:
         """Создание пользователя"""
@@ -54,6 +75,7 @@ class UsersDAO(BaseDAO):
 
         return user
 
+    @model_result(models.User)
     def get_user_info(self, login: str) -> models.User:
         """Получение информации и пользователе"""
         user_info = self.find_user_by_login(login=login)
@@ -61,8 +83,9 @@ class UsersDAO(BaseDAO):
         if not user_info:
             raise HTTPException(status_code=404, detail=f"Пользователь с логином '{login}' не найден")
 
-        return models.User.from_orm(user_info)
+        return user_info
 
+    @model_result(models.User)
     def change_user_data(self, login: str, name: str, surname: str) -> models.User:
         """Изменение данных пользователя"""
         user = self.find_user_by_login(login=login)
@@ -72,8 +95,9 @@ class UsersDAO(BaseDAO):
         self.session.add(user)
         self.session.commit()
 
-        return models.User.from_orm(user)
+        return user
 
+    @model_result(models.Profile)
     def get_profile_by_login(self, login: str) -> models.Profile:
         """Нахождение профайла пользователя по логину пользователя"""
         db_profile = (
@@ -87,7 +111,7 @@ class UsersDAO(BaseDAO):
         if not db_profile:
             raise HTTPException(status_code=404, detail=f"Профиль пользователя с логином '{login}' не найден")
 
-        return models.Profile.from_orm(db_profile)
+        return db_profile
 
     def set_avatar_file(self, user_id: int, avatar_file: str) -> None:
         """Установка имени файла аватара для пользователя"""

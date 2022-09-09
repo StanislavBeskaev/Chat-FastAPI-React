@@ -16,3 +16,17 @@ class ContactChange(ContactCreate):
 
 class Contact(ContactChange):
     pass
+
+    class Config:
+        orm_mode = True
+
+
+class ContactFull(BaseModel):
+    id: int
+    owner_user_id: int
+    contact_user_id: int
+    name: str
+    surname: str
+
+    class Config:
+        orm_mode = True

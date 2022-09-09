@@ -2,12 +2,25 @@ from loguru import logger
 from sqlalchemy import and_
 
 from backend import tables, models
+from backend.core.decorators import model_result
 from backend.dao import BaseDAO
 
 
 class ChatMembersDAO(BaseDAO):
     """Класс для работы с участниками чатов в БД"""
 
+    @model_result(models.ChatMemberFull)
+    def get_all_chat_members(self) -> list[models.ChatMemberFull]:
+        """Получение всех записей таблицы участников чатов"""
+        db_chat_members = (
+            self.session
+            .query(tables.ChatMember)
+            .all()
+        )
+
+        return db_chat_members
+
+    @model_result(models.User)
     def get_chat_members(self, chat_id: str) -> list[models.User]:
         """Получение пользователей - участников чата"""
         users_in_chat = (
@@ -22,10 +35,9 @@ class ChatMembersDAO(BaseDAO):
             .all()
         )
 
-        users = [models.User.from_orm(user) for user in users_in_chat]
-        user_logins = [user.login for user in users]
+        user_logins = [user.login for user in users_in_chat]
         logger.debug(f"Участники чата {chat_id}: {user_logins}")
-        return users
+        return users_in_chat
 
     def find_chat_member(self, user_id: int, chat_id: str) -> tables.ChatMember | None:
         """Поиск участника чата"""

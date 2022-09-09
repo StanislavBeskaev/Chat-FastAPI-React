@@ -1,9 +1,20 @@
-from backend import tables
+from backend import tables, models
+from backend.core.decorators import model_result
 from backend.dao import BaseDAO
 
 
 class TokensDAO(BaseDAO):
     """Класс для работы с токенами в БД"""
+
+    @model_result(models.RefreshToken)
+    def get_all_refresh_tokens(self) -> list[models.RefreshToken]:
+        """Получение всех записей таблицы refresh токенов"""
+        db_refresh_tokens = (
+            self.session
+            .query(tables.RefreshToken)
+            .all()
+        )
+        return db_refresh_tokens
 
     def find_refresh_token_by_user(self, user_id: int, user_agent: str) -> tables.RefreshToken | None:
         """Поиск refresh токена по пользователю и user_agent"""

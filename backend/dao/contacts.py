@@ -1,9 +1,21 @@
 from backend import tables, models
+from backend.core.decorators import model_result
 from backend.dao import BaseDAO
 
 
 class ContactsDAO(BaseDAO):
     """Класс для работы с контактами в БД"""
+
+    @model_result(models.ContactFull)
+    def get_all_contacts(self) -> list[models.ContactFull]:
+        """Получение всех записей таблицы контактов из базы"""
+        db_contacts = (
+            self.session
+            .query(tables.Contact)
+            .all()
+        )
+
+        return db_contacts
 
     def get_user_contacts(self, user_id: int) -> list[models.Contact]:
         """Получение контактов пользователя"""

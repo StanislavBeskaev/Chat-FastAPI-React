@@ -7,12 +7,33 @@ from sqlalchemy import and_
 from sqlalchemy.orm import Query, aliased
 
 from backend import tables, models
+from backend.core.decorators import model_result
 from backend.core.time import get_current_time
 from backend.dao import BaseDAO
 
 
 class MessagesDAO(BaseDAO):
     """Класс для работы с сообщениями в БД"""
+
+    @model_result(models.MessageFull)
+    def get_all_messages(self) -> list[models.MessageFull]:
+        """Получение всех записей из таблицы сообщений"""
+        db_messages = (
+            self.session
+            .query(tables.Message)
+            .all()
+        )
+        return db_messages
+
+    @model_result(models.MessageReadStatus)
+    def get_all_read_status_messages(self) -> list[models.MessageReadStatus]:
+        """Получение всех записей из таблицы информации о прочтении сообщения пользователем"""
+        db_messages = (
+            self.session
+                .query(tables.MessageReadStatus)
+                .all()
+        )
+        return db_messages
 
     def create_text_message(self, text: str, user_id: int, chat_id: str) -> models.Message:
         """Создание текстового сообщения в базе"""

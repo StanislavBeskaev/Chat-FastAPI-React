@@ -32,6 +32,20 @@ class Message(BaseModel):
         orm_mode = True
 
 
+class MessageFull(Message):
+    change_time: datetime | None
+
+
+class MessageReadStatus(BaseModel):
+    id: int
+    message_id: str
+    user_id: str
+    is_read: bool
+
+    class Config:
+        orm_mode = True
+
+
 class MessageData(WSMessageData):
     message_id: str | None
     type: str | None = tables.MessageType.TEXT

@@ -1,7 +1,7 @@
-from .chat import Chat
-from .chat_members import ChatMemberWithOnlineStatus, ChatMember
-from .contact import Contact, ContactCreate, ContactDelete, ContactChange
-from .message import (
+from backend.models.chat import Chat
+from backend.models.chat_members import ChatMemberWithOnlineStatus, ChatMember, ChatMemberFull
+from backend.models.contact import Contact, ContactCreate, ContactDelete, ContactChange, ContactFull
+from backend.models.message import (
     MessageData,
     ChatData,
     ChatMessages,
@@ -11,13 +11,15 @@ from .message import (
     ChatChangeNameData,
     ChatNameData,
     Message,
+    MessageFull,
+    MessageReadStatus,
     ChangeMessageText,
     ChangeMessageTextData,
     DeleteMessageData,
 )
-from .token import Tokens
-from .user import UserUpdate, UserCreate, UserLogin, User, Profile
-from .ws import (
+from backend.models.token import Tokens, RefreshToken
+from backend.models.user import UserUpdate, UserCreate, UserLogin, User, Profile
+from backend.models.ws import (
     WSMessageData,
     TextMessageData,
     InTextMessageData,
