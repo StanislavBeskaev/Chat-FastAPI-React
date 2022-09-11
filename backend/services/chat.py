@@ -8,7 +8,7 @@ from backend import models, tables
 from backend.dao.chats import ChatsDAO
 from backend.dao.messages import MessagesDAO
 from backend.dao.users import UsersDAO
-from backend.database import get_session
+from backend.db_config import get_session
 from backend.services import BaseService
 from backend.services.chat_members import ChatMembersService
 from backend.services.ws import NewChatMessage, ChangeChatNameMessage, InfoMessage

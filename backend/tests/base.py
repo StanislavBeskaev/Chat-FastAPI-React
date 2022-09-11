@@ -9,7 +9,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from backend import tables, models
-from backend.database import get_session
+from backend.db_config import get_session
 from backend.main import app
 from backend.services.ws.constants import MessageType, OnlineStatus
 

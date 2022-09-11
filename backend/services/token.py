@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from backend import models, tables
 from backend.dao.tokens import TokensDAO
-from backend.database import get_session
+from backend.db_config import get_session
 from backend.settings import get_settings, Settings
 from backend.services import BaseService
 

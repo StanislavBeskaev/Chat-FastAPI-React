@@ -22,7 +22,6 @@ from backend.services.ws import (
 )
 from backend.services.ws_connection_manager import WSConnectionManager, WebsocketClient
 
-
 app = FastAPI(
         title='API приложения для общения',
         description='Приложение для общения',

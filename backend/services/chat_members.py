@@ -9,7 +9,7 @@ from backend.dao.chat_members import ChatMembersDAO
 from backend.dao.chats import ChatsDAO
 from backend.dao.messages import MessagesDAO
 from backend.dao.users import UsersDAO
-from backend.database import get_session
+from backend.db_config import get_session
 from backend.services import BaseService
 from backend.services.ws import InfoMessage, AddLoginToChatMessage, DeleteLoginFromChatMessage
 from backend.services.ws_connection_manager import WSConnectionManager

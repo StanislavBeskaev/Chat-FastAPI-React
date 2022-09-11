@@ -9,7 +9,7 @@ from fastapi import Depends
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from backend.database import get_session
+from backend.db_config import get_session
 from backend.dao.chats import ChatsDAO
 from backend.dao.chat_members import ChatMembersDAO
 from backend.dao.contacts import ContactsDAO

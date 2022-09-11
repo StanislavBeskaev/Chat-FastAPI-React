@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from backend import tables
-from backend.database import get_session
+from backend.db_config import get_session
 from backend.dao.chats import ChatsDAO
 from backend.dao.chat_members import ChatMembersDAO
 from backend.dao.users import UsersDAO

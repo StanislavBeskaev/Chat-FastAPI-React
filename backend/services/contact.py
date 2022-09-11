@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from backend import models, tables
 from backend.dao.contacts import ContactsDAO
 from backend.dao.users import UsersDAO
-from backend.database import get_session
+from backend.db_config import get_session
 from backend.services import BaseService
 
 

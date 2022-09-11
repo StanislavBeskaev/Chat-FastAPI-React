@@ -3,7 +3,7 @@ from fastapi import UploadFile
 from loguru import logger
 
 from backend import tables
-from backend.database import get_session
+from backend.db_config import get_session
 from backend.settings import get_settings
 
 

@@ -3,7 +3,7 @@ from abc import ABC
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from backend.database import get_session
+from backend.db_config import get_session
 
 
 class BaseDAO(ABC):

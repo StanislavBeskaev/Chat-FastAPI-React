@@ -9,7 +9,7 @@ from backend import models
 from backend.core.time import get_formatted_time
 from backend.dao.messages import MessagesDAO
 from backend.dao.chats import ChatsDAO
-from backend.database import get_session
+from backend.db_config import get_session
 from backend.services import BaseService
 from backend.services.ws import ChangeMessageTextMessage, DeleteMessageMessage
 

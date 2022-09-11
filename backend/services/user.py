@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from backend import models
 from backend.dao.users import UsersDAO
-from backend.database import get_session
+from backend.db_config import get_session
 from backend.services import BaseService
 from backend.services.files import FilesService
 

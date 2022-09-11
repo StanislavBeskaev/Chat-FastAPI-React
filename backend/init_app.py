@@ -4,9 +4,9 @@ import shutil
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from backend.database import engine
+from backend.db_config import engine
 from backend import tables
-from backend.database import get_session
+from backend.db_config import get_session
 from backend.settings import get_settings, Settings
 from backend.services.auth import AuthService
 from backend.services.files import check_files_folder, IMAGES_FOLDER, FilesService
@@ -40,6 +40,7 @@ def _copy_admin_avatar_to_files():
 
 def _init_db():
     logger.info("_init_db start")
+    # TODO миграции
     tables.Base.metadata.create_all(bind=engine)
 
     session = next(get_session())
