@@ -187,6 +187,7 @@ class MessagesStore {
     const {chat_id: chatId, message_id: messageId} = message
     const notViewedMessagesCount = this.getChatNotViewedMessagesCount(chatId)
 
+    // TODO исправить, при информационном сообщении прокручивается до конца
     this.needScrollToNewMessage = (
       notViewedMessagesCount === 0 && chatId === this.selectedChatId && this.isSelectedChatLastMessageInView()
       ||

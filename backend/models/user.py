@@ -25,6 +25,10 @@ class User(UserBase, UserUpdate):
         orm_mode = True
 
 
+class UserWithPassword(User):
+    password_hash: str
+
+
 class Profile(BaseModel):
     id: int
     user: int

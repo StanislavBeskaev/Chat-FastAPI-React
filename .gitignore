@@ -3,6 +3,7 @@
 build
 node_modules
 files
+data
 tmp
 .coverage
 *probe*

@@ -19,6 +19,11 @@ class UserService(BaseService):
 
         self._users_dao = UsersDAO(session=session)
 
+    @classmethod
+    def is_admin(cls, user: models.User) -> bool:
+        """Является ли пользователь админом"""
+        return user.login == "admin"
+
     def change_user_data(self, user_login: str, user_data: models.UserUpdate) -> models.User:
         """Изменение данных пользователя"""
         user = self._users_dao.change_user_data(

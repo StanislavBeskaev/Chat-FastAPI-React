@@ -210,6 +210,7 @@ class MessagesDAO(BaseDAO):
         """Удаление сообщения из базы"""
         message = self.get_message_by_id(message_id=message_id)
         self.session.delete(message)
+        self.session.query(tables.MessageReadStatus).where(tables.MessageReadStatus.message_id == message_id).delete()
         self.session.commit()
 
         logger.info(f"Удалено сообщение '{message.text}' c id {message.id},"

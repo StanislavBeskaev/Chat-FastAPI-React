@@ -9,7 +9,7 @@ from backend.dao import BaseDAO
 class UsersDAO(BaseDAO):
     """Класс для работы с пользователями в БД"""
 
-    @model_result(models.User)
+    @model_result(models.UserWithPassword)
     def get_all_users(self) -> list[models.User]:
         """Получение всех записей таблицы пользователей"""
         db_users = (

@@ -18,7 +18,7 @@ from backend.models.message import (
     DeleteMessageData,
 )
 from backend.models.token import Tokens, RefreshToken
-from backend.models.user import UserUpdate, UserCreate, UserLogin, User, Profile
+from backend.models.user import UserUpdate, UserCreate, UserLogin, User, Profile, UserWithPassword
 from backend.models.ws import (
     WSMessageData,
     TextMessageData,

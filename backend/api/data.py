@@ -2,11 +2,15 @@ from fastapi import (
     APIRouter,
     Depends,
     status,
+    HTTPException, UploadFile
 )
+from fastapi.responses import StreamingResponse
 from loguru import logger
 
+from backend import models
 from backend.dependencies import get_current_user
-from backend.services.export import ExportService
+from backend.services.db_data import DBDataService
+from backend.services.user import UserService
 
 router = APIRouter(
     prefix='/data',
@@ -16,11 +20,42 @@ router = APIRouter(
 
 @router.get(
     "/export",
-    status_code=status.HTTP_200_OK # TODO нужна проверка на админа
+    status_code=status.HTTP_200_OK
 )
-def export_db_data(export_service: ExportService = Depends()):
+def export_db_data(
+    user: models.User = Depends(get_current_user),
+    db_data_service: DBDataService = Depends()
+):
     """Получение выгрузки данных из базы"""
     logger.info("Запрос выгрузки данных из базы")
-    export_service.export_db_data()
+    if not UserService.is_admin(user=user):
+        logger.warning("Пользователь запрашивающий выгрузку не админ, отказано")
+        raise HTTPException(status_code=403, detail="Не достаточно полномочий")
 
-    return {"message": "Тут будет экспорт данных"}
+    logger.debug("Пользователь является админом, выгружаем данные из базы")
+    return StreamingResponse(
+        content=db_data_service.export_db_data(),
+        media_type="application/zip",
+        headers={'Content-Disposition': 'attachment; filename=export.zip'}
+    )
+
+
+@router.post(
+    "/import",
+    status_code=status.HTTP_200_OK
+)
+def import_db_data(
+    file: UploadFile,
+    user: models.User = Depends(get_current_user),
+    db_data_service: DBDataService = Depends()
+):
+    """Импорт данных в базу"""
+    logger.info("Запрос импорта данных в базу")
+    if not UserService.is_admin(user=user):
+        logger.warning("Пользователь импортирующий данные не админ, отказано")
+        raise HTTPException(status_code=403, detail="Не достаточно полномочий")
+
+    logger.debug("Пользователь является админом, импортируем данные в базу")
+    db_data_service.import_db_data(import_zip_file=file)
+
+    return {"message": "Данные успешно залиты"}
