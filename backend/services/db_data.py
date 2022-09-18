@@ -48,7 +48,8 @@ def convert_datetime_to_timestamp(obj: Any):
 
 def convert_timestamp_str_to_datetime(timestamp_str: str) -> datetime:
     """Преобразование строчного представления timestamp в datetime"""
-    return datetime.fromtimestamp(float(timestamp_str))
+    import_time_delta = get_settings().import_time_delta_s
+    return datetime.fromtimestamp(float(timestamp_str) + import_time_delta)
 
 
 class DBDataService(BaseService):
@@ -93,6 +94,7 @@ class DBDataService(BaseService):
 
     def import_db_data(self, import_zip_file: UploadFile) -> None:
         """Импорт данных в базу из zip файла"""
+        self._create_import_folder()
         self._unzip_import_zip_file(
             import_zip_file_path=self._save_import_zip_file(import_zip_file=import_zip_file)
         )
@@ -118,6 +120,12 @@ class DBDataService(BaseService):
     def _get_folder_path_in_tmp_folder(self, folder_name: str) -> str | PosixPath:
         return os.path.join(self._settings.base_dir, TMP_FOLDER, folder_name)
 
+    @staticmethod
+    def _create_folder(folder_path: str) -> None:
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path, exist_ok=True)
+            logger.info(f"Создана папка под временные файлы {folder_path}")
+
     def _make_export_zip_object(self):
         export_object = io.BytesIO()
         with ZipFile(export_object, "w") as zip_file:
@@ -128,12 +136,6 @@ class DBDataService(BaseService):
 
         export_object.seek(0)
         return export_object
-
-    @staticmethod
-    def _create_folder(folder_path: str) -> None:
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path, exist_ok=True)
-            logger.info(f"Создана папка под временные файлы {folder_path}")
 
     def _export_db_data_source(self, db_data_source: DBDataSource) -> str | PosixPath:
         export_folder_path = self._get_export_folder_path()
@@ -147,7 +149,6 @@ class DBDataService(BaseService):
         return export_file_path
 
     def _save_import_zip_file(self, import_zip_file: UploadFile) -> str | PosixPath:
-        self._create_import_folder()
         import_zip_file_path = os.path.join(self._get_import_folder_path(), "import.zip")
 
         with open(import_zip_file_path, mode="wb") as import_file:
@@ -200,6 +201,10 @@ class DBDataService(BaseService):
         logger.info(f"Вставлены данные в таблицу {table.__tablename__}")
 
     def _set_correct_table_sequences_value(self) -> None:
+        if self._settings.sqlalchemy_connection_url.startswith("sqlite"):
+            logger.info("sqlite последовательности не трогаем")
+            return
+
         table_sequences_to_restart = (
             ("messages_read_status_id_seq", tables.MessageReadStatus),
             ("chat_members_id_seq", tables.ChatMember),

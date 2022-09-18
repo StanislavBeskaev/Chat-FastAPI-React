@@ -1,6 +1,18 @@
 version: '3'
 
 services:
+  postgresql:
+    image: postgres:12
+    container_name: "fastapi_chat_postgres"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
   app:
     container_name: "fastapi_chat_app"
     restart: always
