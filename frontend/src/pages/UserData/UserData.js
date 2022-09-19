@@ -43,11 +43,15 @@ const UserData = () => {
         />
         {
           successUpload
-            ? <span className="text-success">Файл загружен</span>
-            : <span className="text-danger">Отправьте файл</span>
+            ? <span className="text-success mb-1">Аватар изменён</span>
+            : null
         }
-        <Button onClick={uploadFile} className="mb-3">Отправить файл</Button>
-        <FileAvatar fileName={authStore.avatarFile} size="lg"/>
+        {
+          file && !successUpload
+            ? <Button onClick={uploadFile} className="mb-3">Отправить файл</Button>
+            : null
+        }
+        <FileAvatar fileName={authStore.avatarFile} size="md"/>
       </div>
     </div>
   )
