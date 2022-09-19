@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useState} from 'react'
 import {Button} from 'react-bootstrap'
 
 import contactModalStore from '../../../stores/modals/contactModalStore'
@@ -8,6 +8,7 @@ import confirmDeleteModalStore from '../../../stores/modals/confirmDeleteModalSt
 
 
 const Contact = ({login}) => {
+  const  [showDeleteBtn, setShowDeleteBtn] = useState(false)
 
   const handleDelete = async () => {
     confirmDeleteModalStore.open(
@@ -20,7 +21,11 @@ const Contact = ({login}) => {
   }
 
   return (
-    <div className="d-flex justify-content-between align-items-center">
+    <div
+      className="d-flex justify-content-between align-items-center"
+      onMouseOver={() => setShowDeleteBtn(true)}
+      onMouseOut={() => setShowDeleteBtn(false)}
+    >
       <div
         onClick={() => contactModalStore.showWithLogin(login)}
         style={{cursor: 'pointer'}}
@@ -30,7 +35,11 @@ const Contact = ({login}) => {
           {contactStore.getDisplayName(login)}
         </div>
       </div>
-      <Button style={{fontSize: 12}} variant="danger" size="sm" onClick={handleDelete}>X</Button>
+      {
+        showDeleteBtn
+          ? <Button style={{fontSize: 12}} variant="danger" size="sm" onClick={handleDelete}>X</Button>
+          : null
+      }
     </div>
   )
 }
