@@ -9,6 +9,7 @@ const FileAvatar = ({fileName, size = "sm"}) => {
   const avatarSrc = fileName ? `${API_URL}/files/${fileName}` : noAvatar
   const sizeMapping = {
     sm: 40,
+    xs: 50,
     md: 150,
     lg: 200
   }

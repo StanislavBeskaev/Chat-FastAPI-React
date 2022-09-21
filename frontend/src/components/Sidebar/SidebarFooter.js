@@ -1,17 +1,22 @@
 import React from 'react'
-import {Link} from 'react-router-dom'
+import {useHistory} from 'react-router-dom'
 import {Button} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
 import authStore from '../../stores/authStore'
 import messagesStore from '../../stores/messagesStore'
-import newChatModalStore from '../../stores/modals/newChatModalStore'
 import socketStore from '../../stores/socketStore'
 import FileAvatar from '../Avatars/FileAvatar'
+import NewChatButton from './NewChatButton'
 
 
 const SidebarFooter = ({login}) => {
   const {selectedChatTyping, selectedChatId} = messagesStore
+  const history = useHistory()
+
+  const onProfileClick = () => {
+    history.push("/user-data/")
+  }
 
   const logout = async () => {
     if (selectedChatTyping) {
@@ -21,25 +26,23 @@ const SidebarFooter = ({login}) => {
   }
 
   return (
-    <div className="p-3 border-top border-end small">
+    <div className="p-4 border-top border-end small">
       <div className="d-flex flex-column">
-        <div>
-          <FileAvatar fileName={authStore.avatarFile} size="sm"/>
-          <span className="ms-2">
-            Ваш логин: <span className="text-muted">{login}</span>
-          </span>
+        <div className="d-flex justify-content-between">
+          <FileAvatar fileName={authStore.avatarFile} size="xs"/>
+          <NewChatButton />
         </div>
+        <span className="mt-2 fs-6">
+          Ваш логин: <span className="text-muted">{login}</span>
+        </span>
         <div className="mt-3 d-flex gap-3">
-          <Button size="sm" variant="primary" onClick={() => newChatModalStore.open()}>
-            Новый чат
+          <Button size="md" variant="primary" onClick={onProfileClick}>
+            Профиль
           </Button>
-          <Button size="sm" variant="danger" onClick={logout}>
+          <Button size="md" variant="danger" onClick={logout} style={{width: 100}}>
             Выход
           </Button>
         </div>
-      </div>
-      <div className="mt-3">
-        <Link to="/user-data/">Данные пользователя</Link>
       </div>
     </div>
   )
