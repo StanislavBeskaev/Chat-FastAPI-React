@@ -112,6 +112,6 @@ async def serve_react_app_and_files(full_path: str, request: Request):
         logger.debug(f"{avatar_file_name=}")
         return FileResponse(path=FilesService.get_file_path(file_name=avatar_file_name), media_type="image/png")
     elif "." in full_path:
-        logger.debug("build file hit")  # TODO когда начальная страница не / то кажись тут будет кривой путь
+        logger.debug("build file hit")
         return FileResponse(path=os.path.join(fronted_build_folder, full_path))
     return templates.TemplateResponse("index.html", {"request": request})

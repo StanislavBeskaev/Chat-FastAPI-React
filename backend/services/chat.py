@@ -36,6 +36,7 @@ class ChatService(BaseService):
 
         logger.info(f"Пользователь {user.login} создал новый чат {new_chat.name} с id {new_chat.id}")
         self._notify_about_new_chat(new_chat=new_chat, creator=user.login)
+        # TODO создать информационное сообщение, кто создал чат
 
     def _validate_new_chat_data(self, chat_data: models.ChatCreate) -> list[models.User]:
         """Проверка данных для создания нового чата"""
