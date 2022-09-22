@@ -35,8 +35,7 @@ class ChatService(BaseService):
             self._chat_members_service.add_user_to_chat(user=chat_user, chat_id=new_chat.id)
 
         logger.info(f"Пользователь {user.login} создал новый чат {new_chat.name} с id {new_chat.id}")
-        self._notify_about_new_chat(new_chat=new_chat, creator=user.login)
-        # TODO создать информационное сообщение, кто создал чат
+        self._notify_about_new_chat(new_chat=new_chat, user=user)
 
     def _validate_new_chat_data(self, chat_data: models.ChatCreate) -> list[models.User]:
         """Проверка данных для создания нового чата"""
@@ -61,11 +60,14 @@ class ChatService(BaseService):
         logger.debug(f"{chat_users=}")
         return chat_users
 
-    @staticmethod
-    def _notify_about_new_chat(new_chat: tables.Chat, creator: str) -> None:
+    def _notify_about_new_chat(self, new_chat: tables.Chat, user: models.User) -> None:
         """ws уведомление участников чата о создании нового чата"""
-        new_chat_message = NewChatMessage(chat_id=new_chat.id, chat_name=new_chat.name, creator=creator)
+        new_chat_message = NewChatMessage(chat_id=new_chat.id, chat_name=new_chat.name, creator=user.login)
         asyncio.run(new_chat_message.send_all())
+
+        new_chat_info_message = self._create_new_chat_info_message(user=user, chat=new_chat)
+        ws_info_message = InfoMessage(login=user.login, info_message=new_chat_info_message)
+        asyncio.run(ws_info_message.send_all())
 
     def change_chat_name(self, chat_id: str, new_name: str, user: models.User) -> None:
         """Изменение названия чата"""
@@ -118,3 +120,13 @@ class ChatService(BaseService):
 
         logger.info(f"В базу сохранено сообщение об изменении названия чата {chat_id} на '{new_chat_name}'")
         return change_chat_name_message
+
+    def _create_new_chat_info_message(self, user: models.User, chat: models.Chat) -> models.Message:
+        """Создание информационного сообщения в базе о создании нового чата"""
+        new_chat_info_message = self._messages_dao.create_info_message(
+            text=f"Пользователь {user.login} создал чат",
+            user_id=user.id,
+            chat_id=chat.id
+        )
+
+        return new_chat_info_message
