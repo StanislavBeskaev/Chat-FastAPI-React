@@ -184,15 +184,14 @@ class MessagesStore {
   addMessage(message, socketSendReadMessage) {
     if (!this.isLoadMessages) return
 
-    const {chat_id: chatId, message_id: messageId} = message
+    const {chat_id: chatId, message_id: messageId, type} = message
     const notViewedMessagesCount = this.getChatNotViewedMessagesCount(chatId)
 
-    // TODO исправить, при информационном сообщении прокручивается до конца
     this.needScrollToNewMessage = (
-      notViewedMessagesCount === 0 && chatId === this.selectedChatId && this.isSelectedChatLastMessageInView()
+      (notViewedMessagesCount === 0 && chatId === this.selectedChatId && this.isSelectedChatLastMessageInView())
       ||
       // Если пользоватль сам написал сообщений в чате, то надо показать сообщение даже если чат промотан
-      message.login === authStore.user.login && chatId === this.selectedChatId
+      (message.login === authStore.user.login && chatId === this.selectedChatId && type === "TEXT")
     )
     logMessages('message store, addMessage, needScrollToNewMessage=', this.needScrollToNewMessage)
 
