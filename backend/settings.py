@@ -16,7 +16,8 @@ class Settings(BaseSettings):
     jwt_refresh_secret: str = "N4;0a1%cvm#da"
     jwt_refresh_expires_s: int = 60 * 60 * 24 * 30
 
-    import_time_delta_s: int = - 3 * 3600
+    timezone = 'Europe/Moscow'
+    import_time_delta_s: int = 0
 
     main_chat_id = "MAIN"
     admin_password = "admin"

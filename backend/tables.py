@@ -83,9 +83,9 @@ class Message(Base):
     chat_id = Column(String, ForeignKey("chats.id"), index=True)
     text = Column(String, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), index=True)
-    time = Column(DateTime, server_default=func.now())
+    time = Column(DateTime(timezone=True), server_default=func.now())
     type = Column(String, default=MessageType.TEXT)
-    change_time = Column(DateTime)
+    change_time = Column(DateTime(timezone=True))
 
     user_rel = relationship(User, backref="messages")
 

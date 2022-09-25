@@ -8,6 +8,8 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+      - TZ=Europe/Moscow
+      - PGTZ=Europe/Moscow
     restart: always
     ports:
       - "15432:5432"
@@ -16,6 +18,8 @@ services:
   app:
     container_name: "fastapi_chat_app"
     restart: always
+    depends_on:
+      - postgresql
     env_file:
       - .env
     build:
