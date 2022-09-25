@@ -1,51 +1,22 @@
-import os
-from pathlib import Path
-from typing import Generator
-from unittest import TestCase
-
 from fastapi.testclient import TestClient
-from loguru import logger
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from starlette.testclient import WebSocketTestSession
 
-from backend import tables, models
-from backend.db_config import get_session
-from backend.main import app
+from backend import models
 from backend.services.ws.constants import MessageType, OnlineStatus
 
 
-TEST_DB_NAME = "test.db"
-TEST_SQLALCHEMY_DATABASE_URL = f"sqlite:///./{TEST_DB_NAME}"
 AUTHORIZATION = "Authorization"
 BEARER = "Bearer"
 
-test_engine = create_engine(
-    TEST_SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
-
-def override_get_session() -> Generator[Session, None, None]:
-    test_session = TestingSessionLocal()
-    try:
-        yield test_session
-    finally:
-        try:
-            test_session.close()
-        except:
-            pass
-
-
-def drop_test_db():
-    test_db_file_path = os.path.join(Path(__file__).resolve().parent.parent.parent, TEST_DB_NAME)
-    if os.path.exists(test_db_file_path):
-        os.remove(test_db_file_path)
-        logger.info(f"Удалён файл тестовой базы: {test_db_file_path}")
-
-
-class BaseTestCase(TestCase):
-    client = TestClient(app)
-    session = next(override_get_session())
+class BaseTest:
+    test_user_agent = "testclient"
+    admin_login = "admin"
+    admin_name = "Админ"
+    admin_surname = "Админов"
+    admin_password = "admin"
+    # токен для user
+    ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NjQ1NDczNjAsIm5iZiI6MTY2NDU0NzM2MCwiZXhwIjo2Nzc0NTQ4MjYwLCJraW5kIjoiYWNjZXNzIiwidXNlciI6eyJuYW1lIjoidXNlciIsInN1cm5hbWUiOiIiLCJsb2dpbiI6InVzZXIiLCJpZCI6MX19.BOlUb6VcNuHmYCy79uxwNxk522rQefKKhH_j7sNmtbU"
     NOT_AUTH_RESPONSE = {"detail": 'Not authenticated'}
     BAD_TOKEN_RESPONSE = {"detail": "Не валидный токен доступа"}
     BAD_PAYLOAD_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NTQ3MDUwMDAsIm5iZiI6MTY1NDcwNTAwMCwiZXhwIjoyNzU0ODgwNTAwLCJraW5kIjoiYWNjZXNzIiwidXNlcjEiOnsibmFtZSI6ItCQ0LTQvNC40L0iLCJzdXJuYW1lIjoi0JDQtNC80LjQvdGB0LrQuNC5IiwibG9naW4iOiJhZG1pbiIsImlkIjoxfX0.D5PqBrHBVUeyvAWg7159sPxhQd2YS3-KTQZnF4tVlts"
@@ -53,48 +24,32 @@ class BaseTestCase(TestCase):
     DEFAULT_USER = "user"
     DEFAULT_PASSWORD = "password"
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        drop_test_db()
-        app.dependency_overrides[get_session] = override_get_session
-        tables.Base.metadata.create_all(bind=test_engine)
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        app.dependency_overrides = {}
+    @staticmethod
+    def exception_response(message: str) -> dict[str, str]:
+        return {"detail": message}
 
     @staticmethod
-    def get_authorization_headers(access_token: str) -> dict:
-        return {AUTHORIZATION: f"{BEARER} {access_token}"}
-
-    def login(self, username: str = DEFAULT_USER, password: str = DEFAULT_PASSWORD) -> models.Tokens:
-        login_response = self.client.post(
+    def login(client: TestClient, username: str = DEFAULT_USER, password: str = DEFAULT_PASSWORD) -> models.Tokens:
+        login_response = client.post(
             "/api/auth/login",
             data={
                 "username": username,
                 "password": password
             }
         )
-
-        self.assertEqual(login_response.status_code, 200)
+        assert login_response.status_code == 200
         tokens = models.Tokens.parse_obj(login_response.json())
         return tokens
 
-    def find_user_by_login(self, login: str) -> tables.User | None:
-        """Поиск пользователя по login"""
-        user = (
-            self.session
-            .query(tables.User)
-            .filter(tables.User.login == login)
-            .first()
-        )
+    @staticmethod
+    def get_authorization_headers(access_token: str = ACCESS_TOKEN) -> dict:
+        return {AUTHORIZATION: f"{BEARER} {access_token}"}
 
-        return user
-
-    def check_ws_online_status_notifications(self, ws, users: list[str]) -> None:
+    @staticmethod
+    def check_ws_online_status_notifications(ws: WebSocketTestSession, users: list[str]) -> None:
         """Проверка ws сообщений о входе пользователей в сеть"""
         for user in users:
             ws_message = ws.receive_json()
-            self.assertEqual(ws_message["type"], MessageType.STATUS)
-            self.assertEqual(ws_message["data"]["login"], user)
-            self.assertEqual(ws_message["data"]["online_status"], OnlineStatus.ONLINE)
+            assert ws_message["type"] == MessageType.STATUS
+            assert ws_message["data"]["login"] == user
+            assert ws_message["data"]["online_status"] == OnlineStatus.ONLINE

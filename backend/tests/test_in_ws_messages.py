@@ -1,89 +1,18 @@
-from unittest.mock import patch
+from fastapi.testclient import TestClient
+from starlette.testclient import WebSocketTestSession
 
-from backend import tables
-from backend.dao.messages import MessagesDAO
-from backend.dao.users import UsersDAO
-from backend.services.auth import AuthService
+from backend.db.mock.facade import MockDBFacade
 from backend.services.ws.constants import MessageType, OnlineStatus, MESSAGE_TYPE_KEY, MESSAGE_DATA_KEY
-from backend.tests.base import BaseTestCase, override_get_session
+from backend.tests.base import BaseTest
+from backend.tests.conftest import TEST_CHAT_ID, SECOND_CHAT_ID
 
 
-test_users = [
-    tables.User(login="user", name="user", surname="", password_hash=AuthService.hash_password("password")),
-    tables.User(login="user1", name="user1", surname="", password_hash=AuthService.hash_password("password1")),
-    tables.User(login="new", name="new", surname="", password_hash=AuthService.hash_password("password2")),
-    tables.User(login="some", name="some", surname="", password_hash=AuthService.hash_password("password3")),
-]
-test_messages = ["Первое", "Как дела?", "куку"]
-TEST_CHAT_ID = "TEST"
-TEST_CHAT_NAME = "Тестовый чат"
-SECOND_CHAT_ID = "SECOND"
-SECOND_CHAT_NAME = "SECOND_CHAT"
-
-
-class TestInWSMessages(BaseTestCase):
-
-    def setUp(self) -> None:
-        self.session.bulk_save_objects(test_users)
-        users = self.session.query(tables.User).all()
-
-        user = next((user for user in users if user.login == self.DEFAULT_USER))
-        test_chat = tables.Chat(id=TEST_CHAT_ID, name=TEST_CHAT_NAME, creator_id=user.id)
-        self.session.add(test_chat)
-
-        profiles = []
-        test_chat_members = []
-        for user in users:
-            profiles.append(tables.Profile(user=user.id, avatar_file=None))
-            test_chat_members.append(tables.ChatMember(chat_id=test_chat.id, user_id=user.id))
-        self.session.bulk_save_objects(profiles)
-        self.session.bulk_save_objects(test_chat_members)
-
-        second_chat = tables.Chat(id=SECOND_CHAT_ID, name=SECOND_CHAT_NAME, creator_id=user.id)
-        self.session.add(second_chat)
-        second_chat_members = []
-        for user in [user for user in users if user.login != "some"]:
-            second_chat_members.append(tables.ChatMember(chat_id=SECOND_CHAT_ID, user_id=user.id))
-
-        self.session.bulk_save_objects(second_chat_members)
-
-        user_test_messages = [
-            tables.Message(
-                id=index,
-                chat_id=TEST_CHAT_ID,
-                text=text,
-                user_id=user.id
-            ) for index, text in enumerate(test_messages)
-        ]
-        user1 = next((user for user in users if user.login == "user1"))
-        unread_messages = [
-            tables.MessageReadStatus(message_id=message.id, user_id=user1.id)
-            for message in user_test_messages
-        ]
-        self.session.bulk_save_objects(user_test_messages)
-        self.session.bulk_save_objects(unread_messages)
-        self.session.commit()
-
-        self.get_session_patcher = patch(target="backend.dao.get_session", new=override_get_session)
-        self.get_session_patcher.start()
-
-    def tearDown(self) -> None:
-        self.session.query(tables.Profile).delete()
-        self.session.query(tables.RefreshToken).delete()
-        self.session.query(tables.ChatMember).delete()
-        self.session.query(tables.Chat).delete()
-        self.session.query(tables.User).delete()
-        self.session.query(tables.MessageReadStatus).delete()
-        self.session.query(tables.Message).delete()
-        self.session.commit()
-
-        self.get_session_patcher.stop()
-
-    def test_statuses_messages(self):
-        with self.client.websocket_connect("ws/user") as user_ws, \
-                self.client.websocket_connect("ws/user1") as user1_ws,\
-                self.client.websocket_connect("ws/new") as new_ws,\
-                self.client.websocket_connect("ws/some") as some_ws:
+class TestInWSMessages(BaseTest):
+    def test_statuses_messages(self, client: TestClient):
+        with client.websocket_connect("ws/user") as user_ws, \
+                client.websocket_connect("ws/user1") as user1_ws,\
+                client.websocket_connect("ws/new") as new_ws,\
+                client.websocket_connect("ws/some") as some_ws:
 
             # Необходимо указывать пользователей в порядке подключения
             ws_users = ["user", "user1", "new", "some"]
@@ -108,23 +37,24 @@ class TestInWSMessages(BaseTestCase):
                 disconnected_user="some"
             )
 
-    def _check_ws_offline_status_notification(self, ws_list, disconnected_user: str) -> None:
+    @staticmethod
+    def _check_ws_offline_status_notification(ws_list: list[WebSocketTestSession], disconnected_user: str) -> None:
         for ws in ws_list:
             ws_message = ws.receive_json()
-            self.assertEqual(ws_message["type"], MessageType.STATUS)
-            self.assertEqual(ws_message["data"]["login"], disconnected_user)
-            self.assertEqual(ws_message["data"]["online_status"], OnlineStatus.OFFLINE)
+            assert ws_message[MESSAGE_TYPE_KEY] == MessageType.STATUS
+            assert ws_message[MESSAGE_DATA_KEY]["login"] == disconnected_user
+            assert ws_message["data"]["online_status"] == OnlineStatus.OFFLINE
 
-    def test_typing_messages(self):
-        with self.client.websocket_connect("ws/user") as user_ws, \
-                self.client.websocket_connect("ws/user1") as user1_ws,\
-                self.client.websocket_connect("ws/new") as new_ws,\
-                self.client.websocket_connect("ws/some") as some_ws:
+    def test_typing_messages(self, client: TestClient):
+        with client.websocket_connect("ws/user") as user_ws, \
+                client.websocket_connect("ws/user1") as user1_ws,\
+                client.websocket_connect("ws/new") as new_ws,\
+                client.websocket_connect("ws/user2") as user2_ws:
 
             # Необходимо указывать пользователей в порядке подключения
-            ws_users = ["user", "user1", "new", "some"]
+            ws_users = ["user", "user1", "new", "user2"]
             # Что бы прочитать статусные сообщения
-            for index, ws in enumerate((user_ws, user1_ws, new_ws, some_ws)):
+            for index, ws in enumerate((user_ws, user1_ws, new_ws, user2_ws)):
                 self.check_ws_online_status_notifications(ws=ws, users=ws_users[index:])
 
             user_ws.send_json(
@@ -136,7 +66,7 @@ class TestInWSMessages(BaseTestCase):
                 }
             )
             self._check_ws_typing_notification(
-                ws_list=[user_ws, user1_ws, new_ws, some_ws],
+                ws_list=[user_ws, user1_ws, new_ws],
                 user="user",
                 typing_type=MessageType.START_TYPING,
                 chat_id=TEST_CHAT_ID
@@ -151,7 +81,7 @@ class TestInWSMessages(BaseTestCase):
                 }
             )
             self._check_ws_typing_notification(
-                ws_list=[user_ws, user1_ws, new_ws],
+                ws_list=[user_ws, user1_ws, new_ws, user2_ws],
                 user="user",
                 typing_type=MessageType.START_TYPING,
                 chat_id=SECOND_CHAT_ID
@@ -166,39 +96,52 @@ class TestInWSMessages(BaseTestCase):
                 }
             )
             self._check_ws_typing_notification(
-                ws_list=[user_ws, user1_ws, new_ws, some_ws],
+                ws_list=[user_ws, user1_ws, new_ws],
                 user="user",
                 typing_type=MessageType.STOP_TYPING,
                 chat_id=TEST_CHAT_ID
             )
 
-    def _check_ws_typing_notification(self, ws_list, user: str, typing_type: str, chat_id: str) -> None:
+            user_ws.send_json(
+                data={
+                    MESSAGE_TYPE_KEY: MessageType.STOP_TYPING,
+                    MESSAGE_DATA_KEY: {
+                        "chatId": SECOND_CHAT_ID
+                    }
+                }
+            )
+            self._check_ws_typing_notification(
+                ws_list=[user_ws, user1_ws, new_ws, user2_ws],
+                user="user",
+                typing_type=MessageType.STOP_TYPING,
+                chat_id=SECOND_CHAT_ID
+            )
+
+    @staticmethod
+    def _check_ws_typing_notification(ws_list: list[WebSocketTestSession], user: str, typing_type: str, chat_id: str) -> None:  # noqa
         for ws in ws_list:
             ws_message = ws.receive_json()
-            self.assertEqual(ws_message["type"], typing_type)
-            self.assertEqual(ws_message["data"]["login"], user)
-            self.assertEqual(ws_message["data"]["chat_id"], chat_id)
+            assert ws_message[MESSAGE_TYPE_KEY] == typing_type
+            assert ws_message[MESSAGE_DATA_KEY]["login"] == user
+            assert ws_message[MESSAGE_DATA_KEY]["chat_id"] == chat_id
 
-    def test_read_message(self):
-        with self.client.websocket_connect("ws/user1") as user1_ws:
+    def test_read_message(self, client: TestClient, db_facade: MockDBFacade):
+        with client.websocket_connect("ws/user1") as user1_ws:
+            message_read_status_before = db_facade.get_unread_message(message_id="1", user_id=2)
+            assert message_read_status_before.is_read is False
             user1_ws.send_json(
                 data={
                     MESSAGE_TYPE_KEY: MessageType.READ_MESSAGE,
                     MESSAGE_DATA_KEY: {
-                        "messageId": "0"
+                        "messageId": "1"
                     }
                 }
             )
-
             import time
-            time.sleep(0.5)  # Ожидание, что бы изменения ушли в базу
-            messages_dao = MessagesDAO.create()
-            users_dao = UsersDAO.create()
-            message_read_status_after = messages_dao.get_unread_message(
-                message_id="0",
-                user_id=users_dao.find_user_by_login(login="user1").id
-            )
-            self.assertEqual(message_read_status_after.is_read, True)
+            # прочтение сообщение асинхронное действие, немного подождём результат
+            time.sleep(0.1)
+            message_read_status_after = db_facade.get_unread_message(message_id="1", user_id=2)
+            assert message_read_status_after.is_read is True
 
             # Попытка прочитать не существующее сообщение
             user1_ws.send_json(
@@ -210,14 +153,13 @@ class TestInWSMessages(BaseTestCase):
                 }
             )
 
-    def test_text_message(self):
-        with self.client.websocket_connect("ws/user") as user_ws, \
-                self.client.websocket_connect("ws/user1") as user1_ws, \
-                self.client.websocket_connect("ws/new") as new_ws, \
-                self.client.websocket_connect("ws/some") as some_ws:
+    def test_text_message(self, client: TestClient, db_facade: MockDBFacade):
+        with client.websocket_connect("ws/user") as user_ws, \
+                client.websocket_connect("ws/user1") as user1_ws, \
+                client.websocket_connect("ws/new") as new_ws:
             # Необходимо указывать пользователей в порядке подключения
-            ws_users = ["user", "user1", "new", "some"]
-            for index, ws in enumerate((user_ws, user1_ws, new_ws, some_ws)):
+            ws_users = ["user", "user1", "new"]
+            for index, ws in enumerate((user_ws, user1_ws, new_ws)):
                 self.check_ws_online_status_notifications(ws=ws, users=ws_users[index:])
 
             user_ws.send_json(
@@ -230,10 +172,11 @@ class TestInWSMessages(BaseTestCase):
                 }
             )
             self._check_ws_text_notification(
-                ws_list=[user_ws, user1_ws, new_ws, some_ws],
+                ws_list=[user_ws, user1_ws, new_ws],
                 user="user",
                 text="Новое сообщение",
-                chat_id=TEST_CHAT_ID
+                chat_id=TEST_CHAT_ID,
+                db_facade=db_facade
             )
 
             user1_ws.send_json(
@@ -246,10 +189,11 @@ class TestInWSMessages(BaseTestCase):
                 }
             )
             self._check_ws_text_notification(
-                ws_list=[user_ws, user1_ws, new_ws, some_ws],
+                ws_list=[user_ws, user1_ws, new_ws],
                 user="user1",
                 text="от первого",
-                chat_id=TEST_CHAT_ID
+                chat_id=TEST_CHAT_ID,
+                db_facade=db_facade
             )
 
             new_ws.send_json(
@@ -265,25 +209,26 @@ class TestInWSMessages(BaseTestCase):
                 ws_list=[user_ws, user1_ws, new_ws],
                 user="new",
                 text="я тут",
-                chat_id=SECOND_CHAT_ID
+                chat_id=SECOND_CHAT_ID,
+                db_facade=db_facade
             )
 
-    def _check_ws_text_notification(self, ws_list, user: str, text: str, chat_id: str):
-        messages_dao = MessagesDAO.create()
-        users_dao = UsersDAO.create()
+    @staticmethod
+    def _check_ws_text_notification(
+            ws_list: list[WebSocketTestSession], user: str, text: str, chat_id: str, db_facade: MockDBFacade
+    ):
         for ws in ws_list:
             ws_message = ws.receive_json()
-            self.assertEqual(ws_message["type"], MessageType.TEXT)
-            self.assertEqual(ws_message["data"]["login"], user)
-            self.assertEqual(ws_message["data"]["chat_id"], chat_id)
-            self.assertEqual(ws_message["data"]["text"], text)
-            self.assertIsNotNone(ws_message["data"]["message_id"])
+            assert ws_message["type"] == MessageType.TEXT
+            assert ws_message["data"]["login"] == user
+            assert ws_message["data"]["chat_id"] == chat_id
+            assert ws_message["data"]["text"] == text
+            assert ws_message["data"]["message_id"] is not None
 
-            message = messages_dao.get_message_by_id(message_id=ws_message["data"]["message_id"])
-            self.assertIsNotNone(message)
-            self.assertEqual(message.text, text)
-            self.assertEqual(message.chat_id, chat_id)
-            self.assertEqual(message.user_id, users_dao.find_user_by_login(login=user).id)
-            self.assertEqual(message.type, MessageType.TEXT)
-            self.assertIsNotNone(message.time)
-            self.assertIsNone(message.change_time)
+            message = db_facade.get_message_by_id(message_id=ws_message["data"]["message_id"])
+            assert message.text == text
+            assert message.chat_id == chat_id
+            assert message.user_id == db_facade.find_user_by_login(login=user).id
+            assert message.type == MessageType.TEXT
+            assert message.time is not None
+            assert message.change_time is None

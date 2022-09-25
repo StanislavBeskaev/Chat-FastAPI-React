@@ -1,27 +1,16 @@
-from fastapi import HTTPException, status, Depends
+from fastapi import HTTPException, status
 from loguru import logger
-from sqlalchemy.orm import Session
 
 from backend import models, tables
-from backend.dao.contacts import ContactsDAO
-from backend.dao.users import UsersDAO
-from backend.db_config import get_session
 from backend.services import BaseService
 
 
 class ContactService(BaseService):
     """Сервис для управления контактами"""
-
-    def __init__(self, session: Session = Depends(get_session)):
-        super().__init__(session=session)
-
-        self._contacts_dao = ContactsDAO(session=session)
-        self._users_dao = UsersDAO(session=session)
-
     def get_many(self, user: models.User) -> list[models.Contact]:
         """Получение контактов пользователя"""
         logger.debug(f"Запрос на получение контактов пользователя: {user.login}")
-        contacts = self._contacts_dao.get_user_contacts(user_id=user.id)
+        contacts = self._db_facade.get_user_contacts(user_id=user.id)
         logger.debug(f"Контакты пользователя {user}: {contacts}")
 
         return contacts
@@ -45,9 +34,9 @@ class ContactService(BaseService):
             )
 
         # Тут будет 404 если пользователь не найден
-        contact_user_info = self._users_dao.get_user_info(login=contact_login)
+        contact_user_info = self._db_facade.get_user_info(login=contact_login)
 
-        self._contacts_dao.create_contact(
+        self._db_facade.create_contact(
             owner_user_id=user.id,
             contact_user_id=contact_user_info.id,
             name=contact_user_info.name,
@@ -71,7 +60,7 @@ class ContactService(BaseService):
                            f"не существующего контакта {contact_login}")
             raise self._get_not_found_contact_exception(contact_login=contact_login)
 
-        self._contacts_dao.delete_contact(contact=contact)
+        self._db_facade.delete_contact(contact=contact)
 
         logger.info(f"Пользователь {user.login} удалён контакт {contact_login}")
 
@@ -101,14 +90,14 @@ class ContactService(BaseService):
                            f"не существующего контакта {contact_data.login}")
             raise self._get_not_found_contact_exception(contact_login=contact_data.login)
 
-        self._contacts_dao.change_contact(
+        self._db_facade.change_contact(
             contact=contact,
             new_name=contact_data.name,
             new_surname=contact_data.surname
         )
 
     def _find_contact(self, user: models.User, contact_login: str) -> tables.Contact | None:
-        contact_user = self._users_dao.find_user_by_login(login=contact_login)
+        contact_user = self._db_facade.find_user_by_login(login=contact_login)
 
         if not contact_user:
             logger.warning(f"Пользователь {user.login} операция"
@@ -118,7 +107,7 @@ class ContactService(BaseService):
                 detail=f"Пользователь с логином '{contact_login}' не найден"
             )
 
-        return self._contacts_dao.find_contact(owner_user_id=user.id, contact_user_id=contact_user.id)
+        return self._db_facade.find_contact(owner_user_id=user.id, contact_user_id=contact_user.id)
 
     @staticmethod
     def _get_not_found_contact_exception(contact_login: str) -> HTTPException:

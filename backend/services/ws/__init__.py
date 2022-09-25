@@ -1,6 +1,7 @@
-from .base_messages import BaseOutWSMessage
-from .constants import MESSAGE_TYPE_KEY, MESSAGE_DATA_KEY, MessageType
-from .message_types import (
+from backend.db.interface import DBFacadeInterface
+from backend.services.ws.base_messages import BaseOutWSMessage
+from backend.services.ws.constants import MESSAGE_TYPE_KEY, MESSAGE_DATA_KEY, MessageType
+from backend.services.ws.message_types import (
     OnlineMessage,
     OfflineMessage,
     StartTypingMessage,
@@ -17,7 +18,12 @@ from .message_types import (
 )
 
 
-def create_message_by_type(message_type: MessageType, login: str, in_data: dict) -> BaseOutWSMessage:
+def create_message_by_type(
+        message_type: MessageType,
+        login: str,
+        db_facade: DBFacadeInterface,
+        in_data: dict
+) -> BaseOutWSMessage:
     type_class_mapping = {
         MessageType.TEXT: TextMessage,
         MessageType.START_TYPING: StartTypingMessage,
@@ -30,4 +36,4 @@ def create_message_by_type(message_type: MessageType, login: str, in_data: dict)
     if not message_class:
         raise ValueError(f"Неизвестный тип сообщения: {message_type}")
 
-    return message_class(login=login, **in_data)
+    return message_class(login=login, db_facade=db_facade, **in_data)

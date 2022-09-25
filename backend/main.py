@@ -2,7 +2,7 @@ import json
 import os
 from pathlib import Path
 
-from fastapi import FastAPI, Request, WebSocketDisconnect, WebSocket
+from fastapi import FastAPI, Request, WebSocketDisconnect, WebSocket, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -11,6 +11,8 @@ from starlette.responses import FileResponse
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 from backend import api
+from backend.db.facade import get_db_facade
+from backend.db.interface import DBFacadeInterface
 from backend.init_app import init_app
 from backend.services.files import FilesService
 from backend.services.ws import (
@@ -48,7 +50,7 @@ def start():
 
 
 @app.websocket("/ws/{login}")
-async def websocket_endpoint(websocket: WebSocket, login: str):
+async def websocket_endpoint(websocket: WebSocket, login: str, db_facade: DBFacadeInterface = Depends(get_db_facade)):
     """Endpoint для ws соединений от пользователей"""
     manager = WSConnectionManager()
     need_send_online_status_message = not manager.has_user_active_connection(login=login)
@@ -60,7 +62,7 @@ async def websocket_endpoint(websocket: WebSocket, login: str):
 
     if need_send_online_status_message:
         logger.info(f"У пользователя {login} ещё не было активного соединения, посылаем OnlineMessage")
-        online_message = OnlineMessage(login=login)
+        online_message = OnlineMessage(login=login, db_facade=db_facade)
         await online_message.send_all()
     else:
         logger.info(f"У пользователя {login} уже есть активное соединение, OnlineMessage не посылается")
@@ -74,7 +76,8 @@ async def websocket_endpoint(websocket: WebSocket, login: str):
             new_message = create_message_by_type(
                 message_type=message_dict[MESSAGE_TYPE_KEY],
                 login=login,
-                in_data=message_dict[MESSAGE_DATA_KEY]
+                in_data=message_dict[MESSAGE_DATA_KEY],
+                db_facade=db_facade
             )
 
             await new_message.send_all()
@@ -84,7 +87,7 @@ async def websocket_endpoint(websocket: WebSocket, login: str):
 
         if not manager.has_user_active_connection(login=login):
             logger.info(f"У пользователя {login} нет больше активных соединений, посылаем OfflineMessage")
-            offline_message = OfflineMessage(login=login)
+            offline_message = OfflineMessage(login=login, db_facade=db_facade)
             await offline_message.send_all()
         else:
             logger.info(f"У пользователя {login} ещё есть активные соединения, OfflineMessage не посылается")

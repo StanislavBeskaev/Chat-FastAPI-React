@@ -4,7 +4,7 @@ import json
 from loguru import logger
 
 from backend import models
-from backend.dao.chat_members import ChatMembersDAO
+from backend.db.interface import DBFacadeInterface
 from backend.services.ws_connection_manager import WSConnectionManager
 
 
@@ -31,8 +31,9 @@ class BaseOutWSMessage(WSMessageInterface, ABC):
     message_type = None
     out_metrics_counter = None
 
-    def __init__(self, login: str):
+    def __init__(self, login: str, db_facade: DBFacadeInterface):
         self._login = login
+        self._db_facade = db_facade
         self._data = self._get_data()
         self._content = {
             "type": self.message_type,
@@ -59,8 +60,7 @@ class BaseChatWSMessage(BaseOutWSMessage, ABC):
 
     async def send_all(self) -> None:
         """Отправка сообщения всем участникам чата"""
-        chat_members_dao = ChatMembersDAO.create()
-        chat_members = chat_members_dao.get_chat_members(chat_id=self._data.chat_id)  # noqa
+        chat_members = self._db_facade.get_chat_members(chat_id=self._data.chat_id)  # noqa
         logins_to_send = [member.login for member in chat_members]
         manager = WSConnectionManager()
         logger.debug(f"Отправка сообщения: {self._content}")
@@ -79,7 +79,7 @@ class BaseChatWSMessage(BaseOutWSMessage, ABC):
 class NoAnswerWSMessage(WSMessageInterface, ABC):
     """Базовый класс ws сообщения без ответа"""
 
-    def __init__(self, login: str):
+    def __init__(self, login: str, *args, **kwargs):
         self._login = login
 
     async def send_all(self) -> None:

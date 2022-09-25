@@ -1,4 +1,5 @@
 from backend import models
+from backend.db.interface import DBFacadeInterface
 from backend.metrics import ws as ws_metrics
 from backend.services.ws.base_messages import BaseChatWSMessage
 from backend.services.ws.constants import MessageType
@@ -9,9 +10,9 @@ class InfoMessage(BaseChatWSMessage):
     message_type = MessageType.TEXT
     out_metrics_counter = ws_metrics.INFO_OUT_WS_MESSAGE_COUNTER
 
-    def __init__(self, login: str, info_message: models.Message):
+    def __init__(self, login: str, info_message: models.Message, db_facade: DBFacadeInterface):
         self._info_message = info_message
-        super().__init__(login=login)
+        super().__init__(login=login, db_facade=db_facade)
 
     def _get_data(self) -> models.InfoMessageData:
         return models.InfoMessageData(

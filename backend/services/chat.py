@@ -1,14 +1,11 @@
 import asyncio
 
 from fastapi import Depends, HTTPException
-from sqlalchemy.orm import Session
 from loguru import logger
 
 from backend import models, tables
-from backend.dao.chats import ChatsDAO
-from backend.dao.messages import MessagesDAO
-from backend.dao.users import UsersDAO
-from backend.db_config import get_session
+from backend.db.facade import get_db_facade
+from backend.db.interface import DBFacadeInterface
 from backend.services import BaseService
 from backend.services.chat_members import ChatMembersService
 from backend.services.ws import NewChatMessage, ChangeChatNameMessage, InfoMessage
@@ -17,20 +14,16 @@ from backend.services.ws import NewChatMessage, ChangeChatNameMessage, InfoMessa
 class ChatService(BaseService):
     """Сервис для работы с чатами"""
 
-    def __init__(self, session: Session = Depends(get_session)):
-        super().__init__(session=session)
-        self._chat_members_service = ChatMembersService(session=session)
-
-        self._chats_dao = ChatsDAO(session=session)
-        self._messages_dao = MessagesDAO(session=session)
-        self._users_dao = UsersDAO(session=session)
+    def __init__(self, db_facade: DBFacadeInterface = Depends(get_db_facade)):
+        super().__init__(db_facade=db_facade)
+        self._chat_members_service = ChatMembersService(db_facade=db_facade)
 
     def create_chat(self, chat_data: models.ChatCreate, user: models.User) -> None:
         """Создание чата"""
         logger.debug(f"Попытка создания нового чата, {chat_data=} {user=}")
         chat_users = self._validate_new_chat_data(chat_data=chat_data)
 
-        new_chat = self._chats_dao.create_chat(chat_name=chat_data.chat_name, creator_id=user.id)
+        new_chat = self._db_facade.create_chat(chat_name=chat_data.chat_name, creator_id=user.id)
         for chat_user in chat_users:
             self._chat_members_service.add_user_to_chat(user=chat_user, chat_id=new_chat.id)
 
@@ -51,7 +44,7 @@ class ChatService(BaseService):
             logger.warning("Необходимо добавить хотя бы ещё одного участника")
             raise HTTPException(status_code=400, detail="Необходимо добавить хотя бы ещё одного участника")
 
-        chat_users = [self._users_dao.find_user_by_login(login) for login in chat_data.members]
+        chat_users = [self._db_facade.find_user_by_login(login) for login in chat_data.members]
         if not all(chat_users):
             logger.warning("В списке участников есть не существующие пользователи")
             raise HTTPException(status_code=400, detail="В списке участников есть не существующие пользователи")
@@ -62,11 +55,16 @@ class ChatService(BaseService):
 
     def _notify_about_new_chat(self, new_chat: tables.Chat, user: models.User) -> None:
         """ws уведомление участников чата о создании нового чата"""
-        new_chat_message = NewChatMessage(chat_id=new_chat.id, chat_name=new_chat.name, creator=user.login)
+        new_chat_message = NewChatMessage(
+            chat_id=new_chat.id,
+            chat_name=new_chat.name,
+            creator=user.login,
+            db_facade=self._db_facade
+        )
         asyncio.run(new_chat_message.send_all())
 
         new_chat_info_message = self._create_new_chat_info_message(user=user, chat=new_chat)
-        ws_info_message = InfoMessage(login=user.login, info_message=new_chat_info_message)
+        ws_info_message = InfoMessage(login=user.login, info_message=new_chat_info_message, db_facade=self._db_facade)
         asyncio.run(ws_info_message.send_all())
 
     def change_chat_name(self, chat_id: str, new_name: str, user: models.User) -> None:
@@ -84,12 +82,12 @@ class ChatService(BaseService):
             raise HTTPException(status_code=400, detail="Укажите название чата")
 
         # Тут будет 404 если чата нет
-        previous_chat_name = self._chats_dao.get_chat_by_id(chat_id=chat_id).name
+        previous_chat_name = self._db_facade.get_chat_by_id(chat_id=chat_id).name
         if previous_chat_name == new_name:
             logger.warning("Передано такое же название чата, изменение названия не выполнятся")
             raise HTTPException(status_code=400, detail="Название чата совпадает с текущим")
 
-        chat = self._chats_dao.change_chat_name(chat_id=chat_id, new_name=new_name)
+        chat = self._db_facade.change_chat_name(chat_id=chat_id, new_name=new_name)
 
         logger.info(f"Для чата {chat_id} установлено название: {new_name}")
         change_chat_name_message = self._create_change_chat_name_message(user=user, chat_id=chat_id, new_chat_name=new_name)  # noqa
@@ -97,22 +95,25 @@ class ChatService(BaseService):
 
     def _is_user_chat_creator(self, chat_id: str, user: models.User) -> bool:
         """Является ли пользователь создателем чата"""
-        chat = self._chats_dao.get_chat_by_id(chat_id=chat_id)
+        chat = self._db_facade.get_chat_by_id(chat_id=chat_id)
 
         return chat.creator_id == user.id
 
-    @staticmethod
-    def _notify_about_change_chat_name(changed_chat: models.Chat, message: tables.Message, login: str) -> None:
+    def _notify_about_change_chat_name(self, changed_chat: models.Chat, message: models.Message, login: str) -> None:
         """ws уведомление участников чата об изменении названия чата"""
-        new_chat_message = ChangeChatNameMessage(chat_id=changed_chat.id, chat_name=changed_chat.name)
+        new_chat_message = ChangeChatNameMessage(
+            chat_id=changed_chat.id,
+            chat_name=changed_chat.name,
+            db_facade=self._db_facade
+        )
         asyncio.run(new_chat_message.send_all())
 
-        ws_info_change_chat_name_message = InfoMessage(login=login, info_message=message)
+        ws_info_change_chat_name_message = InfoMessage(login=login, info_message=message, db_facade=self._db_facade)
         asyncio.run(ws_info_change_chat_name_message.send_all())
 
     def _create_change_chat_name_message(self, user: models.User, chat_id: str, new_chat_name) -> models.Message:
         """Создание сообщения в базе об изменении названия чата"""
-        change_chat_name_message = self._messages_dao.create_info_message(
+        change_chat_name_message = self._db_facade.create_info_message(
             text=f"Название чата изменено на '{new_chat_name}'",
             user_id=user.id,
             chat_id=chat_id
@@ -123,7 +124,7 @@ class ChatService(BaseService):
 
     def _create_new_chat_info_message(self, user: models.User, chat: models.Chat) -> models.Message:
         """Создание информационного сообщения в базе о создании нового чата"""
-        new_chat_info_message = self._messages_dao.create_info_message(
+        new_chat_info_message = self._db_facade.create_info_message(
             text=f"Пользователь {user.login} создал чат",
             user_id=user.id,
             chat_id=chat.id

@@ -2,145 +2,100 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 
-from backend import tables
-from backend.services.auth import AuthService
+from fastapi.testclient import TestClient
+
+from backend.db.mock.facade import MockDBFacade
 from backend.services.files import FilesService
 from backend.settings import Settings
-from backend.tests.base import BaseTestCase
+from backend.tests.base import BaseTest
+from backend.tests.conftest import users
 
-
-test_users = [
-    tables.User(login="user", name="user", surname="surname", password_hash=AuthService.hash_password("password")),
-    tables.User(login="user1", name="user1", surname="surname1", password_hash=AuthService.hash_password("password1")),
-    tables.User(login="user2", name="user2", surname="surname2", password_hash=AuthService.hash_password("password2")),
-]
 
 TEST_FILES_FOLDER = os.path.join(Path(__file__).resolve().parent, "files")
 
 
-def test_files_folder_get_settings() -> Settings:
+def get_settings_test_files_folder() -> Settings:
     return Settings(
         base_dir=Path(__file__).resolve().parent
     )
 
 
-class TestUser(BaseTestCase):
+class TestUser(BaseTest):
     user_url = "/api/user"
 
-    def setUp(self) -> None:
-        self.session.bulk_save_objects(test_users)
-        users = self.session.query(tables.User).all()
-        profiles = []
-        for user in users:
-            profiles.append(
-                tables.Profile(
-                    user=user.id,
-                    avatar_file=f"{user.name}:{user.surname}.jpeg" if user.login != "user2" else ""
-                )
-            )
-        self.session.bulk_save_objects(profiles)
-        self.session.commit()
-
-    def tearDown(self) -> None:
-        self.session.query(tables.Profile).delete()
-        self.session.query(tables.RefreshToken).delete()
-        self.session.query(tables.User).delete()
-        self.session.commit()
-
-    def test_success_get_user_info(self):
-        tokens = self.login()
-
-        response = self.client.get(
+    def test_success_get_user_info(self, client: TestClient):
+        response = client.get(
             f"{self.user_url}/info/user2",
-            headers=self.get_authorization_headers(access_token=tokens.access_token)
+            headers=self.get_authorization_headers()
         )
-
-        self.assertEqual(response.status_code, 200)
-
-        requested_user = self.find_user_by_login("user2")
-        self.assertEqual(
-            response.json(),
-            {
+        assert response.status_code == 200
+        assert response.json() == {
                 "login": "user2",
                 "name": "user2",
                 "surname": "surname2",
-                "id": requested_user.id
+                "id": 4
             }
-        )
 
-    def test_get_user_info_not_exist_login(self):
-        tokens = self.login()
-
-        response = self.client.get(
+    def test_get_user_info_not_exist_login(self, client: TestClient):
+        response = client.get(
             f"{self.user_url}/info/not_exist_login",
-            headers=self.get_authorization_headers(access_token=tokens.access_token)
+            headers=self.get_authorization_headers()
         )
+        assert response.status_code == 404
+        assert response.json() == self.exception_response("Пользователь с логином 'not_exist_login' не найден")
 
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {"detail": "Пользователь с логином 'not_exist_login' не найден"})
-
-    def test_get_user_info_without_auth(self):
-        response = self.client.get(
+    def test_get_user_info_without_auth(self, client: TestClient):
+        response = client.get(
             f"{self.user_url}/info/user2",
         )
+        assert response.status_code == 401
+        assert response.json() == self.NOT_AUTH_RESPONSE
 
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
-
-    def test_get_user_info_wrong_access_token(self):
-        response = self.client.get(
+    def test_get_user_info_wrong_access_token(self, client: TestClient):
+        response = client.get(
             f"{self.user_url}/info/user2",
             headers=self.get_authorization_headers(access_token="bad.access.token")
         )
+        assert response.status_code == 401
+        assert response.json() == self.BAD_TOKEN_RESPONSE
 
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json(), self.BAD_TOKEN_RESPONSE)
-
-    def test_success_change_user_data(self):
-        tokens = self.login()
-
+    def test_success_change_user_data(self, client: TestClient, db_facade: MockDBFacade):
         new_name = "new_username"
         new_surname = "Иванов"
 
-        response = self.client.put(
+        response = client.put(
             f"{self.user_url}/change",
-            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            headers=self.get_authorization_headers(),
             json={
                 "name": new_name,
                 "surname": new_surname
             }
         )
+        assert response.status_code == 200
 
-        self.assertEqual(response.status_code, 200)
-        our_user = self.find_user_by_login(login="user")
-
-        self.assertEqual(
-            response.json(),
-            {
+        our_user = db_facade.find_user_by_login(login="user")
+        assert response.json() == {
                 "id": our_user.id,
                 "login": "user",
                 "name": new_name,
                 "surname": new_surname
             }
-        )
+        assert our_user.name == new_name
+        assert our_user.surname == new_surname
 
-        self.assertEqual(our_user.name, new_name)
-        self.assertEqual(our_user.surname, new_surname)
-
-    def test_change_user_date_without_auth(self):
-        response = self.client.put(
+    def test_change_user_date_without_auth(self, client: TestClient):
+        response = client.put(
             f"{self.user_url}/change",
             json={
                 "name": "new_name",
                 "surname": "new_surname"
             }
         )
+        assert response.status_code == 401
+        assert response.json() == self.NOT_AUTH_RESPONSE
 
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
-
-    def test_change_user_data_wrong_access_token(self):
-        response = self.client.put(
+    def test_change_user_data_wrong_access_token(self, client: TestClient):
+        response = client.put(
             f"{self.user_url}/change",
             headers=self.get_authorization_headers(access_token=self.BAD_PAYLOAD_ACCESS_TOKEN),
             json={
@@ -148,116 +103,98 @@ class TestUser(BaseTestCase):
                 "surname": "new_surname"
             }
         )
+        assert response.status_code == 401
+        assert response.json() == self.BAD_TOKEN_RESPONSE
 
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json(), self.BAD_TOKEN_RESPONSE)
-
-    def test_success_upload_avatar(self):
-        tokens = self.login()
+    def test_success_upload_avatar(self, client: TestClient, db_facade: MockDBFacade):
         with open(os.path.join(TEST_FILES_FOLDER, "avatar_1.jpeg"), mode="rb") as file:
-            response = self.client.post(
+            response = client.post(
                 f"{self.user_url}/avatar",
-                headers=self.get_authorization_headers(access_token=tokens.access_token),
+                headers=self.get_authorization_headers(),
                 files={"file": file}
             )
+        assert response.status_code == 201
+        our_user_profile = db_facade.get_profile_by_login(login=self.DEFAULT_USER)
+        assert our_user_profile.avatar_file == response.json()["avatar_file"]
 
-        self.assertEqual(response.status_code, 201)
-        avatar_file = response.json()["avatar_file"]
-
-        our_user = self.find_user_by_login(login="user")
-        our_user_profile: tables.Profile = (
-            self.session
-            .query(tables.Profile)
-            .where(tables.Profile.user == our_user.id)
-            .first()
-        )
-        self.assertEqual(our_user_profile.avatar_file, avatar_file)
-
-    def test_upload_avatar_without_auth(self):
+    def test_upload_avatar_without_auth(self, client: TestClient):
         with open(os.path.join(TEST_FILES_FOLDER, "avatar_1.jpeg"), mode="rb") as file:
-            response = self.client.post(
+            response = client.post(
                 f"{self.user_url}/avatar",
                 files={"file": file}
             )
+        assert response.status_code == 401
+        assert response.json() == self.NOT_AUTH_RESPONSE
 
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
-
-    def test_upload_avatar_bad_access_token(self):
+    def test_upload_avatar_bad_access_token(self, client: TestClient):
         with open(os.path.join(TEST_FILES_FOLDER, "avatar_1.jpeg"), mode="rb") as file:
-            response = self.client.post(
+            response = client.post(
                 f"{self.user_url}/avatar",
                 headers=self.get_authorization_headers(access_token="bad.access.token"),
                 files={"file": file}
             )
+        assert response.status_code == 401
+        assert response.json() == self.BAD_TOKEN_RESPONSE
 
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json(), self.BAD_TOKEN_RESPONSE)
-
-    def test_success_get_login_avatar_filename(self):
-        tokens = self.login()
-
-        response = self.client.get(
+    def test_success_get_login_avatar_filename(self, client: TestClient):
+        response = client.get(
             url=f"{self.user_url}/avatar_file_name/user1",
-            headers=self.get_authorization_headers(access_token=tokens.access_token)
+            headers=self.get_authorization_headers()
         )
+        assert response.status_code == 200
+        assert response.json() == {"avatar_file": "user1:surname1.jpeg"}
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"avatar_file": "user1:surname1.jpeg"})
-
-        response = self.client.get(
+        response = client.get(
             url=f"{self.user_url}/avatar_file_name/user2",
-            headers=self.get_authorization_headers(access_token=tokens.access_token)
+            headers=self.get_authorization_headers()
         )
+        assert response.status_code == 200
+        assert response.json() == {"avatar_file": ""}
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"avatar_file": ""})
-
-    def test_get_login_avatar_filename_not_auth(self):
-        response = self.client.get(
+    def test_get_login_avatar_filename_not_auth(self, client: TestClient):
+        response = client.get(
             url=f"{self.user_url}/avatar_file_name/user1",
         )
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json(), self.NOT_AUTH_RESPONSE)
+        assert response.status_code == 401
+        assert response.json() == self.NOT_AUTH_RESPONSE
 
-    def test_get_login_avatar_filename_not_exist_login(self):
-        tokens = self.login()
+    def test_get_login_avatar_filename_not_exist_login(self, client: TestClient):
         not_exist_login = "not_exist_login"
-        response = self.client.get(
+        response = client.get(
             url=f"{self.user_url}/avatar_file_name/{not_exist_login}",
-            headers=self.get_authorization_headers(access_token=tokens.access_token)
+            headers=self.get_authorization_headers()
         )
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {"detail": f"Профиль пользователя с логином '{not_exist_login}' не найден"})
+        assert response.status_code == 404
+        assert response.json() == self.exception_response(f"Профиль пользователя с логином '{not_exist_login}' не найден")
 
-    def test_success_get_login_avatar_file(self):
-        response = self.client.get(
+    def test_success_get_login_avatar_file(self, client: TestClient):
+        response = client.get(
             url=f"{self.user_url}/avatar_file/user2",
         )
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
 
         with open(FilesService.get_no_avatar_file_path(), mode="rb") as no_avatar_file:
             no_avatar_file_content = no_avatar_file.read()
-            self.assertEqual(response.content, no_avatar_file_content)
+            assert response.content == no_avatar_file_content
 
-        get_settings_patcher = patch(target="backend.services.files.get_settings", new=test_files_folder_get_settings)
+        get_settings_patcher = patch(target="backend.services.files.get_settings", new=get_settings_test_files_folder)
         get_settings_patcher.start()
 
-        for user in test_users[:2]:
-            response = self.client.get(
+        for user in users[:2]:
+            response = client.get(
                 url=f"{self.user_url}/avatar_file/{user.login}",
             )
-            self.assertEqual(response.status_code, 200)
+            assert response.status_code == 200
             with open(os.path.join(TEST_FILES_FOLDER, f"{user.name}:{user.surname}.jpeg"), mode="rb") as avatar_file:
                 user_avatar_file = avatar_file.read()
-                self.assertEqual(response.content, user_avatar_file)
+                assert response.content == user_avatar_file
 
         get_settings_patcher.stop()
 
-    def test_get_login_avatar_file_not_exist_login(self):
+    def test_get_login_avatar_file_not_exist_login(self, client: TestClient):
         not_exist_login = "not_exist_login"
-        response = self.client.get(
+        response = client.get(
             url=f"{self.user_url}/avatar_file/{not_exist_login}",
         )
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {"detail": f"Профиль пользователя с логином '{not_exist_login}' не найден"})
+        assert response.status_code == 404
+        assert response.json() == self.exception_response(f"Профиль пользователя с логином '{not_exist_login}' не найден")
