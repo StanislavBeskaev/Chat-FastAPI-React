@@ -1,6 +1,6 @@
 from backend import tables, models
 from backend.core.decorators import model_result
-from backend.dao import BaseDAO
+from backend.db.dao.base_dao import BaseDAO
 
 
 class TokensDAO(BaseDAO):

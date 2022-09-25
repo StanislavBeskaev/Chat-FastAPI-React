@@ -13,13 +13,8 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from backend import tables
+from backend.db.facade import DBFacade
 from backend.db_config import get_session
-from backend.dao.chats import ChatsDAO
-from backend.dao.chat_members import ChatMembersDAO
-from backend.dao.contacts import ContactsDAO
-from backend.dao.messages import MessagesDAO
-from backend.dao.tokens import TokensDAO
-from backend.dao.users import UsersDAO
 from backend.services import BaseService
 from backend.settings import Settings, get_settings
 from backend.tables import Base
@@ -56,31 +51,25 @@ class DBDataService(BaseService):
     """Сервис для выгрузки и загрузки данных базы"""
 
     def __init__(self, session: Session = Depends(get_session), settings: Settings = Depends(get_settings)):
-        super().__init__(session=session)
+        super().__init__(db_facade=DBFacade(session=session))
+        self._session = session
         self._settings = settings
-        # TODO тут бы пригодился DBFacade
-        self._chats_dao = ChatsDAO(session=session)
-        self._chat_members_dao = ChatMembersDAO(session=session)
-        self._contacts_dao = ContactsDAO(session=session)
-        self._messages_dao = MessagesDAO(session=session)
-        self._tokens_dao = TokensDAO(session=session)
-        self._users_dao = UsersDAO(session=session)
         self._db_data_sources = [
-            DBDataSource(export_method=self._users_dao.get_all_users, file_name="users.json",
+            DBDataSource(export_method=self._db_facade.get_all_users, file_name="users.json",
                          delete_priority=8, insert_priority=1, table=tables.User),
-            DBDataSource(export_method=self._chats_dao.get_all_chats, file_name="chats.json",
+            DBDataSource(export_method=self._db_facade.get_all_chats, file_name="chats.json",
                          delete_priority=6, insert_priority=2, table=tables.Chat),
-            DBDataSource(export_method=self._messages_dao.get_all_messages, file_name="messages.json",
+            DBDataSource(export_method=self._db_facade.get_all_messages, file_name="messages.json",
                          delete_priority=5, insert_priority=3, table=tables.Message),
-            DBDataSource(export_method=self._contacts_dao.get_all_contacts, file_name="contacts.json",
+            DBDataSource(export_method=self._db_facade.get_all_contacts, file_name="contacts.json",
                          delete_priority=4, insert_priority=4, table=tables.Contact),
-            DBDataSource(export_method=self._chat_members_dao.get_all_chat_members, file_name="chat_members.json",
+            DBDataSource(export_method=self._db_facade.get_all_chat_members, file_name="chat_members.json",
                          delete_priority=3, insert_priority=5, table=tables.ChatMember),
-            DBDataSource(export_method=self._messages_dao.get_all_read_status_messages, file_name="messages_read_status.json",  # noqa
+            DBDataSource(export_method=self._db_facade.get_all_read_status_messages, file_name="messages_read_status.json",  # noqa
                          delete_priority=2, insert_priority=6, table=tables.MessageReadStatus),
-            DBDataSource(export_method=self._tokens_dao.get_all_refresh_tokens, file_name="refresh_tokens.json",
+            DBDataSource(export_method=self._db_facade.get_all_refresh_tokens, file_name="refresh_tokens.json",
                          delete_priority=2, insert_priority=7, table=tables.RefreshToken),
-            DBDataSource(export_method=self._users_dao.get_all_profiles, file_name="profiles.json",
+            DBDataSource(export_method=self._db_facade.get_all_profiles, file_name="profiles.json",
                          delete_priority=1, insert_priority=8, table=tables.Profile),
         ]
 
@@ -168,9 +157,9 @@ class DBDataService(BaseService):
             key=lambda x: x.delete_priority
         )
         for db_data_source in db_data_sources_delete_order:
-            self.session.query(db_data_source.table).delete()
+            self._session.query(db_data_source.table).delete()
             logger.info(f"Очищаем таблицу {db_data_source.table.__tablename__}")
-        self.session.commit()
+        self._session.commit()
         logger.info("Все таблицы очищены")
 
     def _insert_import_db_data(self) -> None:
@@ -185,7 +174,7 @@ class DBDataService(BaseService):
                 table=db_data_source.table
             )
 
-        self.session.commit()
+        self._session.commit()
         logger.info("commit вставки импортированных данных")
 
     def _read_import_data_file(self, file_name: str) -> list[dict]:
@@ -197,7 +186,7 @@ class DBDataService(BaseService):
 
     def _insert_import_data_to_table(self, import_data: list[dict], table: Base) -> None:
         table_objects = [table(**data) for data in import_data]
-        self.session.bulk_save_objects(table_objects)
+        self._session.bulk_save_objects(table_objects)
         logger.info(f"Вставлены данные в таблицу {table.__tablename__}")
 
     def _set_correct_table_sequences_value(self) -> None:
@@ -215,10 +204,10 @@ class DBDataService(BaseService):
         )
 
         for sequence_name, table in table_sequences_to_restart:
-            next_table_id = self.session.query(func.max(table.id)).scalar() + 1
-            self.session.execute(
+            next_table_id = self._session.query(func.max(table.id)).scalar() + 1
+            self._session.execute(
                 f"ALTER SEQUENCE {sequence_name} RESTART WITH {next_table_id}"
             )
             logger.info(f"Для последовательности {sequence_name} выставлено значение {next_table_id}")
-        self.session.commit()
+        self._session.commit()
         logger.info("Для всех последовательностей установлены корректные значения")

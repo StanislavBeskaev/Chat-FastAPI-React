@@ -9,7 +9,7 @@ from sqlalchemy.orm import Query, aliased
 from backend import tables, models
 from backend.core.decorators import model_result
 from backend.core.time import get_current_time
-from backend.dao import BaseDAO
+from backend.db.dao.base_dao import BaseDAO
 
 
 class MessagesDAO(BaseDAO):

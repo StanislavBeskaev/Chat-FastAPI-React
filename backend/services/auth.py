@@ -2,12 +2,10 @@ from fastapi import HTTPException, status, Depends
 from loguru import logger
 from passlib.hash import bcrypt
 from pydantic import ValidationError
-from sqlalchemy.orm import Session
 
 from backend import models
-from backend.dao.tokens import TokensDAO
-from backend.dao.users import UsersDAO
-from backend.db_config import get_session
+from backend.db.facade import get_db_facade
+from backend.db.interface import DBFacadeInterface
 from backend.settings import get_settings
 from backend.services import BaseService
 from backend.services.chat_members import ChatMembersService
@@ -17,13 +15,10 @@ from backend.services.token import TokenService
 class AuthService(BaseService):
     """Сервис авторизации и регистрации"""
 
-    def __init__(self, session: Session = Depends(get_session)):
-        super().__init__(session=session)
-        self._token_service = TokenService(session=session)
-        self._chat_members_service = ChatMembersService(session=session)
-
-        self._tokens_dao = TokensDAO(session=session)
-        self._users_dao = UsersDAO(session=session)
+    def __init__(self, db_facade: DBFacadeInterface = Depends(get_db_facade)):
+        super().__init__(db_facade=db_facade)
+        self._token_service = TokenService(db_facade=db_facade)
+        self._chat_members_service = ChatMembersService(db_facade=db_facade)
 
     @classmethod
     def hash_password(cls, password: str) -> str:
@@ -39,7 +34,7 @@ class AuthService(BaseService):
         """Регистрация нового пользователя"""
         logger.debug(f"Попытка регистрации нового пользователя c данными:"
                      f" login={user_data.login}, name={user_data.name}, surname={user_data.surname}")
-        if self._users_dao.find_user_by_login(login=user_data.login):
+        if self._db_facade.find_user_by_login(login=user_data.login):
             logger.warning(f"Пользователь с логином '{user_data.login}' уже существует")
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -54,7 +49,7 @@ class AuthService(BaseService):
     def login_user(self, login: str, password: str, user_agent: str) -> models.Tokens:
         """Авторизация пользователя"""
         logger.debug(f"Попытка авторизации с данными: {login=} {user_agent=}")
-        user = self._users_dao.find_user_by_login(login)
+        user = self._db_facade.find_user_by_login(login)
         if not user:
             message = "Пользователь с таким логином не найден"
             logger.warning(message)
@@ -76,14 +71,14 @@ class AuthService(BaseService):
             raise HTTPException(status_code=401, detail="Не валидный refresh_token")
 
         user_data = self._token_service.verify_refresh_token(token=refresh_token)
-        refresh_token_from_db = self._tokens_dao.find_refresh_token_by_token(token=refresh_token, user_agent=user_agent)
+        refresh_token_from_db = self._db_facade.find_refresh_token_by_token(token=refresh_token, user_agent=user_agent)
 
         if not user_data or not refresh_token_from_db:
             logger.debug(f"Не удалось обновить токены, {user_data=}, {refresh_token_from_db=}")
             raise HTTPException(status_code=401, detail="Не удалось обновить токены")
 
         try:
-            user = models.User.from_orm(self._users_dao.find_user_by_id(user_id=user_data.id))
+            user = models.User.from_orm(self._db_facade.find_user_by_id(user_id=user_data.id))
         except ValidationError as e:
             logger.warning(f"Не удалось получить пользователя по id={user_data.id}: {str(e)}")
             raise HTTPException(status_code=401, detail="Не удалось обновить токены")
@@ -107,14 +102,14 @@ class AuthService(BaseService):
 
     def _create_new_user(self, user_data: models.UserCreate) -> models.User:
         """Создание нового пользователя"""
-        new_user = self._users_dao.create_user(
+        new_user = self._db_facade.create_user(
             login=user_data.login,
             password_hash=self.hash_password(user_data.password),
             name=user_data.name,
             surname=user_data.surname
         )
 
-        self._users_dao.create_user_profile(user_id=new_user.id)
+        self._db_facade.create_user_profile(user_id=new_user.id)
 
         settings = get_settings()
         self._chat_members_service.add_user_to_chat(
