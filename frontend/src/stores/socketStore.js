@@ -7,6 +7,8 @@ import chatMembersModalStore from './modals/chatMembersModalStore'
 import logMessages from '../log'
 
 
+const RECONNECT_TIMEOUT_S = 10
+
 class SocketStore {
   socket = null
   login = null
@@ -35,7 +37,7 @@ class SocketStore {
         setTimeout(() => {
           logMessages(`SocketStore WS закрыт, авторизован, переподключаемся, login=${authStore.user.login}`)
           this.connect(this.login)
-        }, 200)
+        }, 1000 * RECONNECT_TIMEOUT_S)
       } else {
         logMessages('SocketStore WS закрыт, не авторизован, не переподключаемся')
       }
