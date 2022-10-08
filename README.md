@@ -1,4 +1,5 @@
 # Простой чат
+На React + FastAPI
 
 ## Возможности
  - Обмен текстовыми сообщениями в онлайн режиме
@@ -33,7 +34,7 @@
 - Сбор метрик выполнения запросов с помощью Prometheus
 - Отображение в почти реальном времени графиков выполненных запросов в Grafana
 <img src="docs/images/grafana.png" width="600">
-- Coverage > 90%
+- Тесты на Pytest, сoverage > 80%
 
 ## Запуск
 Перед запуском необходимо заполнить файл .env в корне проекта. Обязательные переменные окружения:  
@@ -63,10 +64,10 @@
 Для управления зависимостями используется Poetry. Для установки зависимостей выполнить `poetry install`
 
 ## Тесты
-Выполнить `python -m unittest`
+В виртуальном окружении, после установки зависимостей выполнить: `pytest`
 
 ## Code coverage
-Собрать статистику покрытия: `coverage run -m unittest`  
+Собрать статистику покрытия: `coverage run -m pytest`  
 Отчёт о покрытии в консоли: `coverage report -m`  
 Отчёт о покрытии в html: `coverage html`  
-Тесты и coverage: `coverage run -m unittest && coverage report -m`
+Тесты и coverage: `coverage run -m pytest && coverage report -m`
