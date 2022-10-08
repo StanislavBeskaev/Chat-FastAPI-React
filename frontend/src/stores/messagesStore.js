@@ -367,6 +367,11 @@ class MessagesStore {
     this.selectedChatText = text
   }
 
+  addTextToSelectedChat(text) {
+    const newSelectedChatText = `${this.selectedChatText}${text}`
+    this.setSelectedChatText(newSelectedChatText)
+  }
+
   setSelectedChatTyping(bool) {
     this.selectedChatTyping = bool
   }
