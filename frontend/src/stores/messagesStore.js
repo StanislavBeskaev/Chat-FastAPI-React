@@ -18,6 +18,7 @@ class MessagesStore {
   selectedChatTyping = false
   waitReadList = []
   needScrollToNewMessage = false
+  textInputRef = null
 
   constructor() {
     makeAutoObservable(this)
@@ -36,6 +37,10 @@ class MessagesStore {
     this.needScrollToNewMessage = false
 
     searchMessagesStore.setDefaultState()
+  }
+
+  setTextInputRef(ref) {
+    this.textInputRef = ref
   }
 
   // Первоначальная загрузка информации о сообщениях, выделение чатов
@@ -137,6 +142,11 @@ class MessagesStore {
     this.selectedChatText = this.chats[chatId].text
     this.selectedChatTyping = false
     this.needScrollToNewMessage = false
+    this._focusTextInput()
+  }
+
+  _focusTextInput() {
+    if (this.textInputRef.current) this.textInputRef.current.focus()
   }
 
   // Метод для добавления чата, когда текущего пользователя добавляют в чат
@@ -370,6 +380,7 @@ class MessagesStore {
   addTextToSelectedChat(text) {
     const newSelectedChatText = `${this.selectedChatText}${text}`
     this.setSelectedChatText(newSelectedChatText)
+    this._focusTextInput()
   }
 
   setSelectedChatTyping(bool) {

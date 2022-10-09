@@ -1,15 +1,21 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useRef} from 'react'
 import {Button, Form, InputGroup} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
+import EmojiPicker from './EmojiPicker'
 
 import messagesStore from '../../stores/messagesStore'
-import EmojiPicker from './EmojiPicker'
 
 
 const STOP_TYPING_DELAY = 3_000
 
 const TextForm = ({sendTextMessage, sendStartTyping, sendStopTyping}) => {
   const {selectedChatText, selectedChatTyping} = messagesStore
+  const textInputRef = useRef(null)
+
+  useEffect(() => {
+    messagesStore.setTextInputRef(textInputRef)
+    textInputRef.current.focus()
+  }, [])
 
   useEffect(() => {
     const stopTypingTimeout = setTimeout(()=> {
@@ -62,6 +68,7 @@ const TextForm = ({sendTextMessage, sendStartTyping, sendStopTyping}) => {
               onChange={e => messagesStore.setSelectedChatText(e.target.value)}
               onKeyPress={handleKeyPress}
               style={{height: '30px', resize: 'none'}}
+              ref={textInputRef}
             />
             <Button type="submit">Отправить</Button>
           </InputGroup>
