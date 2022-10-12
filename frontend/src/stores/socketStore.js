@@ -7,7 +7,7 @@ import chatMembersModalStore from './modals/chatMembersModalStore'
 import logMessages from '../log'
 
 
-const RECONNECT_TIMEOUT_S = 10
+const RECONNECT_TIMEOUT_S = 5
 
 class SocketStore {
   socket = null
