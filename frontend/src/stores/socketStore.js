@@ -1,6 +1,7 @@
 import {makeAutoObservable} from "mobx"
 import {toast} from 'react-toastify'
 
+import authStore from "./authStore"
 import messagesStore from './messagesStore'
 import chatMembersModalStore from './modals/chatMembersModalStore'
 import logMessages from '../log'
@@ -12,11 +13,16 @@ const SOCKET_OPEN_STATE = 1
 class SocketStore {
   socket = null
   login = null
-  isOnline = false
+  reconnectAttempts = 0
+  needLoadMessages = false
 
   constructor() {
     makeAutoObservable(this)
     logMessages("Создан SocketStore")
+  }
+
+  isOnline() {
+    return this.socket.readyState === SOCKET_OPEN_STATE
   }
 
   async connect(login) {
@@ -30,23 +36,50 @@ class SocketStore {
     const ws = new WebSocket(`ws://${serverUrl}/ws/${login}`)
     this.setSocket(ws)
     this.setLogin(login)
-    this.setIsOnline(true)
+    ws.onopen = async e =>  {
+      logMessages("ws.onopen", e)
+      this.setReconnectAttempts(0)
+      if (this.needLoadMessages) {
+        await messagesStore.loadMessages()
+        this.setNeedLoadMessages(false)
+      }
+    }
 
     await this._addWSMessagesListener()
 
     ws.onclose = () => {
-      this.setIsOnline(false)
-      this._askReload()
+      this.setNeedLoadMessages(true)
+      this._askReconnect()
     }
   }
 
-  _askReload() {
-    // TODO тут можно перезагрузить все сообщения, что бы актуализировать и сделать reconnect
-    ConfirmDeleteModalStore.open(
-"Потеряна связь с сервером. Необходимо обновить страницу, обновляем?",
-() => window.location.reload(),
-() => {}
-    )
+  _askReconnect() {
+    logMessages("_askReconnect", authStore.isAuth, this.login)
+    if (authStore.isAuth && this.login) {
+      if (this.reconnectAttempts === 0) {
+        ConfirmDeleteModalStore.open(
+          "Потеряна связь с сервером. Переподключиться?",
+          async () => {
+            this.setReconnectAttempts(1)
+            await this.connect(this.login)
+          },
+          () => {}
+        )
+      } else{
+        ConfirmDeleteModalStore.open(
+          "Не удалось переподключиться. Необходимо обновить страницу, обновляем?",
+          () => window.location.reload(),
+          () => {}
+        )
+      }
+    } else {
+      ConfirmDeleteModalStore.open(
+          "Потеряна связь с сервером. Необходимо обновить страницу, обновляем?",
+          () => window.location.reload(),
+          () => {}
+      )
+    }
+
   }
 
   disconnect() {
@@ -58,7 +91,6 @@ class SocketStore {
     this.login = null
     this.socket.close()
     this.socket = null
-    this.setIsOnline(false)
   }
 
   sendText(text, chatId) {
@@ -80,7 +112,7 @@ class SocketStore {
   _sendMessage(messageData, messageType) {
     logMessages('SocketStore start _sendMessage', this.socket)
     if (this.socket.readyState !== SOCKET_OPEN_STATE) {
-      this._askReload()
+      this._askReconnect()
       return
     }
     const message = JSON.stringify(
@@ -217,9 +249,12 @@ class SocketStore {
     this.login = login
   }
 
-  setIsOnline(bool) {
-    logMessages("setIsOnline", bool)
-    this.login = bool
+  setReconnectAttempts(value) {
+    this.reconnectAttempts = value
+  }
+
+  setNeedLoadMessages(bool) {
+    this.needLoadMessages = bool
   }
 }
 
