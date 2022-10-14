@@ -31,9 +31,11 @@ class ConfirmDeleteModalStore {
     logMessages('close ConfirmDeleteModal')
     this.show = false
     setTimeout(() => {
-      this.text = ''
-      this.onYes = null
-      this.onNo = null
+      if (!this.show) {
+        this.text = ''
+        this.onYes = null
+        this.onNo = null
+      }
     }, 400)
   }
 

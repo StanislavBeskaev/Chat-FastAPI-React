@@ -1,17 +1,18 @@
 import {makeAutoObservable} from "mobx"
 import {toast} from 'react-toastify'
 
-import authStore from './authStore'
 import messagesStore from './messagesStore'
 import chatMembersModalStore from './modals/chatMembersModalStore'
 import logMessages from '../log'
+import ConfirmDeleteModalStore from "./modals/confirmDeleteModalStore"
 
 
-const RECONNECT_TIMEOUT_S = 5
+const SOCKET_OPEN_STATE = 1
 
 class SocketStore {
   socket = null
   login = null
+  isOnline = false
 
   constructor() {
     makeAutoObservable(this)
@@ -29,19 +30,23 @@ class SocketStore {
     const ws = new WebSocket(`ws://${serverUrl}/ws/${login}`)
     this.setSocket(ws)
     this.setLogin(login)
+    this.setIsOnline(true)
 
     await this._addWSMessagesListener()
 
     ws.onclose = () => {
-      if (authStore.isAuth && this.login) {
-        setTimeout(() => {
-          logMessages(`SocketStore WS закрыт, авторизован, переподключаемся, login=${authStore.user.login}`)
-          this.connect(this.login)
-        }, 1000 * RECONNECT_TIMEOUT_S)
-      } else {
-        logMessages('SocketStore WS закрыт, не авторизован, не переподключаемся')
-      }
+      this.setIsOnline(false)
+      this._askReload()
     }
+  }
+
+  _askReload() {
+    // TODO тут можно перезагрузить все сообщения, что бы актуализировать и сделать reconnect
+    ConfirmDeleteModalStore.open(
+"Потеряна связь с сервером. Необходимо обновить страницу, обновляем?",
+() => window.location.reload(),
+() => {}
+    )
   }
 
   disconnect() {
@@ -53,6 +58,7 @@ class SocketStore {
     this.login = null
     this.socket.close()
     this.socket = null
+    this.setIsOnline(false)
   }
 
   sendText(text, chatId) {
@@ -72,6 +78,11 @@ class SocketStore {
   }
 
   _sendMessage(messageData, messageType) {
+    logMessages('SocketStore start _sendMessage', this.socket)
+    if (this.socket.readyState !== SOCKET_OPEN_STATE) {
+      this._askReload()
+      return
+    }
     const message = JSON.stringify(
       {
         type: messageType,
@@ -204,6 +215,11 @@ class SocketStore {
 
   setLogin(login) {
     this.login = login
+  }
+
+  setIsOnline(bool) {
+    logMessages("setIsOnline", bool)
+    this.login = bool
   }
 }
 
