@@ -13,6 +13,7 @@ import NewChatButton from './NewChatButton'
 const SidebarFooter = ({login}) => {
   const {selectedChatTyping, selectedChatId} = messagesStore
   const history = useHistory()
+  const statusClassName = socketStore.isOnline() ? "bg-success" : "bg-danger"
 
   const onProfileClick = () => {
     history.push("/user-data/")
@@ -32,8 +33,14 @@ const SidebarFooter = ({login}) => {
           <FileAvatar fileName={authStore.avatarFile} size="xs"/>
           <NewChatButton />
         </div>
-        <span className="mt-2 fs-6">
-          Ваш логин: <span className="text-muted">{login}</span>
+        <span className="mt-2 fs-6 d-flex align-items-center">
+          <div>
+            Ваш логин: <span className="text-muted">{login}</span>
+          </div>
+          <div
+              className={`ms-2 align-self-center rounded-circle ${statusClassName}`}
+              style={{width: 13, height: 13}}
+          ></div>
         </span>
         <div className="mt-3 d-flex gap-3">
           <Button size="md" variant="primary" onClick={onProfileClick}>
