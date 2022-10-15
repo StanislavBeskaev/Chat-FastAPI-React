@@ -25,7 +25,7 @@ class SocketStore {
   }
 
   isOnline() {
-    return [SOCKET_CLOSING_STATE, SOCKET_CLOSE_STATE].indexOf(this.socket.readyState) === -1 && !this.closing
+    return [SOCKET_CLOSING_STATE, SOCKET_CLOSE_STATE].indexOf(this.socket?.readyState) === -1 && !this.closing
   }
 
   async connect(login) {
@@ -117,7 +117,7 @@ class SocketStore {
 
   _sendMessage(messageData, messageType) {
     logMessages('SocketStore start _sendMessage', this.socket)
-    if (this.socket.readyState !== SOCKET_OPEN_STATE) {
+    if (this.socket?.readyState !== SOCKET_OPEN_STATE) {
       this._askReconnect()
       return
     }
