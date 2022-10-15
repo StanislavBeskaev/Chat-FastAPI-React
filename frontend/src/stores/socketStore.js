@@ -9,12 +9,15 @@ import ConfirmDeleteModalStore from "./modals/confirmDeleteModalStore"
 
 
 const SOCKET_OPEN_STATE = 1
+const SOCKET_CLOSING_STATE = 2
+const SOCKET_CLOSE_STATE = 3
 
 class SocketStore {
   socket = null
   login = null
   reconnectAttempts = 0
   needLoadMessages = false
+  closing = false
 
   constructor() {
     makeAutoObservable(this)
@@ -22,7 +25,7 @@ class SocketStore {
   }
 
   isOnline() {
-    return this.socket.readyState === SOCKET_OPEN_STATE
+    return [SOCKET_CLOSING_STATE, SOCKET_CLOSE_STATE].indexOf(this.socket.readyState) === -1 && !this.closing
   }
 
   async connect(login) {
@@ -39,6 +42,7 @@ class SocketStore {
     ws.onopen = async e =>  {
       logMessages("ws.onopen", e)
       this.setReconnectAttempts(0)
+      this.setClosing(false)
       if (this.needLoadMessages) {
         await messagesStore.loadMessages()
         this.setNeedLoadMessages(false)
@@ -48,6 +52,8 @@ class SocketStore {
     await this._addWSMessagesListener()
 
     ws.onclose = () => {
+      logMessages("ws.onclose")
+      this.setClosing(true)
       this.setNeedLoadMessages(true)
       this._askReconnect()
     }
@@ -255,6 +261,10 @@ class SocketStore {
 
   setNeedLoadMessages(bool) {
     this.needLoadMessages = bool
+  }
+
+  setClosing(bool) {
+    this.closing = bool
   }
 }
 
