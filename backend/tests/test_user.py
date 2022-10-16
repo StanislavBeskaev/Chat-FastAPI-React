@@ -7,8 +7,8 @@ from fastapi.testclient import TestClient
 from backend.db.mock.facade import MockDBFacade
 from backend.services.files import FilesService
 from backend.settings import Settings
+from backend.tests import data as test_data
 from backend.tests.base import BaseTest
-from backend.tests.conftest import users
 
 
 TEST_FILES_FOLDER = os.path.join(Path(__file__).resolve().parent, "files")
@@ -180,7 +180,7 @@ class TestUser(BaseTest):
         get_settings_patcher = patch(target="backend.services.files.get_settings", new=get_settings_test_files_folder)
         get_settings_patcher.start()
 
-        for user in users[:2]:
+        for user in test_data.users[:2]:
             response = client.get(
                 url=f"{self.user_url}/avatar_file/{user.login}",
             )

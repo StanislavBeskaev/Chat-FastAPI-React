@@ -1,8 +1,8 @@
 from fastapi.testclient import TestClient
 
 from backend.services.ws import MessageType
+from backend.tests import data as test_data
 from backend.tests.base import BaseTest
-from backend.tests.conftest import TEST_CHAT_ID, messages, SECOND_CHAT_ID, SECOND_CHAT_NAME, TEST_CHAT_NAME
 
 
 class TestMessages(BaseTest):
@@ -32,7 +32,7 @@ class TestMessages(BaseTest):
                 ws_list=[user_ws, user1_ws, new_ws],
                 message_id=change_message_id,
                 new_text=new_message_text,
-                chat_id=TEST_CHAT_ID
+                chat_id=test_data.TEST_CHAT_ID
             )
 
     @staticmethod
@@ -93,8 +93,8 @@ class TestMessages(BaseTest):
         assert response.json() == self.exception_response("Только автор может менять сообщение!")
 
     def test_change_message_text_same_text(self, client: TestClient):
-        change_message_id = messages[0].id
-        same_message_text = messages[0].text
+        change_message_id = test_data.messages[0].id
+        same_message_text = test_data.messages[0].text
 
         response = client.put(
             url=f"{self.messages_url}{change_message_id}",
@@ -125,7 +125,7 @@ class TestMessages(BaseTest):
             self._check_ws_delete_message_notification(
                 ws_list=[user_ws, user1_ws, new_ws],
                 message_id=delete_message_id,
-                chat_id=TEST_CHAT_ID
+                chat_id=test_data.TEST_CHAT_ID
             )
 
     @staticmethod
@@ -171,23 +171,23 @@ class TestMessages(BaseTest):
         )
         assert response.status_code == 200
         assert isinstance(response.json(), dict)
-        assert TEST_CHAT_ID in response.json().keys()
-        assert SECOND_CHAT_ID in response.json().keys()
-        assert response.json()[TEST_CHAT_ID]["chat_name"] == TEST_CHAT_NAME
-        assert response.json()[SECOND_CHAT_ID]["chat_name"] == SECOND_CHAT_NAME
-        assert response.json()[TEST_CHAT_ID]["creator"] == "user"
-        assert response.json()[SECOND_CHAT_ID]["creator"] == "user"
-        assert len(response.json()[TEST_CHAT_ID]["messages"]) == 3
-        assert len(response.json()[SECOND_CHAT_ID]["messages"]) == 0
+        assert test_data.TEST_CHAT_ID in response.json().keys()
+        assert test_data.SECOND_CHAT_ID in response.json().keys()
+        assert response.json()[test_data.TEST_CHAT_ID]["chat_name"] == test_data.TEST_CHAT_NAME
+        assert response.json()[test_data.SECOND_CHAT_ID]["chat_name"] == test_data.SECOND_CHAT_NAME
+        assert response.json()[test_data.TEST_CHAT_ID]["creator"] == "user"
+        assert response.json()[test_data.SECOND_CHAT_ID]["creator"] == "user"
+        assert len(response.json()[test_data.TEST_CHAT_ID]["messages"]) == 3
+        assert len(response.json()[test_data.SECOND_CHAT_ID]["messages"]) == 0
 
         self._check_user_test_chat_messages(
-            test_chat_messages=response.json()[TEST_CHAT_ID]["messages"]
+            test_chat_messages=response.json()[test_data.TEST_CHAT_ID]["messages"]
         )
 
     @staticmethod
     def _check_user_test_chat_messages(test_chat_messages: list[dict]):
         assert isinstance(test_chat_messages, list)
-        for index, test_message in enumerate(messages):
+        for index, test_message in enumerate(test_data.messages):
             message = test_chat_messages[index]
             assert isinstance(message, dict)
             assert message["login"] == "user"
@@ -203,12 +203,12 @@ class TestMessages(BaseTest):
 
     def test_success_get_chat_messages(self, client: TestClient):
         response = client.get(
-            url=f"{self.messages_url}{TEST_CHAT_ID}",
+            url=f"{self.messages_url}{test_data.TEST_CHAT_ID}",
             headers=self.get_authorization_headers()
         )
         assert response.status_code == 200
         assert isinstance(response.json(), dict)
-        assert response.json()["chat_name"] == TEST_CHAT_NAME
+        assert response.json()["chat_name"] == test_data.TEST_CHAT_NAME
         assert response.json()["creator"] == "user"
         assert len(response.json()["messages"]) == 3
         self._check_user_test_chat_messages(
@@ -216,7 +216,7 @@ class TestMessages(BaseTest):
         )
 
     def test_get_chat_messages_not_auth(self, client: TestClient):
-        response = client.get(url=f"{self.messages_url}{TEST_CHAT_ID}")
+        response = client.get(url=f"{self.messages_url}{test_data.TEST_CHAT_ID}")
         assert response.status_code == 401
         assert response.json() == self.NOT_AUTH_RESPONSE
 

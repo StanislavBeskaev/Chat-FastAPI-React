@@ -3,8 +3,8 @@ from starlette.testclient import WebSocketTestSession
 
 from backend.db.mock.facade import MockDBFacade
 from backend.services.ws.constants import MessageType, OnlineStatus, MESSAGE_TYPE_KEY, MESSAGE_DATA_KEY
+from backend.tests import data as test_data
 from backend.tests.base import BaseTest
-from backend.tests.conftest import TEST_CHAT_ID, SECOND_CHAT_ID
 
 
 class TestInWSMessages(BaseTest):
@@ -61,7 +61,7 @@ class TestInWSMessages(BaseTest):
                 data={
                     MESSAGE_TYPE_KEY: MessageType.START_TYPING,
                     MESSAGE_DATA_KEY: {
-                        "chatId": TEST_CHAT_ID
+                        "chatId": test_data.TEST_CHAT_ID
                     }
                 }
             )
@@ -69,14 +69,14 @@ class TestInWSMessages(BaseTest):
                 ws_list=[user_ws, user1_ws, new_ws],
                 user="user",
                 typing_type=MessageType.START_TYPING,
-                chat_id=TEST_CHAT_ID
+                chat_id=test_data.TEST_CHAT_ID
             )
 
             user_ws.send_json(
                 data={
                     MESSAGE_TYPE_KEY: MessageType.START_TYPING,
                     MESSAGE_DATA_KEY: {
-                        "chatId": SECOND_CHAT_ID
+                        "chatId": test_data.SECOND_CHAT_ID
                     }
                 }
             )
@@ -84,14 +84,14 @@ class TestInWSMessages(BaseTest):
                 ws_list=[user_ws, user1_ws, new_ws, user2_ws],
                 user="user",
                 typing_type=MessageType.START_TYPING,
-                chat_id=SECOND_CHAT_ID
+                chat_id=test_data.SECOND_CHAT_ID
             )
 
             user_ws.send_json(
                 data={
                     MESSAGE_TYPE_KEY: MessageType.STOP_TYPING,
                     MESSAGE_DATA_KEY: {
-                        "chatId": TEST_CHAT_ID
+                        "chatId": test_data.TEST_CHAT_ID
                     }
                 }
             )
@@ -99,14 +99,14 @@ class TestInWSMessages(BaseTest):
                 ws_list=[user_ws, user1_ws, new_ws],
                 user="user",
                 typing_type=MessageType.STOP_TYPING,
-                chat_id=TEST_CHAT_ID
+                chat_id=test_data.TEST_CHAT_ID
             )
 
             user_ws.send_json(
                 data={
                     MESSAGE_TYPE_KEY: MessageType.STOP_TYPING,
                     MESSAGE_DATA_KEY: {
-                        "chatId": SECOND_CHAT_ID
+                        "chatId": test_data.SECOND_CHAT_ID
                     }
                 }
             )
@@ -114,7 +114,7 @@ class TestInWSMessages(BaseTest):
                 ws_list=[user_ws, user1_ws, new_ws, user2_ws],
                 user="user",
                 typing_type=MessageType.STOP_TYPING,
-                chat_id=SECOND_CHAT_ID
+                chat_id=test_data.SECOND_CHAT_ID
             )
 
     @staticmethod
@@ -167,7 +167,7 @@ class TestInWSMessages(BaseTest):
                     MESSAGE_TYPE_KEY: MessageType.TEXT,
                     MESSAGE_DATA_KEY: {
                         "text": "Новое сообщение",
-                        "chatId": TEST_CHAT_ID
+                        "chatId": test_data.TEST_CHAT_ID
                     }
                 }
             )
@@ -175,7 +175,7 @@ class TestInWSMessages(BaseTest):
                 ws_list=[user_ws, user1_ws, new_ws],
                 user="user",
                 text="Новое сообщение",
-                chat_id=TEST_CHAT_ID,
+                chat_id=test_data.TEST_CHAT_ID,
                 db_facade=db_facade
             )
 
@@ -184,7 +184,7 @@ class TestInWSMessages(BaseTest):
                     MESSAGE_TYPE_KEY: MessageType.TEXT,
                     MESSAGE_DATA_KEY: {
                         "text": "от первого",
-                        "chatId": TEST_CHAT_ID
+                        "chatId": test_data.TEST_CHAT_ID
                     }
                 }
             )
@@ -192,7 +192,7 @@ class TestInWSMessages(BaseTest):
                 ws_list=[user_ws, user1_ws, new_ws],
                 user="user1",
                 text="от первого",
-                chat_id=TEST_CHAT_ID,
+                chat_id=test_data.TEST_CHAT_ID,
                 db_facade=db_facade
             )
 
@@ -201,7 +201,7 @@ class TestInWSMessages(BaseTest):
                     MESSAGE_TYPE_KEY: MessageType.TEXT,
                     MESSAGE_DATA_KEY: {
                         "text": "я тут",
-                        "chatId": SECOND_CHAT_ID
+                        "chatId": test_data.SECOND_CHAT_ID
                     }
                 }
             )
@@ -209,7 +209,7 @@ class TestInWSMessages(BaseTest):
                 ws_list=[user_ws, user1_ws, new_ws],
                 user="new",
                 text="я тут",
-                chat_id=SECOND_CHAT_ID,
+                chat_id=test_data.SECOND_CHAT_ID,
                 db_facade=db_facade
             )
 

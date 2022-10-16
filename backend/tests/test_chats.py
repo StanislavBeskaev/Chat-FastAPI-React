@@ -1,8 +1,8 @@
 from fastapi.testclient import TestClient
 
 from backend.services.ws import MessageType
+from backend.tests import data as test_data
 from backend.tests.base import BaseTest
-from backend.tests.conftest import TEST_CHAT_ID, TEST_CHAT_NAME, users
 
 
 class TestChats(BaseTest):
@@ -81,7 +81,7 @@ class TestChats(BaseTest):
                 client.websocket_connect("ws/user1") as user1_ws, \
                 client.websocket_connect("ws/new") as new_ws:
             response = client.put(
-                url=f"{self.chats_url}{TEST_CHAT_ID}",
+                url=f"{self.chats_url}{test_data.TEST_CHAT_ID}",
                 headers=self.get_authorization_headers(),
                 json={"chat_name": new_name}
             )
@@ -94,11 +94,11 @@ class TestChats(BaseTest):
                 ws_message = ws.receive_json()
                 assert ws_message["type"] == MessageType.CHANGE_CHAT_NAME
                 assert ws_message["data"]["chat_name"] == new_name
-                assert ws_message["data"]["chat_id"] == TEST_CHAT_ID
+                assert ws_message["data"]["chat_id"] == test_data.TEST_CHAT_ID
 
     def test_change_chat_name_not_auth(self, client: TestClient):
         response = client.put(
-            url=f"{self.chats_url}{TEST_CHAT_ID}",
+            url=f"{self.chats_url}{test_data.TEST_CHAT_ID}",
             json={"chat_name": "новое название"}
         )
         assert response.status_code == 401
@@ -106,7 +106,7 @@ class TestChats(BaseTest):
 
     def test_change_chat_name_empty_name(self, client: TestClient):
         response = client.put(
-            url=f"{self.chats_url}{TEST_CHAT_ID}",
+            url=f"{self.chats_url}{test_data.TEST_CHAT_ID}",
             headers=self.get_authorization_headers(),
             json={"chat_name": ""}
         )
@@ -115,9 +115,9 @@ class TestChats(BaseTest):
 
     def test_change_chat_name_same_name(self, client: TestClient):
         response = client.put(
-            url=f"{self.chats_url}{TEST_CHAT_ID}",
+            url=f"{self.chats_url}{test_data.TEST_CHAT_ID}",
             headers=self.get_authorization_headers(),
-            json={"chat_name": TEST_CHAT_NAME}
+            json={"chat_name": test_data.TEST_CHAT_NAME}
         )
         assert response.status_code == 400
         assert response.json() == self.exception_response("Название чата совпадает с текущим")
@@ -127,18 +127,18 @@ class TestChats(BaseTest):
         response = client.put(
             url=f"{self.chats_url}{bad_chat_id}",
             headers=self.get_authorization_headers(),
-            json={"chat_name": TEST_CHAT_NAME}
+            json={"chat_name": test_data.TEST_CHAT_NAME}
         )
         assert response.status_code == 404
         assert response.json() == self.exception_response(f"Чата с id {bad_chat_id} не существует")
 
     def test_change_chat_name_not_creator(self, client: TestClient):
-        not_creator = users[1]
+        not_creator = test_data.users[1]
         tokens = self.login(client=client, username=not_creator.login, password="password1")
         response = client.put(
-            url=f"{self.chats_url}{TEST_CHAT_ID}",
+            url=f"{self.chats_url}{test_data.TEST_CHAT_ID}",
             headers=self.get_authorization_headers(access_token=tokens.access_token),
-            json={"chat_name": TEST_CHAT_NAME}
+            json={"chat_name": test_data.TEST_CHAT_NAME}
         )
 
         assert response.status_code == 403
