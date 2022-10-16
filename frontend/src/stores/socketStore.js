@@ -8,6 +8,7 @@ import logMessages from '../log'
 import ConfirmDeleteModalStore from "./modals/confirmDeleteModalStore"
 
 
+const SOCKET_OPEN_STATE = 1
 const SOCKET_CLOSING_STATE = 2
 const SOCKET_CLOSE_STATE = 3
 
@@ -111,6 +112,11 @@ class SocketStore {
   }
 
   _sendMessage(messageData, messageType) {
+    logMessages('SocketStore start _sendMessage', this.socket)
+    if (this.socket?.readyState !== SOCKET_OPEN_STATE) {
+      this._askReconnect()
+      return
+    }
     const message = JSON.stringify(
       {
         type: messageType,
