@@ -8,7 +8,6 @@ import logMessages from '../log'
 import ConfirmDeleteModalStore from "./modals/confirmDeleteModalStore"
 
 
-const SOCKET_OPEN_STATE = 1
 const SOCKET_CLOSING_STATE = 2
 const SOCKET_CLOSE_STATE = 3
 
@@ -61,31 +60,27 @@ class SocketStore {
 
   _askReconnect() {
     logMessages("_askReconnect", authStore.isAuth, this.login)
-    if (authStore.isAuth && this.login) {
-      if (this.reconnectAttempts === 0) {
-        ConfirmDeleteModalStore.open(
-          "Потеряна связь с сервером. Переподключиться?",
-          async () => {
-            this.setReconnectAttempts(1)
-            await this.connect(this.login)
-          },
-          () => {}
-        )
-      } else{
-        ConfirmDeleteModalStore.open(
-          "Не удалось переподключиться. Необходимо обновить страницу, обновляем?",
-          () => window.location.reload(),
-          () => {}
-        )
-      }
-    } else {
-      ConfirmDeleteModalStore.open(
-          "Потеряна связь с сервером. Необходимо обновить страницу, обновляем?",
-          () => window.location.reload(),
-          () => {}
-      )
+    if (!(authStore.isAuth && this.login)) {
+      logMessages('Не авторизован ничего не делаем')
+      return
     }
 
+    if (this.reconnectAttempts === 0) {
+      ConfirmDeleteModalStore.open(
+        "Потеряна связь с сервером. Переподключиться?",
+        async () => {
+          this.setReconnectAttempts(1)
+          await this.connect(this.login)
+        },
+        () => {}
+      )
+    } else{
+      ConfirmDeleteModalStore.open(
+        "Не удалось переподключиться. Необходимо обновить страницу, обновляем?",
+        () => window.location.reload(),
+        () => {}
+      )
+    }
   }
 
   disconnect() {
@@ -116,11 +111,6 @@ class SocketStore {
   }
 
   _sendMessage(messageData, messageType) {
-    logMessages('SocketStore start _sendMessage', this.socket)
-    if (this.socket?.readyState !== SOCKET_OPEN_STATE) {
-      this._askReconnect()
-      return
-    }
     const message = JSON.stringify(
       {
         type: messageType,
