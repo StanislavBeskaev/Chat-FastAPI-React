@@ -115,7 +115,6 @@ class ChatMembersService(BaseService):
 
         return delete_login_message
 
-    # TODO кажись это приватный метод
     def add_user_to_chat(self, user: models.User, chat_id: str) -> None:
         """
         Добавление пользователя к чату. Если пользователь уже есть в чате, то raise HTTPException 409

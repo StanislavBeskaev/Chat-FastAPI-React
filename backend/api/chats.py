@@ -52,3 +52,22 @@ def change_chat_name(
     )
 
     return {"message": "Название чата успешно изменено"}
+
+
+@router.get(
+    "/try_leave/{chat_id}",
+    status_code=status.HTTP_200_OK,
+    responses=chats_responses.try_leave_chat_responses
+)
+def try_leave_chat(
+        chat_id: str,
+        user: models.User = Depends(get_current_user),
+        chat_service: ChatService = Depends()
+):
+    """Попытка выйти из чата, получение предупредительного сообщения"""
+    # TODO настроить Grafana под новую метрику
+    chats_metrics.TRY_LEAVE_CHAT_COUNTER.inc()
+
+    warning_message = chat_service.try_leave_chat(chat_id=chat_id, user=user)
+
+    return {"message": warning_message}

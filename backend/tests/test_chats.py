@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from backend.services.ws import MessageType
+from backend.settings import Settings
 from backend.tests import data as test_data
 from backend.tests.base import BaseTest
 
@@ -143,3 +144,59 @@ class TestChats(BaseTest):
 
         assert response.status_code == 403
         assert response.json() == self.exception_response("Изменить название чата может только создатель")
+
+    def test_success_try_leave_chat_not_creator(self, client: TestClient):
+        not_creator = test_data.users[1]
+        tokens = self.login(client=client, username=not_creator.login, password="password1")
+        response = client.get(
+            url=f"{self.chats_url}try_leave/{test_data.TEST_CHAT_ID}",
+            headers=self.get_authorization_headers(access_token=tokens.access_token)
+        )
+
+        assert response.status_code == 200
+        assert response.json() == {"message": "Вы уверены, что хотите покинуть чат?"}
+
+    def test_success_try_leave_chat_creator(self, client: TestClient):
+        response = client.get(
+            url=f"{self.chats_url}try_leave/{test_data.TEST_CHAT_ID}",
+            headers=self.get_authorization_headers()
+        )
+
+        assert response.status_code == 200
+        assert response.json() == {"message": "Вы создатель чата. Это приведёт к удалению чата. Вы уверены?"}
+
+    def test_try_leave_not_exist_chat(self, client: TestClient):
+        bad_chat_id = "bad_chat_id"
+        response = client.get(
+            url=f"{self.chats_url}try_leave/{bad_chat_id}",
+            headers=self.get_authorization_headers()
+        )
+        assert response.status_code == 404
+        assert response.json() == self.exception_response(f"Чата с id {bad_chat_id} не существует")
+
+    def test_try_leave_chat_not_auth(self, client: TestClient):
+        response = client.get(
+            url=f"{self.chats_url}try_leave/{test_data.TEST_CHAT_ID}",
+        )
+
+        assert response.status_code == 401
+        assert response.json() == self.NOT_AUTH_RESPONSE
+
+    def test_try_leave_chat_not_chat_member(self, client: TestClient):
+        tokens = self.login(client=client, username="user2", password="password2")
+        response = client.get(
+            url=f"{self.chats_url}try_leave/{test_data.TEST_CHAT_ID}",
+            headers=self.get_authorization_headers(access_token=tokens.access_token)
+        )
+
+        assert response.status_code == 400
+        assert response.json() == self.exception_response("Вы не участник чата")
+
+    def test_try_leave_main(self, client: TestClient, settings: Settings):
+        response = client.get(
+            url=f"{self.chats_url}try_leave/{settings.main_chat_id}",
+            headers=self.get_authorization_headers()
+        )
+
+        assert response.status_code == 403
+        assert response.json() == self.exception_response("Нельзя покинуть главный чат")

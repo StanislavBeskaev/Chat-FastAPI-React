@@ -4,6 +4,7 @@ from fastapi import Depends, HTTPException
 from loguru import logger
 
 from backend import models, tables
+from backend.settings import get_settings
 from backend.db.facade import get_db_facade
 from backend.db.interface import DBFacadeInterface
 from backend.services import BaseService
@@ -29,6 +30,46 @@ class ChatService(BaseService):
 
         logger.info(f"Пользователь {user.login} создал новый чат {new_chat.name} с id {new_chat.id}")
         self._notify_about_new_chat(new_chat=new_chat, user=user)
+
+    def change_chat_name(self, chat_id: str, new_name: str, user: models.User) -> None:
+        """Изменение названия чата"""
+        logger.debug(f"Попытка изменить название чата: {chat_id=} {new_name=} {user=}")
+        if not self._is_user_chat_creator(chat_id=chat_id, user=user):
+            logger.warning("Пользователь не является создателем чата, изменение названия не выполнятся")
+            raise HTTPException(
+                status_code=403,
+                detail="Изменить название чата может только создатель"
+            )
+
+        if not new_name:
+            logger.warning("Передано пустое новое название, изменение названия не выполнятся")
+            raise HTTPException(status_code=400, detail="Укажите название чата")
+
+        # Тут будет 404 если чата нет
+        previous_chat_name = self._db_facade.get_chat_by_id(chat_id=chat_id).name
+        if previous_chat_name == new_name:
+            logger.warning("Передано такое же название чата, изменение названия не выполнятся")
+            raise HTTPException(status_code=400, detail="Название чата совпадает с текущим")
+
+        chat = self._db_facade.change_chat_name(chat_id=chat_id, new_name=new_name)
+
+        logger.info(f"Для чата {chat_id} установлено название: {new_name}")
+        change_chat_name_message = self._create_change_chat_name_message(user=user, chat_id=chat_id, new_chat_name=new_name)  # noqa
+        self._notify_about_change_chat_name(changed_chat=chat, message=change_chat_name_message, login=user.login)
+
+    def try_leave_chat(self, chat_id: str, user: models.User) -> str:
+        """Попытка покинуть чат, возвращается сообщение для отображения в модальном окне на front'е"""
+        if chat_id == get_settings().main_chat_id:
+            raise HTTPException(status_code=403, detail="Нельзя покинуть главный чат")
+
+        # Тут будет 404 если чата нет
+        if self._is_user_chat_creator(chat_id=chat_id, user=user):
+            return "Вы создатель чата. Это приведёт к удалению чата. Вы уверены?"
+
+        if not self._chat_members_service.is_user_in_chat(user=user, chat_id=chat_id):
+            raise HTTPException(status_code=400, detail="Вы не участник чата")
+
+        return "Вы уверены, что хотите покинуть чат?"
 
     def _validate_new_chat_data(self, chat_data: models.ChatCreate) -> list[models.User]:
         """Проверка данных для создания нового чата"""
@@ -66,32 +107,6 @@ class ChatService(BaseService):
         new_chat_info_message = self._create_new_chat_info_message(user=user, chat=new_chat)
         ws_info_message = InfoMessage(login=user.login, info_message=new_chat_info_message, db_facade=self._db_facade)
         asyncio.run(ws_info_message.send_all())
-
-    def change_chat_name(self, chat_id: str, new_name: str, user: models.User) -> None:
-        """Изменение названия чата"""
-        logger.debug(f"Попытка изменить название чата: {chat_id=} {new_name=} {user=}")
-        if not self._is_user_chat_creator(chat_id=chat_id, user=user):
-            logger.warning("Пользователь не является создателем чата, изменение названия не выполнятся")
-            raise HTTPException(
-                status_code=403,
-                detail="Изменить название чата может только создатель"
-            )
-
-        if not new_name:
-            logger.warning("Передано пустое новое название, изменение названия не выполнятся")
-            raise HTTPException(status_code=400, detail="Укажите название чата")
-
-        # Тут будет 404 если чата нет
-        previous_chat_name = self._db_facade.get_chat_by_id(chat_id=chat_id).name
-        if previous_chat_name == new_name:
-            logger.warning("Передано такое же название чата, изменение названия не выполнятся")
-            raise HTTPException(status_code=400, detail="Название чата совпадает с текущим")
-
-        chat = self._db_facade.change_chat_name(chat_id=chat_id, new_name=new_name)
-
-        logger.info(f"Для чата {chat_id} установлено название: {new_name}")
-        change_chat_name_message = self._create_change_chat_name_message(user=user, chat_id=chat_id, new_chat_name=new_name)  # noqa
-        self._notify_about_change_chat_name(changed_chat=chat, message=change_chat_name_message, login=user.login)
 
     def _is_user_chat_creator(self, chat_id: str, user: models.User) -> bool:
         """Является ли пользователь создателем чата"""
