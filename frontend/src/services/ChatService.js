@@ -9,4 +9,8 @@ export default class ChatService {
   static async changeChatName(chatId, newName) {
     return axiosInstance.put(`/chats/${chatId}`, {"chat_name": newName})
   }
+
+  static async tryLeaveChat(chatId) {
+    return axiosInstance.get(`/chats/try_leave/${chatId}`)
+  }
 }

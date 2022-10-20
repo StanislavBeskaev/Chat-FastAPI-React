@@ -1,16 +1,18 @@
 import React from 'react'
 import {useHistory} from 'react-router-dom'
-import {ListGroup, Badge} from 'react-bootstrap'
+import {ListGroup} from 'react-bootstrap'
 import {observer} from 'mobx-react-lite'
 
 import messagesStore from '../../../stores/messagesStore'
 import socketStore from '../../../stores/socketStore'
+import Chat from "./Chat"
 
 
 const Chats = () => {
   const {chats, selectedChatId, selectedChatTyping} = messagesStore
 
   const history = useHistory()
+  const chatIds = messagesStore.getChatIds()
 
   const changeChat = (chatId) => {
     if (selectedChatTyping) {
@@ -29,35 +31,21 @@ const Chats = () => {
 
   return (
     <ListGroup variant="flush">
-      {messagesStore.getChatIds().map(chatId => {
-        const chatName = chats[chatId].chat_name
-        const selected = selectedChatId === chatId
-        const notViewedMessagesCount = messagesStore.getChatNotViewedMessagesCount(chatId)
-        return (
+      {chatIds.map(chatId => (
           <ListGroup.Item
             key={chatId}
             action
             onClick={() => changeChat(chatId)}
-            active={selected}
+            active={selectedChatId === chatId}
           >
-            <div className="d-flex justify-content-between">
-              {chatName}
-              {
-                notViewedMessagesCount > 0
-                  ? <Badge
-                    pill
-                    bg={selected ? 'light' : 'primary'}
-                    className={`align-self-center ${selected ? 'text-primary' : ''}`}
-                  >
-                    {notViewedMessagesCount}
-                  </Badge>
-                  : null
-              }
-            </div>
+            <Chat
+              chatId={chatId}
+              chatName={chats[chatId].chat_name}
+              selected={selectedChatId === chatId}
+              notViewedMessagesCount={messagesStore.getChatNotViewedMessagesCount(chatId)}
+            />
           </ListGroup.Item>
-        )
-      })
-      }
+      ))}
     </ListGroup>
   )
 }

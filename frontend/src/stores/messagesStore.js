@@ -4,6 +4,7 @@ import authStore from './authStore'
 import MessageService from '../services/MessageService'
 import searchMessagesStore from './searchMessagesStore'
 import logMessages from '../log'
+import ChatService from "../services/ChatService";
 
 
 const DEFAULT_CHAT_ID = 'MAIN'
@@ -134,6 +135,13 @@ class MessagesStore {
     delete this.chats[chatId]
     searchMessagesStore.deleteChat(chatId)
     logMessages('Удалён чат', chatId)
+  }
+
+  async tryLeaveChat(chatId) {
+    logMessages('Попытка выхода из чата', chatId)
+    const response = await ChatService.tryLeaveChat(chatId)
+    logMessages(response)
+    return response.data.message
   }
 
   setSelectedChatId(chatId) {
