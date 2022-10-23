@@ -101,6 +101,13 @@ class MockUsersDAO:
         user_profile = self._find_profile_by_user_id(user_id=user_id)
         user_profile.avatar_file = avatar_file
 
+    def get_used_avatar_files(self) -> list[str]:
+        """Получение названий используемых файлов аватаров"""
+        avatar_files = [
+            profile.avatar_file for profile in self.profiles
+        ]
+        return avatar_files
+
     def _find_profile_by_user_id(self, user_id: int) -> tables.Profile:
         user = self.find_user_by_id(user_id=user_id)
         profile = next(

@@ -2,8 +2,7 @@ import os
 from fastapi import UploadFile
 from loguru import logger
 
-from backend import tables
-from backend.db_config import get_session
+from backend.services import BaseService
 from backend.settings import get_settings
 
 
@@ -25,7 +24,7 @@ def check_files_folder(func):
     return wrapper
 
 
-class FilesService:
+class FilesService(BaseService):
     """Сервис для управления файлами"""
 
     @classmethod
@@ -62,27 +61,13 @@ class FilesService:
         """Удаление не используемых файлов аватарок"""
         logger.debug("Выполняется удаление не используемых файлов аватарок")
         not_used_avatar_files = [
-            file_name for file_name in self._get_all_file_names() if file_name not in self._get_used_avatar_files()
+            file_name for file_name in self._get_all_file_names()
+            if file_name not in self._db_facade.get_used_avatar_files()
         ]
 
         for file_name in not_used_avatar_files:
             logger.info(f"Удаляем не используемый файл: {file_name}")
             os.remove(self.get_file_path(file_name))
-
-    @staticmethod
-    def _get_used_avatar_files() -> list[str]:
-        """Получение используемых файлов аватарок"""
-        session = next(get_session())
-        avatar_files = (
-            session
-            .query(tables.Profile.avatar_file)
-            .where(tables.Profile.avatar_file is not None)
-            .all()
-        )
-
-        avatar_files = [row[0] for row in avatar_files]
-
-        return avatar_files
 
     def _get_all_file_names(self) -> list[str]:
         """Получение названий всех файлов из папки с файлами"""

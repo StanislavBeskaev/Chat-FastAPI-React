@@ -57,6 +57,11 @@ class DBFacadeInterface(ABC):
         ...
 
     @abstractmethod
+    def get_used_avatar_files(self) -> list[str]:
+        """Получение названий используемых файлов аватаров"""
+        ...
+
+    @abstractmethod
     def get_all_refresh_tokens(self) -> list[models.RefreshToken]:
         """Получение всех записей таблицы refresh токенов"""
         ...

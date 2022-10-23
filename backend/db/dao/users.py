@@ -120,6 +120,19 @@ class UsersDAO(BaseDAO):
         self.session.add(user_profile)
         self.session.commit()
 
+    def get_used_avatar_files(self) -> list[str]:
+        """Получение названий используемых файлов аватаров"""
+        avatar_files = (
+            self.session
+            .query(tables.Profile.avatar_file)
+            .where(tables.Profile.avatar_file is not None)
+            .all()
+        )
+
+        avatar_files = [row[0] for row in avatar_files]
+
+        return avatar_files
+
     def _find_profile_by_user_id(self, user_id: int) -> tables.Profile:
         db_profile = (
             self.session

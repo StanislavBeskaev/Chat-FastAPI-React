@@ -64,6 +64,10 @@ class MockDBFacade(DBFacadeInterface):
         """Установка имени файла аватара для пользователя"""
         self.users_dao.set_avatar_file(user_id=user_id, avatar_file=avatar_file)
 
+    def get_used_avatar_files(self) -> list[str]:
+        """Получение названий используемых файлов аватаров"""
+        return self.users_dao.get_used_avatar_files()
+
     def delete_user_by_login(self, login: str) -> None:
         """Удаление пользователя. Нужно для тестов"""
         self.users_dao.delete_user_by_login(login=login)

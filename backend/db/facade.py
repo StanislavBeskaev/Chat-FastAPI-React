@@ -66,6 +66,10 @@ class DBFacade(DBFacadeInterface):
         """Установка имени файла аватара для пользователя"""
         self._users_dao.set_avatar_file(user_id=user_id, avatar_file=avatar_file)
 
+    def get_used_avatar_files(self) -> list[str]:
+        """Получение названий используемых файлов аватаров"""
+        return self._users_dao.get_used_avatar_files()
+
     def get_all_refresh_tokens(self) -> list[models.RefreshToken]:
         """Получение всех записей таблицы refresh токенов"""
         return self._tokens_dao.get_all_refresh_tokens()
