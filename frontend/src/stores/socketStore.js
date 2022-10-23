@@ -168,6 +168,9 @@ class SocketStore {
         case 'LEAVE_CHAT':
           this._handleLeaveFromChatMessage(msg.data)
           break
+        case 'DELETE_CHAT':
+          this._handleDeleteChatMessage(msg.data)
+          break
         default:
           logMessages('SocketStore, неожиданное сообщение из ws:', msg)
       }
@@ -236,7 +239,15 @@ class SocketStore {
     this._showLeaveFromChatNotification(messageData)
   }
 
-  _showAddNewChatNotification (messageData) {
+  _handleDeleteChatMessage(messageData) {
+    const {chat_id: messageChatId} = messageData
+    if (messageChatId === messagesStore.selectedChatId) this.sendStopTyping(messageChatId)
+    if (chatMembersModalStore.show && messageChatId === chatMembersModalStore.chatId) chatMembersModalStore.close()
+    messagesStore.deleteChat(messageChatId)
+    this._showDeleteChatNotification(messageData)
+  }
+
+  _showAddNewChatNotification(messageData) {
     const {chat_name: chatName} = messageData
     toast.info(`Создан новый чат: ${chatName}`)
   }
@@ -258,6 +269,11 @@ class SocketStore {
   _showLeaveFromChatNotification(messageData) {
     const {chat_name: chatName} = messageData
     toast.info(`Вы вышли из чата: ${chatName}`)
+  }
+
+  _showDeleteChatNotification(messageData) {
+    const {login, chat_name: chatName} = messageData
+    toast.error(`Пользователь ${login} удалил чат ${chatName}`)
   }
 
   setSocket(socket) {
