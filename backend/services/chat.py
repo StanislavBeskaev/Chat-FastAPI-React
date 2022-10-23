@@ -176,10 +176,16 @@ class ChatService(BaseService):
 
     def _notify_about_user_leave_chat(self, chat_id: str, user: models.User) -> None:
         """Рассылка ws сообщений о выходе пользователя из чата"""
-        leave_chat_message = LeaveChatMessage(chat_id=chat_id, login=user.login, db_facade=self._db_facade)
+        chat = self._db_facade.get_chat_by_id(chat_id=chat_id)
+
+        leave_chat_message = LeaveChatMessage(
+            chat_id=chat_id,
+            chat_name=chat.name,
+            login=user.login,
+            db_facade=self._db_facade,
+        )
         asyncio.run(leave_chat_message.send_all())
 
-        chat = self._db_facade.get_chat_by_id(chat_id=chat_id)
         delete_login_from_chat_message = DeleteLoginFromChatMessage(
             login=user.login,
             chat_id=chat_id,

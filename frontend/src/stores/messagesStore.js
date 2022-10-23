@@ -138,10 +138,22 @@ class MessagesStore {
   }
 
   async tryLeaveChat(chatId) {
-    logMessages('Попытка выхода из чата', chatId)
+    logMessages('Запрос сообщения выхода из чата', chatId)
     const response = await ChatService.tryLeaveChat(chatId)
     logMessages(response)
     return response.data.message
+  }
+
+  async leaveChat(chatId) {
+    logMessages('Пытаемся выйти из чата')
+    try {
+      const response = await ChatService.leaveChat(chatId)
+      logMessages(response)
+    } catch (e) {
+      // TODO показывать модалку "Не удалось, попробуйте позже" с ошибкой при неудачных попытках
+      logMessages('Ошибка при выходе из чата', chatId)
+      logMessages(e.response)
+    }
   }
 
   setSelectedChatId(chatId) {

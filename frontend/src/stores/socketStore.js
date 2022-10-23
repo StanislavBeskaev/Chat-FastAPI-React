@@ -132,6 +132,7 @@ class SocketStore {
       const msg = JSON.parse(e.data)
       logMessages('SocketStore, сообщение из ws: ', msg)
 
+      // TODO маппинг
       switch (msg.type) {
         case 'TEXT':
           messagesStore.addMessage(msg.data, this.sendReadMessage.bind(this))
@@ -163,6 +164,9 @@ class SocketStore {
           break
         case 'DELETE_MESSAGE':
           messagesStore.deleteMessage(msg.data)
+          break
+        case 'LEAVE_CHAT':
+          this._handleLeaveFromChatMessage(msg.data)
           break
         default:
           logMessages('SocketStore, неожиданное сообщение из ws:', msg)
@@ -209,8 +213,8 @@ class SocketStore {
     }
   }
 
-  async _handleDeleteFromChatMessage(messageData){
-    const messageChatId = messageData.chat_id
+  async _handleDeleteFromChatMessage(messageData) {
+    const {chat_id: messageChatId} = messageData
     if (messageData.login === this.login) {
       logMessages('Меня удаляют из чата')
       if (messageChatId === messagesStore.selectedChatId) this.sendStopTyping(messageChatId)
@@ -222,6 +226,14 @@ class SocketStore {
     if (show && chatId === messageChatId) {
       await chatMembersModalStore.loadChatMembers()
     }
+  }
+
+  _handleLeaveFromChatMessage(messageData) {
+    const {chat_id: messageChatId} = messageData
+    if (messageChatId === messagesStore.selectedChatId) this.sendStopTyping(messageChatId)
+    if (chatMembersModalStore.show && messageChatId === chatMembersModalStore.chatId) chatMembersModalStore.close()
+    messagesStore.deleteChat(messageChatId)
+    this._showLeaveFromChatNotification(messageData)
   }
 
   _showAddNewChatNotification (messageData) {
@@ -241,6 +253,11 @@ class SocketStore {
   _showDeleteFromChatNotification(messageData) {
     const {chat_name: chatName} = messageData
     toast.error(`Вы удалены из чата: ${chatName}`)
+  }
+
+  _showLeaveFromChatNotification(messageData) {
+    const {chat_name: chatName} = messageData
+    toast.info(`Вы вышли из чата: ${chatName}`)
   }
 
   setSocket(socket) {

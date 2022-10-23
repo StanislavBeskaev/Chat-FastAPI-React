@@ -11,9 +11,9 @@ class LeaveChatMessage(BaseSingleUserWSMessage):
     message_type = MessageType.LEAVE_CHAT
     out_metrics_counter = ws_metrics.LEAVE_CHAT_OUT_WS_MESSAGE_COUNTER
 
-    def __init__(self, chat_id: str, login: str, db_facade: DBFacadeInterface):
-        self._chat_id = chat_id
+    def __init__(self, chat_id: str, chat_name: str,  login: str, db_facade: DBFacadeInterface):
+        self._leave_chat_data = models.LeaveChat(chat_id=chat_id, chat_name=chat_name)
         super().__init__(login=login, db_facade=db_facade)
 
     def _get_data(self) -> models.LeaveChat:
-        return models.LeaveChat(chat_id=self._chat_id)
+        return self._leave_chat_data

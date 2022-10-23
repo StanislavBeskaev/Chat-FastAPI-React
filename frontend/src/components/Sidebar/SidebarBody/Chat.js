@@ -9,11 +9,10 @@ const Chat = ({chatId, chatName, selected,  notViewedMessagesCount}) => {
 
     const handleDelete = async (e) => {
       e.stopPropagation()
-      //  TODO выполнить запрос на выход из чата при да
       const warningMessage = await messagesStore.tryLeaveChat(chatId)
       confirmDeleteModalStore.open(
         warningMessage,
-      () => {},
+      () => messagesStore.leaveChat(chatId),
       () => {}
       )
     }

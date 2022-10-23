@@ -13,4 +13,8 @@ export default class ChatService {
   static async tryLeaveChat(chatId) {
     return axiosInstance.get(`/chats/try_leave/${chatId}`)
   }
+
+  static leaveChat(chatId) {
+    return axiosInstance.post(`/chats/leave/${chatId}`)
+  }
 }

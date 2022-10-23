@@ -77,7 +77,7 @@ def try_leave_chat(
 # TODO документация
 # TODO Grafana
 @router.post(
-    "leave_chat/{chat_id}",
+    "/leave/{chat_id}",
     status_code=status.HTTP_200_OK
 )
 def leave_chat(

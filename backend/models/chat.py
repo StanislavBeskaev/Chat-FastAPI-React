@@ -13,3 +13,4 @@ class Chat(BaseModel):
 
 class LeaveChat(BaseModel):
     chat_id: str
+    chat_name: str
