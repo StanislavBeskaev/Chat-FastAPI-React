@@ -19,6 +19,7 @@ class MessageType(str, Enum):
     CHANGE_MESSAGE_TEXT = "CHANGE_MESSAGE_TEXT"
     DELETE_MESSAGE = "DELETE_MESSAGE"
     LEAVE_CHAT = "LEAVE_CHAT"
+    DELETE_CHAT = "DELETE_CHAT"
 
 
 class OnlineStatus(str, Enum):

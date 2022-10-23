@@ -15,7 +15,8 @@ from backend.services.ws.message_types import (
     ReadMessageWSMessage,
     ChangeMessageTextMessage,
     DeleteMessageMessage,
-    LeaveChatMessage
+    LeaveChatMessage,
+    DeleteChatMessage
 )
 
 

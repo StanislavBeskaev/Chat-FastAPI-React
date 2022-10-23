@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from fastapi import HTTPException, status
 from loguru import logger
-from sqlalchemy import and_
+from sqlalchemy import and_, delete
 from sqlalchemy.orm import Query, aliased
 
 from backend import tables, models
@@ -215,3 +215,28 @@ class MessagesDAO(BaseDAO):
 
         logger.info(f"Удалено сообщение '{message.text}' c id {message.id},"
                     f"чата {message.chat_id} пользователя {message.user_id}")
+
+    def delete_chat_messages(self, chat_id: str) -> None:
+        """Удаление всех сообщений чата"""
+        messages_table = tables.Message.__tablename__
+        messages_read_status_table = tables.MessageReadStatus.__tablename__
+        chat_messages_read_statuses_delete_query = f"""
+            DELETE
+            FROM {messages_read_status_table}
+            WHERE EXISTS (
+                SELECT 1
+                FROM {messages_table}
+                WHERE {messages_table}.id = {messages_read_status_table}.message_id
+                AND {messages_table}.chat_id = :chat_id
+            )
+        """
+        self.session.execute(chat_messages_read_statuses_delete_query, {"chat_id": chat_id})
+
+        chat_messages_query = (
+            self.session
+            .query(tables.Message)
+            .where(tables.Message.chat_id == chat_id)
+        )
+        chat_messages_query.delete()
+
+        logger.info(f"Удалены сообщения чата {chat_id}")

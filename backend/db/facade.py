@@ -13,7 +13,6 @@ from backend.db.dao import (
 from backend.db_config import Session, get_session
 
 
-# TODO наверно нужен классовый метод для создания фасада
 class DBFacade(DBFacadeInterface):
     """Фасад для работы с базой данных"""
 
@@ -109,6 +108,13 @@ class DBFacade(DBFacadeInterface):
     def change_chat_name(self, chat_id: str, new_name: str) -> models.Chat:
         """Изменение названия чата"""
         return self._chats_dao.change_chat_name(chat_id=chat_id, new_name=new_name)
+
+    def delete_chat(self, chat_id) -> None:
+        """Удаление чата"""
+        self._messages_dao.delete_chat_messages(chat_id=chat_id)
+        self._chat_members_dao.delete_all_members_from_chat(chat_id=chat_id)
+        self._chats_dao.delete_chat(chat_id=chat_id)
+        self._session.commit()
 
     def get_all_chat_members(self) -> list[models.ChatMemberFull]:
         """Получение всех записей таблицы участников чатов"""

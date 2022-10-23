@@ -112,6 +112,11 @@ class DBFacadeInterface(ABC):
         ...
 
     @abstractmethod
+    def delete_chat(self, chat_id) -> None:
+        """Удаление чата"""
+        ...
+
+    @abstractmethod
     def get_all_chat_members(self) -> list[models.ChatMemberFull]:
         """Получение всех записей таблицы участников чатов"""
         ...

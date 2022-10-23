@@ -66,3 +66,9 @@ class ChatsDAO(BaseDAO):
         self.session.commit()
 
         return chat
+
+    def delete_chat(self, chat_id) -> None:
+        """Удаление чата"""
+        chat = self._get_chat_by_id(chat_id=chat_id)
+        self.session.delete(chat)
+        logger.info(f"Удалён чат с id {chat_id}")

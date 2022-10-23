@@ -9,3 +9,4 @@ from .text import TextMessage
 from .typing import StartTypingMessage, StopTypingMessage
 from .status import OnlineMessage, OfflineMessage
 from .leave_chat import LeaveChatMessage
+from .delete_chat import DeleteChatMessage

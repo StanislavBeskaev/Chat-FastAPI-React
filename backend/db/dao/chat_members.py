@@ -69,3 +69,13 @@ class ChatMembersDAO(BaseDAO):
         """Удаление участника из чата"""
         self.session.delete(chat_member)
         self.session.commit()
+
+    def delete_all_members_from_chat(self, chat_id: str) -> None:
+        """Удаление всех участников чата"""
+        chat_members_query = (
+            self.session
+            .query(tables.ChatMember)
+            .where(tables.ChatMember.chat_id == chat_id)
+        )
+        chat_members_query.delete()
+        logger.info(f"Удалены все участники чата {chat_id}")

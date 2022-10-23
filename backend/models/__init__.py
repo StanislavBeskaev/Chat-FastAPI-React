@@ -1,4 +1,4 @@
-from backend.models.chat import Chat, LeaveChat
+from backend.models.chat import Chat, LeaveChat, DeleteChat
 from backend.models.chat_members import ChatMemberWithOnlineStatus, ChatMember, ChatMemberFull
 from backend.models.contact import Contact, ContactCreate, ContactDelete, ContactChange, ContactFull
 from backend.models.message import (

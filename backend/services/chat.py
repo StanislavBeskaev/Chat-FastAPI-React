@@ -14,7 +14,8 @@ from backend.services.ws import (
     ChangeChatNameMessage,
     InfoMessage,
     DeleteLoginFromChatMessage,
-    LeaveChatMessage
+    LeaveChatMessage,
+    DeleteChatMessage,
 )
 
 
@@ -84,9 +85,16 @@ class ChatService(BaseService):
         if chat_id == get_settings().main_chat_id:
             raise HTTPException(status_code=403, detail="Нельзя покинуть главный чат")
 
+        chat = self._db_facade.get_chat_by_id(chat_id=chat_id)
         if self._is_user_chat_creator(chat_id=chat_id, user=user):
             logger.info(f"Пользователь {user} решил удалить чат {chat_id}")
-            # TODO удалить всех пользователей из чата и весь чат, отправить всем уведомления
+            delete_chat_ws_message = DeleteChatMessage(
+                login=user.login, chat_id=chat_id, chat_name=chat.name, db_facade=self._db_facade
+            )
+            asyncio.run(delete_chat_ws_message.send_all())
+
+            self._db_facade.delete_chat(chat_id=chat_id)
+            logger.info(f"Удалены все объекты чата: {chat.name = } {chat.id = }")
             return
 
         chat_member = self._db_facade.find_chat_member(user_id=user.id, chat_id=chat_id)
@@ -96,7 +104,7 @@ class ChatService(BaseService):
         # Пользователь в чате и не создатель
         logger.info(f"Пользователь {user.login} не создатель чата {chat_id}, удаляем из чата")
         self._db_facade.delete_chat_member(chat_member=chat_member)
-        self._notify_about_user_leave_chat(chat_id=chat_id, user=user)
+        self._notify_about_user_leave_chat(chat_id=chat_id, user=user, chat_name=chat.name)
 
     def _validate_new_chat_data(self, chat_data: models.ChatCreate) -> list[models.User]:
         """Проверка данных для создания нового чата"""
@@ -174,13 +182,11 @@ class ChatService(BaseService):
 
         return new_chat_info_message
 
-    def _notify_about_user_leave_chat(self, chat_id: str, user: models.User) -> None:
+    def _notify_about_user_leave_chat(self, chat_id: str, user: models.User, chat_name: str) -> None:
         """Рассылка ws сообщений о выходе пользователя из чата"""
-        chat = self._db_facade.get_chat_by_id(chat_id=chat_id)
-
         leave_chat_message = LeaveChatMessage(
             chat_id=chat_id,
-            chat_name=chat.name,
+            chat_name=chat_name,
             login=user.login,
             db_facade=self._db_facade,
         )
@@ -189,7 +195,7 @@ class ChatService(BaseService):
         delete_login_from_chat_message = DeleteLoginFromChatMessage(
             login=user.login,
             chat_id=chat_id,
-            chat_name=chat.name,
+            chat_name=chat_name,
             db_facade=self._db_facade
         )
         asyncio.run(delete_login_from_chat_message.send_all())
