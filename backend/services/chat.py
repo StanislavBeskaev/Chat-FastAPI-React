@@ -9,7 +9,13 @@ from backend.db.facade import get_db_facade
 from backend.db.interface import DBFacadeInterface
 from backend.services import BaseService
 from backend.services.chat_members import ChatMembersService
-from backend.services.ws import NewChatMessage, ChangeChatNameMessage, InfoMessage
+from backend.services.ws import (
+    NewChatMessage,
+    ChangeChatNameMessage,
+    InfoMessage,
+    DeleteLoginFromChatMessage,
+    LeaveChatMessage
+)
 
 
 class ChatService(BaseService):
@@ -59,6 +65,7 @@ class ChatService(BaseService):
 
     def try_leave_chat(self, chat_id: str, user: models.User) -> str:
         """Попытка покинуть чат, возвращается сообщение для отображения в модальном окне на front'е"""
+        logger.debug(f"Попытка покинуть чат {chat_id} пользователем {user}")
         if chat_id == get_settings().main_chat_id:
             raise HTTPException(status_code=403, detail="Нельзя покинуть главный чат")
 
@@ -70,6 +77,26 @@ class ChatService(BaseService):
             raise HTTPException(status_code=400, detail="Вы не участник чата")
 
         return "Вы уверены, что хотите покинуть чат?"
+
+    def leave_chat(self, chat_id: str, user: models.User) -> None:
+        """Выход пользователя из чата"""
+        logger.debug(f"Запрос выхода из чата {chat_id} пользователем {user}")
+        if chat_id == get_settings().main_chat_id:
+            raise HTTPException(status_code=403, detail="Нельзя покинуть главный чат")
+
+        if self._is_user_chat_creator(chat_id=chat_id, user=user):
+            logger.info(f"Пользователь {user} решил удалить чат {chat_id}")
+            # TODO удалить всех пользователей из чата и весь чат, отправить всем уведомления
+            return
+
+        chat_member = self._db_facade.find_chat_member(user_id=user.id, chat_id=chat_id)
+        if not chat_member:
+            raise HTTPException(status_code=400, detail="Вы не участник чата")
+
+        # Пользователь в чате и не создатель
+        logger.info(f"Пользователь {user.login} не создатель чата {chat_id}, удаляем из чата")
+        self._db_facade.delete_chat_member(chat_member=chat_member)
+        self._notify_about_user_leave_chat(chat_id=chat_id, user=user)
 
     def _validate_new_chat_data(self, chat_data: models.ChatCreate) -> list[models.User]:
         """Проверка данных для создания нового чата"""
@@ -146,3 +173,31 @@ class ChatService(BaseService):
         )
 
         return new_chat_info_message
+
+    def _notify_about_user_leave_chat(self, chat_id: str, user: models.User) -> None:
+        """Рассылка ws сообщений о выходе пользователя из чата"""
+        leave_chat_message = LeaveChatMessage(chat_id=chat_id, login=user.login, db_facade=self._db_facade)
+        asyncio.run(leave_chat_message.send_all())
+
+        chat = self._db_facade.get_chat_by_id(chat_id=chat_id)
+        delete_login_from_chat_message = DeleteLoginFromChatMessage(
+            login=user.login,
+            chat_id=chat_id,
+            chat_name=chat.name,
+            db_facade=self._db_facade
+        )
+        asyncio.run(delete_login_from_chat_message.send_all())
+
+        leave_login_db_info_message = self._db_facade.create_info_message(
+            text=f"Пользователь {user.login} вышел из чата",
+            user_id=user.id,
+            chat_id=chat_id
+        )
+        logger.info(f"В базу сохранено сообщение о выходе пользователя {user.login} из чата {chat_id}")
+
+        ws_info_leave_login_message = InfoMessage(
+            login=user.login,
+            info_message=leave_login_db_info_message,
+            db_facade=self._db_facade
+        )
+        asyncio.run(ws_info_leave_login_message.send_all())

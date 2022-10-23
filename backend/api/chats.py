@@ -71,3 +71,22 @@ def try_leave_chat(
     warning_message = chat_service.try_leave_chat(chat_id=chat_id, user=user)
 
     return {"message": warning_message}
+
+
+# TODO тесты
+# TODO документация
+# TODO Grafana
+@router.post(
+    "leave_chat/{chat_id}",
+    status_code=status.HTTP_200_OK
+)
+def leave_chat(
+        chat_id: str,
+        user: models.User = Depends(get_current_user),
+        chat_service: ChatService = Depends()
+):
+    """Выход пользователя из чата"""
+    chats_metrics.LEAVE_CHAT_COUNTER.inc()
+
+    chat_service.leave_chat(chat_id=chat_id, user=user)
+    return {"message": "Вы вышли из чата"}

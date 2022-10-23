@@ -9,3 +9,7 @@ class Chat(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class LeaveChat(BaseModel):
+    chat_id: str

@@ -84,3 +84,21 @@ class NoAnswerWSMessage(WSMessageInterface, ABC):
 
     async def send_all(self) -> None:
         pass
+
+
+class BaseSingleUserWSMessage(BaseOutWSMessage, ABC):
+    """Базовый класс исходящего сообщения конкретному пользователю"""
+
+    async def send_all(self) -> None:
+        """Отправка сообщения конкретному пользователю"""
+        manager = WSConnectionManager()
+        logger.debug(f"Отправка сообщения: {self._content}")
+        await manager.send_message_to_logins(
+            logins=[self._login],
+            message=self._get_message(),
+            out_metrics_counter=self.out_metrics_counter
+        )
+
+    @abstractmethod
+    def _get_data(self) -> models.ChatMessageData:
+        pass

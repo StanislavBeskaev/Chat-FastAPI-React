@@ -24,3 +24,4 @@ READ_MESSAGE_IN_WS_MESSAGE_COUNTER = InWSCounter("read_message_in_ws_message", "
 CHANGE_MESSAGE_TEXT_OUT_WS_MESSAGE_COUNTER = OutWSCounter("change_message_text_out_ws_message", "Количество исходящих сообщений об изменении текста сообщения")  # noqa
 DELETE_MESSAGE_OUT_WS_MESSAGE_COUNTER = OutWSCounter("delete_message_out_ws_message", "Количество исходящих сообщений об удалении сообщения")  # noqa
 
+LEAVE_CHAT_OUT_WS_MESSAGE_COUNTER = OutWSCounter("leave_chat_out_ws_message", "Количество исходящих сообщений о выходе пользователя из чата")  # noqa
