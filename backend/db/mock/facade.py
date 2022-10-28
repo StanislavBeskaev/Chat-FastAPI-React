@@ -116,6 +116,11 @@ class MockDBFacade(DBFacadeInterface):
         """Изменение названия чата"""
         return self.chats_dao.change_chat_name(chat_id=chat_id, new_name=new_name)
 
+    # TODO реализовать
+    def delete_chat(self, chat_id) -> None:
+        """Удаление чата"""
+        pass
+
     def get_all_chat_members(self) -> list[models.ChatMemberFull]:
         """Получение всех записей таблицы участников чатов"""
         return self.chat_members_dao.get_all_chat_members()

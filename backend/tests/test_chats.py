@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+from backend.db.mock.facade import MockDBFacade
 from backend.services.ws import MessageType
 from backend.settings import Settings
 from backend.tests import data as test_data
@@ -200,3 +201,17 @@ class TestChats(BaseTest):
 
         assert response.status_code == 403
         assert response.json() == self.exception_response("Нельзя покинуть главный чат")
+
+    def test_leave_chat_success(self, client: TestClient, db_facade: MockDBFacade):
+        not_creator = test_data.users[1]
+        tokens = self.login(client=client, username=not_creator.login, password="password1")
+        response = client.post(
+            url=f"{self.chats_url}leave/{test_data.TEST_CHAT_ID}",
+            headers=self.get_authorization_headers(access_token=tokens.access_token)
+        )
+
+        assert response.status_code == 200
+        assert response.json() == {"message": "Вы вышли из чата"}
+
+        test_chat_members = db_facade.get_chat_members(chat_id=test_data.TEST_CHAT_ID)
+        assert not_creator.login not in [member.login for member in test_chat_members]
