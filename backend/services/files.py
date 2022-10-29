@@ -13,6 +13,7 @@ NO_AVATAR_FILE = "no_avatar.png"
 
 def check_files_folder(func):
     """Декоратор для создания папки под файлы, если папки нет"""
+
     def wrapper(*args, **kwargs):
         files_folder = os.path.join(get_settings().base_dir, FILES_FOLDER)
         if not os.path.exists(files_folder):
@@ -61,7 +62,8 @@ class FilesService(BaseService):
         """Удаление не используемых файлов аватарок"""
         logger.debug("Выполняется удаление не используемых файлов аватарок")
         not_used_avatar_files = [
-            file_name for file_name in self._get_all_file_names()
+            file_name
+            for file_name in self._get_all_file_names()
             if file_name not in self._db_facade.get_used_avatar_files()
         ]
 

@@ -31,10 +31,7 @@ def _copy_admin_avatar_to_files():
         return
 
     settings = get_settings()
-    shutil.copyfile(
-        src=os.path.join(settings.base_dir, IMAGES_FOLDER, ADMIN_AVATAR),
-        dst=admin_avatar_in_files
-    )
+    shutil.copyfile(src=os.path.join(settings.base_dir, IMAGES_FOLDER, ADMIN_AVATAR), dst=admin_avatar_in_files)
     logger.info(f"Аватарка админа скопирована в {admin_avatar_in_files}")
 
 
@@ -62,7 +59,7 @@ def _create_admin_if_needed(session: Session, settings: Settings) -> None:
         login="admin",
         name="admin",
         surname="admin",
-        password_hash=AuthService.hash_password(password=settings.admin_password)
+        password_hash=AuthService.hash_password(password=settings.admin_password),
     )
 
     session.add(admin)
@@ -86,16 +83,9 @@ def _create_main_chat_if_needed(session: Session, settings: Settings) -> None:
 
     admin = _get_admin(session=session)
 
-    main_chat = tables.Chat(
-        id=settings.main_chat_id,
-        name="Главная",
-        is_public=True,
-        creator_id=admin.id
-    )
+    main_chat = tables.Chat(id=settings.main_chat_id, name="Главная", is_public=True, creator_id=admin.id)
     session.add(main_chat)
-    session.add(
-        tables.ChatMember(chat_id=settings.main_chat_id, user_id=admin.id)
-    )
+    session.add(tables.ChatMember(chat_id=settings.main_chat_id, user_id=admin.id))
     session.commit()
 
     logger.info(f"Создан главный чат с id: {settings.main_chat_id}")

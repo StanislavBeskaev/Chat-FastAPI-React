@@ -8,6 +8,7 @@ from backend.services.ws.base_messages import BaseChatWSMessage
 # TODO обновить графики в Grafana
 class DeleteChatMessage(BaseChatWSMessage):
     """Сообщение об удалении чата"""
+
     message_type = MessageType.DELETE_CHAT
     out_metrics_counter = ws_metrics.DELETE_CHAT_OUT_WS_MESSAGE_COUNTER
 

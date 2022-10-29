@@ -1,9 +1,4 @@
-from fastapi import (
-    APIRouter,
-    Depends,
-    status,
-    HTTPException, UploadFile
-)
+from fastapi import APIRouter, Depends, status, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 from loguru import logger
 
@@ -18,14 +13,8 @@ router = APIRouter(
 )
 
 
-@router.get(
-    "/export",
-    status_code=status.HTTP_200_OK
-)
-def export_db_data(
-    user: models.User = Depends(get_current_user),
-    db_data_service: DBDataService = Depends()
-):
+@router.get("/export", status_code=status.HTTP_200_OK)
+def export_db_data(user: models.User = Depends(get_current_user), db_data_service: DBDataService = Depends()):
     """Получение выгрузки данных из базы"""
     logger.info("Запрос выгрузки данных из базы")
     if not UserService.is_admin(user=user):
@@ -36,18 +25,13 @@ def export_db_data(
     return StreamingResponse(
         content=db_data_service.export_db_data(),
         media_type="application/zip",
-        headers={'Content-Disposition': 'attachment; filename=export.zip'}
+        headers={'Content-Disposition': 'attachment; filename=export.zip'},
     )
 
 
-@router.post(
-    "/import",
-    status_code=status.HTTP_200_OK
-)
+@router.post("/import", status_code=status.HTTP_200_OK)
 def import_db_data(
-    file: UploadFile,
-    user: models.User = Depends(get_current_user),
-    db_data_service: DBDataService = Depends()
+    file: UploadFile, user: models.User = Depends(get_current_user), db_data_service: DBDataService = Depends()
 ):
     """Импорт данных в базу"""
     logger.info("Запрос импорта данных в базу")

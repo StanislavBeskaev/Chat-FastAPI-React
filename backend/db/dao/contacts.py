@@ -9,19 +9,14 @@ class ContactsDAO(BaseDAO):
     @model_result(models.ContactFull)
     def get_all_contacts(self) -> list[models.ContactFull]:
         """Получение всех записей таблицы контактов из базы"""
-        db_contacts = (
-            self.session
-            .query(tables.Contact)
-            .all()
-        )
+        db_contacts = self.session.query(tables.Contact).all()
 
         return db_contacts
 
     def get_user_contacts(self, user_id: int) -> list[models.Contact]:
         """Получение контактов пользователя"""
         contacts = (
-            self.session
-            .query(
+            self.session.query(
                 tables.User.login.label("login"),
                 tables.Contact.name.label("name"),
                 tables.Contact.surname.label("surname"),
@@ -38,8 +33,7 @@ class ContactsDAO(BaseDAO):
     def find_contact(self, owner_user_id: int, contact_user_id: int) -> tables.Contact | None:
         """Нахождение контакта пользователя"""
         contact = (
-            self.session
-            .query(tables.Contact)
+            self.session.query(tables.Contact)
             .where(tables.Contact.owner_user_id == owner_user_id)
             .where(tables.Contact.contact_user_id == contact_user_id)
             .first()
@@ -50,10 +44,7 @@ class ContactsDAO(BaseDAO):
     def create_contact(self, owner_user_id: int, contact_user_id: int, name: str, surname: str) -> tables.Contact:
         """Создание контакта"""
         new_contact = tables.Contact(
-            owner_user_id=owner_user_id,
-            contact_user_id=contact_user_id,
-            name=name,
-            surname=surname
+            owner_user_id=owner_user_id, contact_user_id=contact_user_id, name=name, surname=surname
         )
 
         self.session.add(new_contact)

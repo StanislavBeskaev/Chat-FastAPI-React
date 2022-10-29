@@ -12,9 +12,9 @@ class TestMessages(BaseTest):
         change_message_id = "1"
         new_message_text = "Новый текст"
 
-        with client.websocket_connect("ws/user") as user_ws, \
-                client.websocket_connect("ws/user1") as user1_ws, \
-                client.websocket_connect("ws/new") as new_ws:
+        with client.websocket_connect("ws/user") as user_ws, client.websocket_connect(
+            "ws/user1"
+        ) as user1_ws, client.websocket_connect("ws/new") as new_ws:
             # Необходимо указывать пользователей в порядке подключения
             ws_users = ["user", "user1", "new"]
             # Что бы прочитать статусные сообщения
@@ -24,7 +24,7 @@ class TestMessages(BaseTest):
             response = client.put(
                 url=f"{self.messages_url}{change_message_id}",
                 headers=self.get_authorization_headers(),
-                json={"text": new_message_text}
+                json={"text": new_message_text},
             )
             assert response.status_code == 200
             assert response.json() == {"message": "Текст сообщения изменён"}
@@ -32,7 +32,7 @@ class TestMessages(BaseTest):
                 ws_list=[user_ws, user1_ws, new_ws],
                 message_id=change_message_id,
                 new_text=new_message_text,
-                chat_id=test_data.TEST_CHAT_ID
+                chat_id=test_data.TEST_CHAT_ID,
             )
 
     @staticmethod
@@ -48,10 +48,7 @@ class TestMessages(BaseTest):
     def test_change_message_text_not_auth(self, client: TestClient):
         change_message_id = "1"
         new_message_text = "Новый текст"
-        response = client.put(
-            url=f"{self.messages_url}{change_message_id}",
-            json={"text": new_message_text}
-        )
+        response = client.put(url=f"{self.messages_url}{change_message_id}", json={"text": new_message_text})
         assert response.status_code == 401
         assert response.json() == self.NOT_AUTH_RESPONSE
 
@@ -62,7 +59,7 @@ class TestMessages(BaseTest):
         response = client.put(
             url=f"{self.messages_url}{change_message_id}",
             headers=self.get_authorization_headers(),
-            json={"text": new_message_text}
+            json={"text": new_message_text},
         )
         assert response.status_code == 400
         assert response.json() == self.exception_response("Сообщение не может быть пустым")
@@ -74,7 +71,7 @@ class TestMessages(BaseTest):
         response = client.put(
             url=f"{self.messages_url}{bad_message_id}",
             headers=self.get_authorization_headers(),
-            json={"text": new_message_text}
+            json={"text": new_message_text},
         )
         assert response.status_code == 404
         assert response.json() == self.exception_response(f"Сообщение с id {bad_message_id} не найдено")
@@ -87,7 +84,7 @@ class TestMessages(BaseTest):
         response = client.put(
             url=f"{self.messages_url}{change_message_id}",
             headers=self.get_authorization_headers(access_token=tokens.access_token),
-            json={"text": new_message_text}
+            json={"text": new_message_text},
         )
         assert response.status_code == 403
         assert response.json() == self.exception_response("Только автор может менять сообщение!")
@@ -99,7 +96,7 @@ class TestMessages(BaseTest):
         response = client.put(
             url=f"{self.messages_url}{change_message_id}",
             headers=self.get_authorization_headers(),
-            json={"text": same_message_text}
+            json={"text": same_message_text},
         )
         assert response.status_code == 400
         assert response.json() == self.exception_response("У сообщения уже такой текст")
@@ -107,9 +104,9 @@ class TestMessages(BaseTest):
     def test_success_delete_message(self, client: TestClient):
         delete_message_id = "1"
 
-        with client.websocket_connect("ws/user") as user_ws, \
-                client.websocket_connect("ws/user1") as user1_ws, \
-                client.websocket_connect("ws/new") as new_ws:
+        with client.websocket_connect("ws/user") as user_ws, client.websocket_connect(
+            "ws/user1"
+        ) as user1_ws, client.websocket_connect("ws/new") as new_ws:
             # Необходимо указывать пользователей в порядке подключения
             ws_users = ["user", "user1", "new"]
             # Что бы прочитать статусные сообщения
@@ -117,15 +114,12 @@ class TestMessages(BaseTest):
                 self.check_ws_online_status_notifications(ws=ws, users=ws_users[index:])
 
             response = client.delete(
-                url=f"{self.messages_url}{delete_message_id}",
-                headers=self.get_authorization_headers()
+                url=f"{self.messages_url}{delete_message_id}", headers=self.get_authorization_headers()
             )
             assert response.status_code == 200
             assert response.json() == {"message": "Сообщение удалено"}
             self._check_ws_delete_message_notification(
-                ws_list=[user_ws, user1_ws, new_ws],
-                message_id=delete_message_id,
-                chat_id=test_data.TEST_CHAT_ID
+                ws_list=[user_ws, user1_ws, new_ws], message_id=delete_message_id, chat_id=test_data.TEST_CHAT_ID
             )
 
     @staticmethod
@@ -146,10 +140,7 @@ class TestMessages(BaseTest):
 
     def test_delete_message_bad_message_id(self, client: TestClient):
         bad_message_id = "bad_id"
-        response = client.delete(
-            url=f"{self.messages_url}{bad_message_id}",
-            headers=self.get_authorization_headers()
-        )
+        response = client.delete(url=f"{self.messages_url}{bad_message_id}", headers=self.get_authorization_headers())
         assert response.status_code == 404
         assert response.json() == self.exception_response(f"Сообщение с id {bad_message_id} не найдено")
 
@@ -159,16 +150,13 @@ class TestMessages(BaseTest):
 
         response = client.delete(
             url=f"{self.messages_url}{delete_message_id}",
-            headers=self.get_authorization_headers(access_token=tokens.access_token)
+            headers=self.get_authorization_headers(access_token=tokens.access_token),
         )
         assert response.status_code == 403
         assert response.json() == self.exception_response("Только автор может удалять сообщение!")
 
     def test_success_get_all_messages(self, client: TestClient):
-        response = client.get(
-            url=self.messages_url,
-            headers=self.get_authorization_headers()
-        )
+        response = client.get(url=self.messages_url, headers=self.get_authorization_headers())
         assert response.status_code == 200
         assert isinstance(response.json(), dict)
         assert test_data.TEST_CHAT_ID in response.json().keys()
@@ -180,9 +168,7 @@ class TestMessages(BaseTest):
         assert len(response.json()[test_data.TEST_CHAT_ID]["messages"]) == 3
         assert len(response.json()[test_data.SECOND_CHAT_ID]["messages"]) == 0
 
-        self._check_user_test_chat_messages(
-            test_chat_messages=response.json()[test_data.TEST_CHAT_ID]["messages"]
-        )
+        self._check_user_test_chat_messages(test_chat_messages=response.json()[test_data.TEST_CHAT_ID]["messages"])
 
     @staticmethod
     def _check_user_test_chat_messages(test_chat_messages: list[dict]):
@@ -203,17 +189,14 @@ class TestMessages(BaseTest):
 
     def test_success_get_chat_messages(self, client: TestClient):
         response = client.get(
-            url=f"{self.messages_url}{test_data.TEST_CHAT_ID}",
-            headers=self.get_authorization_headers()
+            url=f"{self.messages_url}{test_data.TEST_CHAT_ID}", headers=self.get_authorization_headers()
         )
         assert response.status_code == 200
         assert isinstance(response.json(), dict)
         assert response.json()["chat_name"] == test_data.TEST_CHAT_NAME
         assert response.json()["creator"] == "user"
         assert len(response.json()["messages"]) == 3
-        self._check_user_test_chat_messages(
-            test_chat_messages=response.json()["messages"]
-        )
+        self._check_user_test_chat_messages(test_chat_messages=response.json()["messages"])
 
     def test_get_chat_messages_not_auth(self, client: TestClient):
         response = client.get(url=f"{self.messages_url}{test_data.TEST_CHAT_ID}")
@@ -222,9 +205,6 @@ class TestMessages(BaseTest):
 
     def test_get_chat_messages_not_exist_chat_id(self, client: TestClient):
         not_exist_chat_id = "not_exist_chat_id"
-        response = client.get(
-            url=f"{self.messages_url}{not_exist_chat_id}",
-            headers=self.get_authorization_headers()
-        )
+        response = client.get(url=f"{self.messages_url}{not_exist_chat_id}", headers=self.get_authorization_headers())
         assert response.status_code == 404
         assert response.json() == self.exception_response(f"Чата с id {not_exist_chat_id} не существует")

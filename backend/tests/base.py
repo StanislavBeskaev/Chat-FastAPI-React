@@ -30,13 +30,7 @@ class BaseTest:
 
     @staticmethod
     def login(client: TestClient, username: str = DEFAULT_USER, password: str = DEFAULT_PASSWORD) -> models.Tokens:
-        login_response = client.post(
-            "/api/auth/login",
-            data={
-                "username": username,
-                "password": password
-            }
-        )
+        login_response = client.post("/api/auth/login", data={"username": username, "password": password})
         assert login_response.status_code == 200
         tokens = models.Tokens.parse_obj(login_response.json())
         return tokens

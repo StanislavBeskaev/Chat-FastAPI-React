@@ -21,7 +21,7 @@ router = APIRouter(
     "/",
     status_code=status.HTTP_200_OK,
     response_model=list[models.Contact],
-    responses=contacts_responses.get_contacts_responses
+    responses=contacts_responses.get_contacts_responses,
 )
 def get_contacts(user: models.User = Depends(get_current_user), contact_service: ContactService = Depends()):
     """Получение контактов текущего пользователя"""
@@ -34,12 +34,12 @@ def get_contacts(user: models.User = Depends(get_current_user), contact_service:
     "/",
     status_code=status.HTTP_201_CREATED,
     response_model=models.Contact,
-    responses=contacts_responses.create_contact_responses
+    responses=contacts_responses.create_contact_responses,
 )
 def create_contact(
     new_contact: models.ContactCreate,
     user: models.User = Depends(get_current_user),
-    contact_service: ContactService = Depends()
+    contact_service: ContactService = Depends(),
 ):
     """Создание нового контакта"""
     contacts_metrics.CREATE_CONTACT_COUNTER.inc()
@@ -47,15 +47,11 @@ def create_contact(
     return contact_service.create(user=user, contact_login=new_contact.login)
 
 
-@router.delete(
-    "/",
-    status_code=status.HTTP_200_OK,
-    responses=contacts_responses.delete_contact_responses
-)
+@router.delete("/", status_code=status.HTTP_200_OK, responses=contacts_responses.delete_contact_responses)
 def delete_contact(
     contact_to_delete: models.ContactDelete,
     user: models.User = Depends(get_current_user),
-    contact_service: ContactService = Depends()
+    contact_service: ContactService = Depends(),
 ):
     """Удаление контакта"""
     contacts_metrics.DELETE_CONTACT_COUNTER.inc()
@@ -68,12 +64,10 @@ def delete_contact(
     "/{login}",
     status_code=status.HTTP_200_OK,
     response_model=models.Contact,
-    responses=contacts_responses.get_contact_info_responses
+    responses=contacts_responses.get_contact_info_responses,
 )
 def get_contact_info(
-    login: str,
-    user: models.User = Depends(get_current_user),
-    contact_service: ContactService = Depends()
+    login: str, user: models.User = Depends(get_current_user), contact_service: ContactService = Depends()
 ):
     """Получение данных контакта по логину"""
     contacts_metrics.GET_CONTACT_INFO_COUNTER.inc()
@@ -81,15 +75,11 @@ def get_contact_info(
     return contact_service.get_by_login(user=user, contact_login=login)
 
 
-@router.put(
-    "/",
-    status_code=status.HTTP_200_OK,
-    responses=contacts_responses.change_contact_responses
-)
+@router.put("/", status_code=status.HTTP_200_OK, responses=contacts_responses.change_contact_responses)
 def change_contact(
     contact_data: models.ContactChange,
     user: models.User = Depends(get_current_user),
-    contact_service: ContactService = Depends()
+    contact_service: ContactService = Depends(),
 ):
     """Изменение данных контакта"""
     contacts_metrics.CHANGE_CONTACT_COUNTER.inc()

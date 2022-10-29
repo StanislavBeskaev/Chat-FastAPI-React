@@ -23,17 +23,14 @@ class MockChatMembersDAO:
     def find_chat_member(self, user_id: int, chat_id: str) -> tables.ChatMember | None:
         """Поиск участника чата"""
         chat_member = next(
-            (member for member in self.chat_members if member.user_id == user_id and member.chat_id == chat_id),
-            None
+            (member for member in self.chat_members if member.user_id == user_id and member.chat_id == chat_id), None
         )
         return chat_member
 
     def add_chat_member(self, user_id: int, chat_id: str) -> None:
         """Добавление участника к чату"""
         new_chat_member = tables.ChatMember(
-            id=max([chat_member.id for chat_member in self.chat_members]) + 1,
-            chat_id=chat_id,
-            user_id=user_id
+            id=max([chat_member.id for chat_member in self.chat_members]) + 1, chat_id=chat_id, user_id=user_id
         )
         self.chat_members.append(new_chat_member)
 

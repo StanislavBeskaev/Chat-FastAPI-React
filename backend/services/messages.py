@@ -39,9 +39,7 @@ class MessageService(BaseService):
         for chat_data in chats_data:
             if chat_data.chat_id not in chats:
                 chats[chat_data.chat_id] = models.ChatMessages(
-                    chat_name=chat_data.chat_name,
-                    creator=chat_data.creator,
-                    messages=[]
+                    chat_name=chat_data.chat_name, creator=chat_data.creator, messages=[]
                 )
 
             if chat_data.message_id:
@@ -51,8 +49,7 @@ class MessageService(BaseService):
 
     def change_message_text(self, message_id: str, new_text: str, user: models.User) -> None:
         """Изменение текста сообщения"""
-        logger.debug(f"Попытка изменения текста сообщения. Входные данные: "
-                     f"{message_id=} {new_text=} {user=}")
+        logger.debug(f"Попытка изменения текста сообщения. Входные данные: " f"{message_id=} {new_text=} {user=}")
         if not new_text:
             logger.warning(f"Передан пустой текст для сообщения")
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Сообщение не может быть пустым")
@@ -75,7 +72,7 @@ class MessageService(BaseService):
             message_id=message_id,
             message_text=new_text,
             change_time=get_formatted_time(message.change_time),
-            db_facade=self._db_facade
+            db_facade=self._db_facade,
         )
         asyncio.run(change_message_text_message.send_all())
 
@@ -91,8 +88,6 @@ class MessageService(BaseService):
         self._db_facade.delete_message(message_id=message_id)
 
         delete_message_ws_message = DeleteMessageMessage(
-            chat_id=message.chat_id,
-            message_id=message_id,
-            db_facade=self._db_facade
+            chat_id=message.chat_id, message_id=message_id, db_facade=self._db_facade
         )
         asyncio.run(delete_message_ws_message.send_all())

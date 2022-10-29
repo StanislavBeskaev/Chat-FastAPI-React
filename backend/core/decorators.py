@@ -14,6 +14,7 @@ def model_result(model: Type[Model]) -> Callable[[Callable[..., Result]], Callab
         - Если результат функции список, то преобразование к списку объектов указанной модели
         - Иначе преобразование к объекту указанной модели
     """
+
     @wraps(model)
     def decorator(function: Callable[..., Result]):
         @wraps(function)
@@ -26,5 +27,7 @@ def model_result(model: Type[Model]) -> Callable[[Callable[..., Result]], Callab
                 return [model.from_orm(obj) for obj in result]
 
             return model.from_orm(result)
+
         return wrapper
+
     return decorator

@@ -101,4 +101,3 @@ class ChatUpdateName(BaseModel):
 
 class ChatCreate(ChatUpdateName):
     members: list[str]
-

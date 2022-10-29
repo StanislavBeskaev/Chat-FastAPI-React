@@ -10,7 +10,6 @@ from backend.db.mock.users import MockUsersDAO
 
 
 class MockDBFacade(DBFacadeInterface):
-    
     def __init__(self):
         self.users_dao = MockUsersDAO()
         self.chat_members_dao = MockChatMembersDAO()
@@ -18,7 +17,7 @@ class MockDBFacade(DBFacadeInterface):
         self.chats_dao = MockChatsDAO()
         self.messages_dao = MockMessagesDAO()
         self.contacts_dao = MockContactsDAO()
-    
+
     def get_all_users(self) -> list[models.User]:
         """Получение всех записей таблицы пользователей"""
         return self.users_dao.get_all_users()
@@ -29,12 +28,7 @@ class MockDBFacade(DBFacadeInterface):
 
     def create_user(self, login: str, password_hash: str, name: str, surname: str) -> models.User:
         """Создание пользователя"""
-        return self.users_dao.create_user(
-            login=login,
-            password_hash=password_hash,
-            name=name,
-            surname=surname
-        )
+        return self.users_dao.create_user(login=login, password_hash=password_hash, name=name, surname=surname)
 
     def create_user_profile(self, user_id) -> None:
         """Создание профиля для пользователя"""
@@ -163,7 +157,7 @@ class MockDBFacade(DBFacadeInterface):
         self.messages_dao.mark_message_as_read(message_id=message_id, user_id=user_id)
 
     def get_unread_message(self, message_id: str, user_id: int) -> tables.MessageReadStatus | None:
-        """Получение объекта информации о прочтении сообщения пользователем """
+        """Получение объекта информации о прочтении сообщения пользователем"""
         return self.messages_dao.get_unread_message(message_id=message_id, user_id=user_id)
 
     def create_info_message(self, text: str, user_id: int, chat_id: str) -> models.Message:
@@ -173,10 +167,7 @@ class MockDBFacade(DBFacadeInterface):
     def get_user_messages(self, user_id: int) -> list[models.ChatData]:
         """Получение сообщений пользователя по всем чатам, где пользователь участник"""
         return self.messages_dao.get_user_messages(
-            user_id=user_id,
-            chat_members_dao=self.chat_members_dao,
-            chats_dao=self.chats_dao,
-            users_dao=self.users_dao
+            user_id=user_id, chat_members_dao=self.chat_members_dao, chats_dao=self.chats_dao, users_dao=self.users_dao
         )
 
     def get_user_chat_messages(self, user_id: int, chat_id: str) -> list[models.ChatData]:
@@ -186,7 +177,7 @@ class MockDBFacade(DBFacadeInterface):
             chat_id=chat_id,
             chat_members_dao=self.chat_members_dao,
             chats_dao=self.chats_dao,
-            users_dao=self.users_dao
+            users_dao=self.users_dao,
         )
 
     def get_message_by_id(self, message_id: str) -> tables.Message:
@@ -220,10 +211,7 @@ class MockDBFacade(DBFacadeInterface):
     def create_contact(self, owner_user_id: int, contact_user_id: int, name: str, surname: str) -> tables.Contact:
         """Создание контакта"""
         return self.contacts_dao.create_contact(
-            owner_user_id=owner_user_id,
-            contact_user_id=contact_user_id,
-            name=name,
-            surname=surname
+            owner_user_id=owner_user_id, contact_user_id=contact_user_id, name=name, surname=surname
         )
 
     def delete_contact(self, contact: tables.Contact) -> None:
@@ -232,8 +220,4 @@ class MockDBFacade(DBFacadeInterface):
 
     def change_contact(self, contact: tables.Contact, new_name: str, new_surname: str) -> None:
         """Изменение данных контакта"""
-        self.contacts_dao.change_contact(
-            contact=contact,
-            new_name=new_name,
-            new_surname=new_surname
-        )
+        self.contacts_dao.change_contact(contact=contact, new_name=new_name, new_surname=new_surname)

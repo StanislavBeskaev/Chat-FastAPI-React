@@ -14,11 +14,7 @@ class DocResponseExample:
         """Преобразование к формату openapi/swagger для отображения в документации"""
         openapi_response_example = {
             "description": self._description,
-            "content": {
-                "application/json": {
-                    "example": self._example
-                }
-            }
+            "content": {"application/json": {"example": self._example}},
         }
 
         return openapi_response_example
@@ -27,16 +23,14 @@ class DocResponseExample:
 @dataclass
 class StatusCodeDocResponseExample:
     """Пример ответа API по статус коду"""
+
     status_code: int
     response_example: DocResponseExample
 
 
 _not_auth_status_code_response_example = StatusCodeDocResponseExample(
     status_code=status.HTTP_401_UNAUTHORIZED,
-    response_example=DocResponseExample(
-        description="Не авторизован",
-        example={"detail": "Not authenticated"}
-    )
+    response_example=DocResponseExample(description="Не авторизован", example={"detail": "Not authenticated"}),
 )
 
 

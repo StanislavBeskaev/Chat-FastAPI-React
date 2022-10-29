@@ -7,6 +7,7 @@ from backend.services.ws.base_messages import BaseChatWSMessage
 
 class NewChatMessage(BaseChatWSMessage):
     """Сообщение всем участникам чата о новом чате"""
+
     message_type = MessageType.NEW_CHAT
     out_metrics_counter = ws_metrics.NEW_CHAT_OUT_WS_MESSAGE_COUNTER
 

@@ -6,6 +6,7 @@ from backend.core.decorators import model_result
 
 class MockUsersDAO:
     """Mock класс для работы с пользователями в БД"""
+
     users: list[tables.User]
     profiles: list[tables.Profile]
 
@@ -30,7 +31,7 @@ class MockUsersDAO:
             login=login,
             password_hash=password_hash,
             name=name,
-            surname=surname
+            surname=surname,
         )
         self.users.append(new_user)
         new_user = models.User.from_orm(new_user)
@@ -39,26 +40,18 @@ class MockUsersDAO:
     def create_user_profile(self, user_id) -> None:
         """Создание профиля для пользователя"""
         user_profile = tables.Profile(
-            id=max([profile.id for profile in self.profiles]) + 1,
-            user=user_id,
-            avatar_file=""
+            id=max([profile.id for profile in self.profiles]) + 1, user=user_id, avatar_file=""
         )
         self.profiles.append(user_profile)
 
     def find_user_by_login(self, login: str) -> tables.User | None:
         """Поиск пользователя по login"""
-        user = next(
-            (user for user in self.users if user.login == login),
-            None
-        )
+        user = next((user for user in self.users if user.login == login), None)
         return user
 
     def find_user_by_id(self, user_id: int) -> tables.User | None:
         """Поиск пользователя по id"""
-        user = next(
-            (user for user in self.users if user.id == user_id),
-            None
-        )
+        user = next((user for user in self.users if user.id == user_id), None)
         return user
 
     @model_result(models.User)
@@ -87,9 +80,7 @@ class MockUsersDAO:
         if not user:
             raise exception
 
-        profile = next(
-            (profile for profile in self.profiles if profile.user == user.id)
-        )
+        profile = next((profile for profile in self.profiles if profile.user == user.id))
 
         if not profile:
             raise HTTPException(status_code=404, detail=f"Профиль пользователя с логином '{login}' не найден")
@@ -103,14 +94,10 @@ class MockUsersDAO:
 
     def get_used_avatar_files(self) -> list[str]:
         """Получение названий используемых файлов аватаров"""
-        avatar_files = [
-            profile.avatar_file for profile in self.profiles
-        ]
+        avatar_files = [profile.avatar_file for profile in self.profiles]
         return avatar_files
 
     def _find_profile_by_user_id(self, user_id: int) -> tables.Profile:
         user = self.find_user_by_id(user_id=user_id)
-        profile = next(
-            (profile for profile in self.profiles if profile.user == user.id)
-        )
+        profile = next((profile for profile in self.profiles if profile.user == user.id))
         return profile

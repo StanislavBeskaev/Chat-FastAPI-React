@@ -8,6 +8,7 @@ from backend.services.ws.constants import MessageType
 
 class TextMessage(InWSMessageMixin, BaseChatWSMessage):
     """Текстовое сообщение всем участникам чата"""
+
     message_type = MessageType.TEXT
     in_metrics_counter = ws_metrics.TEXT_IN_WS_MESSAGE_COUNTER
     out_metrics_counter = ws_metrics.TEXT_OUT_WS_MESSAGE_COUNTER
@@ -28,7 +29,7 @@ class TextMessage(InWSMessageMixin, BaseChatWSMessage):
             login=self._login,
             time=get_formatted_time(message.time),
             text=self._text,
-            chat_id=self._chat_id
+            chat_id=self._chat_id,
         )
 
         return data
@@ -36,13 +37,10 @@ class TextMessage(InWSMessageMixin, BaseChatWSMessage):
     def _create_db_message(self) -> models.Message:
         """Создание сообщения в базе"""
         message = self._db_facade.create_text_message(
-            text=self._text,
-            user_id=self._db_facade.find_user_by_login(login=self._login).id,
-            chat_id=self._chat_id
+            text=self._text, user_id=self._db_facade.find_user_by_login(login=self._login).id, chat_id=self._chat_id
         )
         self._db_facade.create_unread_messages(
-            message=message,
-            chat_members=self._db_facade.get_chat_members(chat_id=self._chat_id)
+            message=message, chat_members=self._db_facade.get_chat_members(chat_id=self._chat_id)
         )
 
         return message

@@ -7,6 +7,7 @@ from backend.services.ws.constants import MessageType
 
 class InfoMessage(BaseChatWSMessage):
     """Информационное сообщение всем участникам чата"""
+
     message_type = MessageType.TEXT
     out_metrics_counter = ws_metrics.INFO_OUT_WS_MESSAGE_COUNTER
 
@@ -20,5 +21,5 @@ class InfoMessage(BaseChatWSMessage):
             chat_id=self._info_message.chat_id,
             text=self._info_message.text,
             login=self._login,
-            time=self._info_message.time
+            time=self._info_message.time,
         )

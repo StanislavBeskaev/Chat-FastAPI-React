@@ -16,15 +16,12 @@ from backend.services.ws.message_types import (
     ChangeMessageTextMessage,
     DeleteMessageMessage,
     LeaveChatMessage,
-    DeleteChatMessage
+    DeleteChatMessage,
 )
 
 
 def create_message_by_type(
-        message_type: MessageType,
-        login: str,
-        db_facade: DBFacadeInterface,
-        in_data: dict
+    message_type: MessageType, login: str, db_facade: DBFacadeInterface, in_data: dict
 ) -> BaseOutWSMessage:
     type_class_mapping = {
         MessageType.TEXT: TextMessage,

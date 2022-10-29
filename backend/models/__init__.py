@@ -28,5 +28,5 @@ from backend.models.ws import (
     ChatMessageData,
     InfoMessageData,
     ChangeChatMembersData,
-    InReadMessageData
+    InReadMessageData,
 )

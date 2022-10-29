@@ -9,10 +9,9 @@ from backend.tests.base import BaseTest
 
 class TestInWSMessages(BaseTest):
     def test_statuses_messages(self, client: TestClient):
-        with client.websocket_connect("ws/user") as user_ws, \
-                client.websocket_connect("ws/user1") as user1_ws,\
-                client.websocket_connect("ws/new") as new_ws,\
-                client.websocket_connect("ws/some") as some_ws:
+        with client.websocket_connect("ws/user") as user_ws, client.websocket_connect(
+            "ws/user1"
+        ) as user1_ws, client.websocket_connect("ws/new") as new_ws, client.websocket_connect("ws/some") as some_ws:
 
             # Необходимо указывать пользователей в порядке подключения
             ws_users = ["user", "user1", "new", "some"]
@@ -20,22 +19,13 @@ class TestInWSMessages(BaseTest):
                 self.check_ws_online_status_notifications(ws=ws, users=ws_users[index:])
 
             user_ws.close()
-            self._check_ws_offline_status_notification(
-                ws_list=[user1_ws, new_ws, some_ws],
-                disconnected_user="user"
-            )
+            self._check_ws_offline_status_notification(ws_list=[user1_ws, new_ws, some_ws], disconnected_user="user")
 
             new_ws.close()
-            self._check_ws_offline_status_notification(
-                ws_list=[user1_ws, some_ws],
-                disconnected_user="new"
-            )
+            self._check_ws_offline_status_notification(ws_list=[user1_ws, some_ws], disconnected_user="new")
 
             some_ws.close()
-            self._check_ws_offline_status_notification(
-                ws_list=[user1_ws],
-                disconnected_user="some"
-            )
+            self._check_ws_offline_status_notification(ws_list=[user1_ws], disconnected_user="some")
 
     @staticmethod
     def _check_ws_offline_status_notification(ws_list: list[WebSocketTestSession], disconnected_user: str) -> None:
@@ -46,10 +36,9 @@ class TestInWSMessages(BaseTest):
             assert ws_message["data"]["online_status"] == OnlineStatus.OFFLINE
 
     def test_typing_messages(self, client: TestClient):
-        with client.websocket_connect("ws/user") as user_ws, \
-                client.websocket_connect("ws/user1") as user1_ws,\
-                client.websocket_connect("ws/new") as new_ws,\
-                client.websocket_connect("ws/user2") as user2_ws:
+        with client.websocket_connect("ws/user") as user_ws, client.websocket_connect(
+            "ws/user1"
+        ) as user1_ws, client.websocket_connect("ws/new") as new_ws, client.websocket_connect("ws/user2") as user2_ws:
 
             # Необходимо указывать пользователей в порядке подключения
             ws_users = ["user", "user1", "new", "user2"]
@@ -58,67 +47,52 @@ class TestInWSMessages(BaseTest):
                 self.check_ws_online_status_notifications(ws=ws, users=ws_users[index:])
 
             user_ws.send_json(
-                data={
-                    MESSAGE_TYPE_KEY: MessageType.START_TYPING,
-                    MESSAGE_DATA_KEY: {
-                        "chatId": test_data.TEST_CHAT_ID
-                    }
-                }
+                data={MESSAGE_TYPE_KEY: MessageType.START_TYPING, MESSAGE_DATA_KEY: {"chatId": test_data.TEST_CHAT_ID}}
             )
             self._check_ws_typing_notification(
                 ws_list=[user_ws, user1_ws, new_ws],
                 user="user",
                 typing_type=MessageType.START_TYPING,
-                chat_id=test_data.TEST_CHAT_ID
+                chat_id=test_data.TEST_CHAT_ID,
             )
 
             user_ws.send_json(
                 data={
                     MESSAGE_TYPE_KEY: MessageType.START_TYPING,
-                    MESSAGE_DATA_KEY: {
-                        "chatId": test_data.SECOND_CHAT_ID
-                    }
+                    MESSAGE_DATA_KEY: {"chatId": test_data.SECOND_CHAT_ID},
                 }
             )
             self._check_ws_typing_notification(
                 ws_list=[user_ws, user1_ws, new_ws, user2_ws],
                 user="user",
                 typing_type=MessageType.START_TYPING,
-                chat_id=test_data.SECOND_CHAT_ID
+                chat_id=test_data.SECOND_CHAT_ID,
             )
 
             user_ws.send_json(
-                data={
-                    MESSAGE_TYPE_KEY: MessageType.STOP_TYPING,
-                    MESSAGE_DATA_KEY: {
-                        "chatId": test_data.TEST_CHAT_ID
-                    }
-                }
+                data={MESSAGE_TYPE_KEY: MessageType.STOP_TYPING, MESSAGE_DATA_KEY: {"chatId": test_data.TEST_CHAT_ID}}
             )
             self._check_ws_typing_notification(
                 ws_list=[user_ws, user1_ws, new_ws],
                 user="user",
                 typing_type=MessageType.STOP_TYPING,
-                chat_id=test_data.TEST_CHAT_ID
+                chat_id=test_data.TEST_CHAT_ID,
             )
 
             user_ws.send_json(
-                data={
-                    MESSAGE_TYPE_KEY: MessageType.STOP_TYPING,
-                    MESSAGE_DATA_KEY: {
-                        "chatId": test_data.SECOND_CHAT_ID
-                    }
-                }
+                data={MESSAGE_TYPE_KEY: MessageType.STOP_TYPING, MESSAGE_DATA_KEY: {"chatId": test_data.SECOND_CHAT_ID}}
             )
             self._check_ws_typing_notification(
                 ws_list=[user_ws, user1_ws, new_ws, user2_ws],
                 user="user",
                 typing_type=MessageType.STOP_TYPING,
-                chat_id=test_data.SECOND_CHAT_ID
+                chat_id=test_data.SECOND_CHAT_ID,
             )
 
     @staticmethod
-    def _check_ws_typing_notification(ws_list: list[WebSocketTestSession], user: str, typing_type: str, chat_id: str) -> None:  # noqa
+    def _check_ws_typing_notification(
+        ws_list: list[WebSocketTestSession], user: str, typing_type: str, chat_id: str
+    ) -> None:
         for ws in ws_list:
             ws_message = ws.receive_json()
             assert ws_message[MESSAGE_TYPE_KEY] == typing_type
@@ -129,15 +103,9 @@ class TestInWSMessages(BaseTest):
         with client.websocket_connect("ws/user1") as user1_ws:
             message_read_status_before = db_facade.get_unread_message(message_id="1", user_id=2)
             assert message_read_status_before.is_read is False
-            user1_ws.send_json(
-                data={
-                    MESSAGE_TYPE_KEY: MessageType.READ_MESSAGE,
-                    MESSAGE_DATA_KEY: {
-                        "messageId": "1"
-                    }
-                }
-            )
+            user1_ws.send_json(data={MESSAGE_TYPE_KEY: MessageType.READ_MESSAGE, MESSAGE_DATA_KEY: {"messageId": "1"}})
             import time
+
             # прочтение сообщение асинхронное действие, немного подождём результат
             time.sleep(0.1)
             message_read_status_after = db_facade.get_unread_message(message_id="1", user_id=2)
@@ -145,18 +113,13 @@ class TestInWSMessages(BaseTest):
 
             # Попытка прочитать не существующее сообщение
             user1_ws.send_json(
-                data={
-                    MESSAGE_TYPE_KEY: MessageType.READ_MESSAGE,
-                    MESSAGE_DATA_KEY: {
-                        "messageId": "bad_message_id"
-                    }
-                }
+                data={MESSAGE_TYPE_KEY: MessageType.READ_MESSAGE, MESSAGE_DATA_KEY: {"messageId": "bad_message_id"}}
             )
 
     def test_text_message(self, client: TestClient, db_facade: MockDBFacade):
-        with client.websocket_connect("ws/user") as user_ws, \
-                client.websocket_connect("ws/user1") as user1_ws, \
-                client.websocket_connect("ws/new") as new_ws:
+        with client.websocket_connect("ws/user") as user_ws, client.websocket_connect(
+            "ws/user1"
+        ) as user1_ws, client.websocket_connect("ws/new") as new_ws:
             # Необходимо указывать пользователей в порядке подключения
             ws_users = ["user", "user1", "new"]
             for index, ws in enumerate((user_ws, user1_ws, new_ws)):
@@ -165,10 +128,7 @@ class TestInWSMessages(BaseTest):
             user_ws.send_json(
                 data={
                     MESSAGE_TYPE_KEY: MessageType.TEXT,
-                    MESSAGE_DATA_KEY: {
-                        "text": "Новое сообщение",
-                        "chatId": test_data.TEST_CHAT_ID
-                    }
+                    MESSAGE_DATA_KEY: {"text": "Новое сообщение", "chatId": test_data.TEST_CHAT_ID},
                 }
             )
             self._check_ws_text_notification(
@@ -176,16 +136,13 @@ class TestInWSMessages(BaseTest):
                 user="user",
                 text="Новое сообщение",
                 chat_id=test_data.TEST_CHAT_ID,
-                db_facade=db_facade
+                db_facade=db_facade,
             )
 
             user1_ws.send_json(
                 data={
                     MESSAGE_TYPE_KEY: MessageType.TEXT,
-                    MESSAGE_DATA_KEY: {
-                        "text": "от первого",
-                        "chatId": test_data.TEST_CHAT_ID
-                    }
+                    MESSAGE_DATA_KEY: {"text": "от первого", "chatId": test_data.TEST_CHAT_ID},
                 }
             )
             self._check_ws_text_notification(
@@ -193,16 +150,13 @@ class TestInWSMessages(BaseTest):
                 user="user1",
                 text="от первого",
                 chat_id=test_data.TEST_CHAT_ID,
-                db_facade=db_facade
+                db_facade=db_facade,
             )
 
             new_ws.send_json(
                 data={
                     MESSAGE_TYPE_KEY: MessageType.TEXT,
-                    MESSAGE_DATA_KEY: {
-                        "text": "я тут",
-                        "chatId": test_data.SECOND_CHAT_ID
-                    }
+                    MESSAGE_DATA_KEY: {"text": "я тут", "chatId": test_data.SECOND_CHAT_ID},
                 }
             )
             self._check_ws_text_notification(
@@ -210,12 +164,12 @@ class TestInWSMessages(BaseTest):
                 user="new",
                 text="я тут",
                 chat_id=test_data.SECOND_CHAT_ID,
-                db_facade=db_facade
+                db_facade=db_facade,
             )
 
     @staticmethod
     def _check_ws_text_notification(
-            ws_list: list[WebSocketTestSession], user: str, text: str, chat_id: str, db_facade: MockDBFacade
+        ws_list: list[WebSocketTestSession], user: str, text: str, chat_id: str, db_facade: MockDBFacade
     ):
         for ws in ws_list:
             ws_message = ws.receive_json()

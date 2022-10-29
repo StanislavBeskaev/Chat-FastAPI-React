@@ -43,10 +43,7 @@ class ChatService(BaseService):
         logger.debug(f"Попытка изменить название чата: {chat_id=} {new_name=} {user=}")
         if not self._is_user_chat_creator(chat_id=chat_id, user=user):
             logger.warning("Пользователь не является создателем чата, изменение названия не выполнятся")
-            raise HTTPException(
-                status_code=403,
-                detail="Изменить название чата может только создатель"
-            )
+            raise HTTPException(status_code=403, detail="Изменить название чата может только создатель")
 
         if not new_name:
             logger.warning("Передано пустое новое название, изменение названия не выполнятся")
@@ -61,7 +58,9 @@ class ChatService(BaseService):
         chat = self._db_facade.change_chat_name(chat_id=chat_id, new_name=new_name)
 
         logger.info(f"Для чата {chat_id} установлено название: {new_name}")
-        change_chat_name_message = self._create_change_chat_name_message(user=user, chat_id=chat_id, new_chat_name=new_name)  # noqa
+        change_chat_name_message = self._create_change_chat_name_message(
+            user=user, chat_id=chat_id, new_chat_name=new_name
+        )
         self._notify_about_change_chat_name(changed_chat=chat, message=change_chat_name_message, login=user.login)
 
     def try_leave_chat(self, chat_id: str, user: models.User) -> str:
@@ -132,10 +131,7 @@ class ChatService(BaseService):
     def _notify_about_new_chat(self, new_chat: tables.Chat, user: models.User) -> None:
         """ws уведомление участников чата о создании нового чата"""
         new_chat_message = NewChatMessage(
-            chat_id=new_chat.id,
-            chat_name=new_chat.name,
-            creator=user.login,
-            db_facade=self._db_facade
+            chat_id=new_chat.id, chat_name=new_chat.name, creator=user.login, db_facade=self._db_facade
         )
         asyncio.run(new_chat_message.send_all())
 
@@ -152,9 +148,7 @@ class ChatService(BaseService):
     def _notify_about_change_chat_name(self, changed_chat: models.Chat, message: models.Message, login: str) -> None:
         """ws уведомление участников чата об изменении названия чата"""
         new_chat_message = ChangeChatNameMessage(
-            chat_id=changed_chat.id,
-            chat_name=changed_chat.name,
-            db_facade=self._db_facade
+            chat_id=changed_chat.id, chat_name=changed_chat.name, db_facade=self._db_facade
         )
         asyncio.run(new_chat_message.send_all())
 
@@ -164,9 +158,7 @@ class ChatService(BaseService):
     def _create_change_chat_name_message(self, user: models.User, chat_id: str, new_chat_name) -> models.Message:
         """Создание сообщения в базе об изменении названия чата"""
         change_chat_name_message = self._db_facade.create_info_message(
-            text=f"Название чата изменено на '{new_chat_name}'",
-            user_id=user.id,
-            chat_id=chat_id
+            text=f"Название чата изменено на '{new_chat_name}'", user_id=user.id, chat_id=chat_id
         )
 
         logger.info(f"В базу сохранено сообщение об изменении названия чата {chat_id} на '{new_chat_name}'")
@@ -175,9 +167,7 @@ class ChatService(BaseService):
     def _create_new_chat_info_message(self, user: models.User, chat: models.Chat) -> models.Message:
         """Создание информационного сообщения в базе о создании нового чата"""
         new_chat_info_message = self._db_facade.create_info_message(
-            text=f"Пользователь {user.login} создал чат",
-            user_id=user.id,
-            chat_id=chat.id
+            text=f"Пользователь {user.login} создал чат", user_id=user.id, chat_id=chat.id
         )
 
         return new_chat_info_message
@@ -193,23 +183,16 @@ class ChatService(BaseService):
         asyncio.run(leave_chat_message.send_all())
 
         delete_login_from_chat_message = DeleteLoginFromChatMessage(
-            login=user.login,
-            chat_id=chat_id,
-            chat_name=chat_name,
-            db_facade=self._db_facade
+            login=user.login, chat_id=chat_id, chat_name=chat_name, db_facade=self._db_facade
         )
         asyncio.run(delete_login_from_chat_message.send_all())
 
         leave_login_db_info_message = self._db_facade.create_info_message(
-            text=f"Пользователь {user.login} вышел из чата",
-            user_id=user.id,
-            chat_id=chat_id
+            text=f"Пользователь {user.login} вышел из чата", user_id=user.id, chat_id=chat_id
         )
         logger.info(f"В базу сохранено сообщение о выходе пользователя {user.login} из чата {chat_id}")
 
         ws_info_leave_login_message = InfoMessage(
-            login=user.login,
-            info_message=leave_login_db_info_message,
-            db_facade=self._db_facade
+            login=user.login, info_message=leave_login_db_info_message, db_facade=self._db_facade
         )
         asyncio.run(ws_info_leave_login_message.send_all())

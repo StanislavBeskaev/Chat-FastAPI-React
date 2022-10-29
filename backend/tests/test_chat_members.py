@@ -10,9 +10,9 @@ class TestChatMembers(BaseTest):
     chat_members_url = "/api/chat_members/"
 
     def test_success_add_chat_member(self, client: TestClient):
-        with client.websocket_connect("ws/user") as user_ws, \
-                client.websocket_connect("ws/user1") as user1_ws, \
-                client.websocket_connect("ws/new") as new_ws:
+        with client.websocket_connect("ws/user") as user_ws, client.websocket_connect(
+            "ws/user1"
+        ) as user1_ws, client.websocket_connect("ws/new") as new_ws:
             # Необходимо указывать пользователей в порядке подключения
             ws_users = ["user", "user1", "new"]
             # Что бы прочитать статусные сообщения
@@ -21,7 +21,7 @@ class TestChatMembers(BaseTest):
             response = client.post(
                 url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}",
                 headers=self.get_authorization_headers(),
-                json={"login": "user2"}
+                json={"login": "user2"},
             )
             assert response.status_code == 201
             assert response.json() == {"message": f"Пользователь user2 добавлен к чату: {test_data.TEST_CHAT_ID}"}
@@ -31,7 +31,7 @@ class TestChatMembers(BaseTest):
                 chat_id=test_data.TEST_CHAT_ID,
                 action_user="user",
                 user="user2",
-                chat_name=test_data.TEST_CHAT_NAME
+                chat_name=test_data.TEST_CHAT_NAME,
             )
 
     @staticmethod
@@ -53,10 +53,7 @@ class TestChatMembers(BaseTest):
             assert add_to_chat_message["data"]["chat_name"] == chat_name
 
     def test_add_chat_member_not_auth(self, client: TestClient):
-        response = client.post(
-            url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}",
-            json={"login": "user1"}
-        )
+        response = client.post(url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}", json={"login": "user1"})
         assert response.status_code == 401
         assert response.json() == self.NOT_AUTH_RESPONSE
 
@@ -65,10 +62,12 @@ class TestChatMembers(BaseTest):
         response = client.post(
             url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}",
             headers=self.get_authorization_headers(),
-            json={"login": candidate}
+            json={"login": candidate},
         )
         assert response.status_code == 409
-        assert response.json() == self.exception_response(f"В чате {test_data.TEST_CHAT_ID} уже есть пользователь {candidate}")
+        assert response.json() == self.exception_response(
+            f"В чате {test_data.TEST_CHAT_ID} уже есть пользователь {candidate}"
+        )
 
     def test_add_chat_members_not_exist_chat(self, client: TestClient):
         candidate = "new"
@@ -76,7 +75,7 @@ class TestChatMembers(BaseTest):
         response = client.post(
             url=f"{self.chat_members_url}{not_exist_chat_id}",
             headers=self.get_authorization_headers(),
-            json={"login": candidate}
+            json={"login": candidate},
         )
         assert response.status_code == 404
         assert response.json() == self.exception_response(f"Чата с id {not_exist_chat_id} не существует")
@@ -87,7 +86,7 @@ class TestChatMembers(BaseTest):
         response = client.post(
             url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}",
             headers=self.get_authorization_headers(access_token=tokens.access_token),
-            json={"login": candidate}
+            json={"login": candidate},
         )
         assert response.status_code == 403
         assert response.json() == self.exception_response(f"Вы не участник чата {test_data.TEST_CHAT_ID}")
@@ -97,7 +96,7 @@ class TestChatMembers(BaseTest):
         response = client.post(
             url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}",
             headers=self.get_authorization_headers(),
-            json={"login": not_exist_login}
+            json={"login": not_exist_login},
         )
         assert response.status_code == 404
         assert response.json() == self.exception_response(f"Пользователя с логином {not_exist_login} не существует")
@@ -105,8 +104,7 @@ class TestChatMembers(BaseTest):
     def test_success_delete_chat_member(self, client: TestClient):
         removable_user = "new"
 
-        with client.websocket_connect("ws/user") as user_ws, \
-                client.websocket_connect("ws/new") as new_ws:
+        with client.websocket_connect("ws/user") as user_ws, client.websocket_connect("ws/new") as new_ws:
             # Необходимо указывать пользователей в порядке подключения
             ws_users = ["user", "new"]
             # Что бы прочитать статусные сообщения
@@ -116,22 +114,24 @@ class TestChatMembers(BaseTest):
             response = client.delete(
                 url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}",
                 headers=self.get_authorization_headers(),
-                json={"login": removable_user}
+                json={"login": removable_user},
             )
             assert response.status_code == 200
-            assert response.json() == {"message": f"Пользователь {removable_user} удалён из чата: {test_data.TEST_CHAT_ID}"}
+            assert response.json() == {
+                "message": f"Пользователь {removable_user} удалён из чата: {test_data.TEST_CHAT_ID}"
+            }
 
             self._check_ws_delete_from_chat_message(
                 ws_list=[user_ws, new_ws],
                 chat_id=test_data.TEST_CHAT_ID,
                 removable_user=removable_user,
-                chat_name=test_data.TEST_CHAT_NAME
+                chat_name=test_data.TEST_CHAT_NAME,
             )
             self._check_ws_delete_from_chat_info_message(
                 ws_list=[user_ws],
                 chat_id=test_data.TEST_CHAT_ID,
                 action_user=self.DEFAULT_USER,
-                removable_user=removable_user
+                removable_user=removable_user,
             )
 
     @staticmethod
@@ -157,10 +157,7 @@ class TestChatMembers(BaseTest):
 
     def test_delete_chat_member_not_auth(self, client: TestClient):
         removable_user = "new"
-        response = client.delete(
-            url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}",
-            json={"login": removable_user}
-        )
+        response = client.delete(url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}", json={"login": removable_user})
         assert response.status_code == 401
         assert response.json() == self.NOT_AUTH_RESPONSE
 
@@ -169,7 +166,7 @@ class TestChatMembers(BaseTest):
         response = client.delete(
             url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}",
             headers=self.get_authorization_headers(),
-            json={"login": user_not_in_test_chat}
+            json={"login": user_not_in_test_chat},
         )
         assert response.status_code == 404
         assert response.json() == self.exception_response(f"Пользователя {user_not_in_test_chat} нет в чате")
@@ -180,7 +177,7 @@ class TestChatMembers(BaseTest):
         response = client.delete(
             url=f"{self.chat_members_url}{not_exist_chat_id}",
             headers=self.get_authorization_headers(),
-            json={"login": removable_user}
+            json={"login": removable_user},
         )
         assert response.status_code == 404
         assert response.json() == self.exception_response(f"Чата с id {not_exist_chat_id} не существует")
@@ -190,7 +187,7 @@ class TestChatMembers(BaseTest):
         response = client.delete(
             url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}",
             headers=self.get_authorization_headers(),
-            json={"login": not_exist_user}
+            json={"login": not_exist_user},
         )
         assert response.status_code == 404
         assert response.json() == self.exception_response(f"Пользователя с логином {not_exist_user} не существует")
@@ -200,7 +197,7 @@ class TestChatMembers(BaseTest):
         response = client.delete(
             url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}",
             headers=self.get_authorization_headers(access_token=tokens.access_token),
-            json={"login": "new"}
+            json={"login": "new"},
         )
         assert response.status_code == 403
         assert response.json() == self.exception_response("Только создатель может удалять из чата")
@@ -208,8 +205,7 @@ class TestChatMembers(BaseTest):
     def test_success_get_chat_members(self, client: TestClient):
         test_chat_members = ("user", "user1", "new")
         response = client.get(
-            url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}",
-            headers=self.get_authorization_headers()
+            url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}", headers=self.get_authorization_headers()
         )
         assert response.status_code == 200
         assert isinstance(response.json(), list)
@@ -219,8 +215,7 @@ class TestChatMembers(BaseTest):
 
         with client.websocket_connect("ws/user"):
             response = client.get(
-                url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}",
-                headers=self.get_authorization_headers()
+                url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}", headers=self.get_authorization_headers()
             )
             assert response.status_code == 200
             assert isinstance(response.json(), list)
@@ -232,17 +227,14 @@ class TestChatMembers(BaseTest):
                     assert chat_member["is_online"] is False
 
     def test_get_chat_members_not_auth(self, client: TestClient):
-        response = client.get(
-            url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}"
-        )
+        response = client.get(url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}")
         assert response.status_code == 401
         assert response.json() == self.NOT_AUTH_RESPONSE
 
     def test_get_chat_members_not_exist_chat(self, client: TestClient):
         not_exist_chat_chat_id = "not_exist_chat_chat_id"
         response = client.get(
-            url=f"{self.chat_members_url}{not_exist_chat_chat_id}",
-            headers=self.get_authorization_headers()
+            url=f"{self.chat_members_url}{not_exist_chat_chat_id}", headers=self.get_authorization_headers()
         )
         assert response.status_code == 404
         assert response.json() == self.exception_response(f"Чата с id {not_exist_chat_chat_id} не существует")
@@ -251,7 +243,7 @@ class TestChatMembers(BaseTest):
         tokens = self.login(client=client, username="user2", password="password2")
         response = client.get(
             url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}",
-            headers=self.get_authorization_headers(access_token=tokens.access_token)
+            headers=self.get_authorization_headers(access_token=tokens.access_token),
         )
         assert response.status_code == 403
         assert response.json() == self.exception_response(f"Вы не участник чата {test_data.TEST_CHAT_ID}")

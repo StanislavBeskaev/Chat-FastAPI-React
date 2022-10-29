@@ -8,12 +8,14 @@ from prometheus_client import Counter
 @dataclass
 class WebsocketClient:
     """Клиент ws соединения"""
+
     login: str
     websocket: WebSocket
 
 
 class WSConnectionManager:
     """Singleton для обслуживания websocket соединений"""
+
     __instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -33,8 +35,9 @@ class WSConnectionManager:
         """Подключение клиента"""
         await ws_client.websocket.accept()
         self.active_clients.append(ws_client)
-        logger.debug(f"{self.__class__.__name__} новое ws соединение"
-                     f" в списке уже {len(self.active_clients)} соединений")
+        logger.debug(
+            f"{self.__class__.__name__} новое ws соединение" f" в списке уже {len(self.active_clients)} соединений"
+        )
 
     def disconnect(self, ws_client: WebsocketClient):
         """Отключение клиента"""
@@ -42,8 +45,10 @@ class WSConnectionManager:
 
     async def broadcast(self, message: str, out_metrics_counter: Counter):
         """Рассылка сообщения на всех подключённых клиентов"""
-        logger.debug(f"{self.__class__.__name__} broadcast на {len(self.active_clients)} соединений:"
-                     f" {', '.join([client.login for client in self.active_clients])}")
+        logger.debug(
+            f"{self.__class__.__name__} broadcast на {len(self.active_clients)} соединений:"
+            f" {', '.join([client.login for client in self.active_clients])}"
+        )
         for ws_client in self.active_clients:
             await ws_client.websocket.send_text(message)
             out_metrics_counter.inc()

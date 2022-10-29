@@ -14,6 +14,7 @@ from backend.db.mock.users import MockUsersDAO
 
 class MockMessagesDAO:
     """Mock класс для работы с сообщениями в БД"""
+
     messages: list[tables.Message]
     messages_read_status: list[tables.MessageReadStatus]
 
@@ -35,7 +36,7 @@ class MockMessagesDAO:
             user_id=user_id,
             time=get_current_time(),
             chat_id=chat_id,
-            type=tables.MessageType.TEXT
+            type=tables.MessageType.TEXT,
         )
 
         self.messages.append(db_message)
@@ -48,11 +49,9 @@ class MockMessagesDAO:
     def create_unread_messages(self, message: models.Message, chat_members: list[models.User]) -> None:
         """Создание записей не прочитанного сообщения для участников чата"""
         unread_messages = [
-            tables.MessageReadStatus(
-                message_id=message.id,
-                user_id=user.id
-            )
-            for user in chat_members if user.id != message.user_id
+            tables.MessageReadStatus(message_id=message.id, user_id=user.id)
+            for user in chat_members
+            if user.id != message.user_id
         ]
 
         self.messages_read_status.extend(unread_messages)
@@ -64,7 +63,9 @@ class MockMessagesDAO:
         logger.debug(f"Запрос на прочтение сообщения: {user_id=} {message_id=}")
         unread_message = self.get_unread_message(message_id=message_id, user_id=user_id)
         if not unread_message:
-            logger.warning(f"Пользователь {user_id} попытка пометить прочитанным не существующее сообщение {message_id}")
+            logger.warning(
+                f"Пользователь {user_id} попытка пометить прочитанным не существующее сообщение {message_id}"
+            )
             return
 
         unread_message.is_read = True
@@ -73,9 +74,12 @@ class MockMessagesDAO:
     def get_unread_message(self, message_id: str, user_id: int) -> tables.MessageReadStatus | None:
         """Получение объекта информации о прочтении сообщения пользователем"""
         unread_message = next(
-            (message_read_status for message_read_status in self.messages_read_status
-             if message_read_status.message_id == message_id and message_read_status.user_id == user_id),
-            None
+            (
+                message_read_status
+                for message_read_status in self.messages_read_status
+                if message_read_status.message_id == message_id and message_read_status.user_id == user_id
+            ),
+            None,
         )
 
         return unread_message
@@ -88,7 +92,7 @@ class MockMessagesDAO:
             user_id=user_id,
             time=get_current_time(),
             chat_id=chat_id,
-            type=tables.MessageType.INFO
+            type=tables.MessageType.INFO,
         )
         self.messages.append(db_message)
 
@@ -98,11 +102,7 @@ class MockMessagesDAO:
         return info_message
 
     def _get_user_messages_chat_data(
-            self,
-            user_id: int,
-            chat_members_dao: MockChatMembersDAO,
-            chats_dao: MockChatsDAO,
-            users_dao: MockUsersDAO
+        self, user_id: int, chat_members_dao: MockChatMembersDAO, chats_dao: MockChatsDAO, users_dao: MockUsersDAO
     ) -> list[models.ChatData]:
         """Получение всех сообщений пользователя"""
         user_chat_ids = [
@@ -135,42 +135,33 @@ class MockMessagesDAO:
                         login=users_dao.find_user_by_id(user_id=message.user_id).login,
                         creator=users_dao.find_user_by_id(user_id=chat.creator_id).login,
                         is_read=unread_message.is_read if unread_message else True,
-                        change_time=message.change_time
+                        change_time=message.change_time,
                     )
                 )
 
         return chats_data
 
     def get_user_messages(
-            self,
-            user_id: int,
-            chat_members_dao: MockChatMembersDAO,
-            chats_dao: MockChatsDAO,
-            users_dao: MockUsersDAO
+        self, user_id: int, chat_members_dao: MockChatMembersDAO, chats_dao: MockChatsDAO, users_dao: MockUsersDAO
     ) -> list[models.ChatData]:
         """Получение сообщений пользователя по всем чатам, где пользователь участник"""
         return self._get_user_messages_chat_data(
-            user_id=user_id,
-            chat_members_dao=chat_members_dao,
-            chats_dao=chats_dao,
-            users_dao=users_dao
+            user_id=user_id, chat_members_dao=chat_members_dao, chats_dao=chats_dao, users_dao=users_dao
         )
 
     def get_user_chat_messages(
-            self,
-            user_id: int,
-            chat_id: str,
-            chat_members_dao: MockChatMembersDAO,
-            chats_dao: MockChatsDAO,
-            users_dao: MockUsersDAO
+        self,
+        user_id: int,
+        chat_id: str,
+        chat_members_dao: MockChatMembersDAO,
+        chats_dao: MockChatsDAO,
+        users_dao: MockUsersDAO,
     ) -> list[models.ChatData]:
         """Получение сообщений пользователя по конкретному чату"""
         chat_data = [
-            chat_data for chat_data in self._get_user_messages_chat_data(
-                user_id=user_id,
-                chat_members_dao=chat_members_dao,
-                chats_dao=chats_dao,
-                users_dao=users_dao
+            chat_data
+            for chat_data in self._get_user_messages_chat_data(
+                user_id=user_id, chat_members_dao=chat_members_dao, chats_dao=chats_dao, users_dao=users_dao
             )
             if chat_data.chat_id == chat_id
         ]
@@ -178,10 +169,7 @@ class MockMessagesDAO:
 
     def get_message_by_id(self, message_id: str) -> tables.Message:
         """Получение сообщения по id"""
-        message = next(
-            (message for message in self.messages if message.id == message_id),
-            None
-        )
+        message = next((message for message in self.messages if message.id == message_id), None)
 
         if not message:
             logger.warning(f"Сообщение с id {message_id} не найдено")
@@ -196,8 +184,10 @@ class MockMessagesDAO:
         message.text = new_text
         message.change_time = datetime.now()
 
-        logger.info(f"Для сообщения {message.id} изменён текст с '{old_text}' на '{new_text}'."
-                    f" Время изменения {message.change_time}")
+        logger.info(
+            f"Для сообщения {message.id} изменён текст с '{old_text}' на '{new_text}'."
+            f" Время изменения {message.change_time}"
+        )
 
         return message
 
@@ -206,12 +196,15 @@ class MockMessagesDAO:
         message = self.get_message_by_id(message_id=message_id)
         self.messages.remove(message)
         self.messages_read_status = [
-            message_read_status for message_read_status in self.messages_read_status
+            message_read_status
+            for message_read_status in self.messages_read_status
             if message_read_status.message_id == message_id
         ]
 
-        logger.info(f"Удалено сообщение '{message.text}' c id {message.id},"
-                    f"чата {message.chat_id} пользователя {message.user_id}")
+        logger.info(
+            f"Удалено сообщение '{message.text}' c id {message.id},"
+            f"чата {message.chat_id} пользователя {message.user_id}"
+        )
 
     def get_chat_messages(self, chat_id: str) -> list[tables.Message]:
         """Получение всех сообщений чата"""
@@ -222,9 +215,8 @@ class MockMessagesDAO:
         """Удаление всех сообщений чата"""
         chat_messages = self.get_chat_messages(chat_id=chat_id)
         self.messages_read_status = [
-            message_read_status for message_read_status in self.messages_read_status
+            message_read_status
+            for message_read_status in self.messages_read_status
             if message_read_status.message_id not in chat_messages
         ]
-        self.messages = [
-            message for message in self.messages if message.chat_id != chat_id
-        ]
+        self.messages = [message for message in self.messages if message.chat_id != chat_id]

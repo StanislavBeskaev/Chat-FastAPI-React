@@ -23,10 +23,12 @@ class TokenService(BaseService):
         tokens = models.Tokens(
             access_token=self.generate_access_token(user=user, settings=settings),
             refresh_token=self.generate_refresh_token(user=user, setting=settings),
-            user=user
+            user=user,
         )
-        logger.debug(f"Для пользователя {user}, {user_agent=},"
-                     f" сгенерированы токены: {tokens.access_token=}, {tokens.refresh_token=}")
+        logger.debug(
+            f"Для пользователя {user}, {user_agent=},"
+            f" сгенерированы токены: {tokens.access_token=}, {tokens.refresh_token=}"
+        )
         self.save_refresh_token_to_db(user_id=user.id, refresh_token=tokens.refresh_token, user_agent=user_agent)
 
         return tokens
@@ -41,9 +43,7 @@ class TokenService(BaseService):
         else:
             logger.debug(f"Для пользователя {user_id} не было refresh_token в базе, создаём новый")
             token = self._db_facade.create_refresh_token(
-                user_id=user_id,
-                refresh_token=refresh_token,
-                user_agent=user_agent
+                user_id=user_id, refresh_token=refresh_token, user_agent=user_agent
             )
 
         logger.info(f"Для пользователя {user_id} {user_agent=} в базу сохранён refresh_token: {refresh_token}")
@@ -56,7 +56,7 @@ class TokenService(BaseService):
             duration=settings.jwt_access_expires_s,
             secret_key=settings.jwt_access_secret,
             algorithm=settings.jwt_algorithm,
-            token_kind="access"
+            token_kind="access",
         )
 
     def generate_refresh_token(self, user: models.User, setting: Settings) -> str:
@@ -66,7 +66,7 @@ class TokenService(BaseService):
             duration=setting.jwt_refresh_expires_s,
             secret_key=setting.jwt_refresh_secret,
             algorithm=setting.jwt_algorithm,
-            token_kind="refresh"
+            token_kind="refresh",
         )
 
     @staticmethod
@@ -80,11 +80,7 @@ class TokenService(BaseService):
             "kind": token_kind,
             USER_JWT_KEY: user.dict(),
         }
-        token = jwt.encode(
-            claims=payload,
-            key=secret_key,
-            algorithm=algorithm
-        )
+        token = jwt.encode(claims=payload, key=secret_key, algorithm=algorithm)
 
         return token
 
@@ -99,11 +95,7 @@ class TokenService(BaseService):
         )
         try:
             settings = get_settings()
-            payload = jwt.decode(
-                token=token,
-                key=settings.jwt_access_secret,
-                algorithms=[settings.jwt_algorithm]
-            )
+            payload = jwt.decode(token=token, key=settings.jwt_access_secret, algorithms=[settings.jwt_algorithm])
         except JWTError:
             logger.warning(f"access_token не валидный")
             raise exception from None
@@ -127,11 +119,7 @@ class TokenService(BaseService):
         settings = get_settings()
         exception = HTTPException(status_code=401, detail="Не валидный refresh_token")
         try:
-            payload = jwt.decode(
-                token=token,
-                key=settings.jwt_refresh_secret,
-                algorithms=[settings.jwt_algorithm]
-            )
+            payload = jwt.decode(token=token, key=settings.jwt_refresh_secret, algorithms=[settings.jwt_algorithm])
         except JWTError:
             logger.warning(f"refresh токен не валидный")
             raise exception from None

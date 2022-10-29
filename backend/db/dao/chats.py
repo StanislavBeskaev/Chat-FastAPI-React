@@ -14,11 +14,7 @@ class ChatsDAO(BaseDAO):
     @model_result(models.Chat)
     def get_all_chats(self) -> list[models.Chat]:
         """Получение всех записей из таблицы чатов"""
-        db_chats = (
-            self.session
-            .query(tables.Chat)
-            .all()
-        )
+        db_chats = self.session.query(tables.Chat).all()
 
         return db_chats
 
@@ -35,23 +31,14 @@ class ChatsDAO(BaseDAO):
         return db_chat
 
     def _get_chat_by_id(self, chat_id: str) -> tables.Chat:
-        db_chat = (
-            self.session
-            .query(tables.Chat)
-            .where(tables.Chat.id == chat_id)
-            .first()
-        )
+        db_chat = self.session.query(tables.Chat).where(tables.Chat.id == chat_id).first()
 
         return db_chat
 
     @model_result(models.Chat)
     def create_chat(self, chat_name: str, creator_id: int) -> models.Chat:
         """Создание нового чата"""
-        new_chat = tables.Chat(
-            id=str(uuid4()),
-            name=chat_name,
-            creator_id=creator_id
-        )
+        new_chat = tables.Chat(id=str(uuid4()), name=chat_name, creator_id=creator_id)
         self.session.add(new_chat)
         self.session.commit()
 

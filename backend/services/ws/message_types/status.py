@@ -10,11 +10,13 @@ from backend.services.ws.constants import OnlineStatus, MessageType
 
 class StatusMessageData(models.WSMessageData):
     """Данные статусного сообщения"""
+
     online_status: OnlineStatus
 
 
 class BaseStatusMessage(BaseOutWSMessage, ABC):
     """Базовый класс исходящего статусного сообщения"""
+
     message_type = MessageType.STATUS
     online_status = None
 
@@ -24,7 +26,7 @@ class BaseStatusMessage(BaseOutWSMessage, ABC):
             login=self._login,
             text=self._get_status_message_text(),
             time=get_formatted_time(),
-            online_status=self.online_status
+            online_status=self.online_status,
         )
 
         return data
@@ -39,6 +41,7 @@ class BaseStatusMessage(BaseOutWSMessage, ABC):
 
 class OnlineMessage(BaseStatusMessage):
     """Сообщение при подключении пользователя"""
+
     online_status = OnlineStatus.ONLINE
     out_metrics_counter = ws_metrics.ONLINE_STATUS_OUT_WS_MESSAGE_COUNTER
 
@@ -61,8 +64,9 @@ class OnlineMessage(BaseStatusMessage):
 
 class OfflineMessage(BaseStatusMessage):
     """Сообщение об отключении пользователя"""
+
     online_status = OnlineStatus.OFFLINE
-    out_metrics_counter = ws_metrics.OFLINE_STATUS_OUT_WS_MESSAGE_COUNTER
+    out_metrics_counter = ws_metrics.OFFLINE_STATUS_OUT_WS_MESSAGE_COUNTER
 
     def _get_text_templates(self) -> list[str]:
         offline_text_templates = [

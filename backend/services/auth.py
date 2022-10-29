@@ -32,13 +32,14 @@ class AuthService(BaseService):
 
     def register_new_user(self, user_data: models.UserCreate, user_agent: str) -> models.Tokens:
         """Регистрация нового пользователя"""
-        logger.debug(f"Попытка регистрации нового пользователя c данными:"
-                     f" login={user_data.login}, name={user_data.name}, surname={user_data.surname}")
+        logger.debug(
+            f"Попытка регистрации нового пользователя c данными:"
+            f" login={user_data.login}, name={user_data.name}, surname={user_data.surname}"
+        )
         if self._db_facade.find_user_by_login(login=user_data.login):
             logger.warning(f"Пользователь с логином '{user_data.login}' уже существует")
             raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Пользователь с таким логином уже существует"
+                status_code=status.HTTP_409_CONFLICT, detail="Пользователь с таким логином уже существует"
             )
 
         new_user = self._create_new_user(user_data=user_data)
@@ -106,15 +107,12 @@ class AuthService(BaseService):
             login=user_data.login,
             password_hash=self.hash_password(user_data.password),
             name=user_data.name,
-            surname=user_data.surname
+            surname=user_data.surname,
         )
 
         self._db_facade.create_user_profile(user_id=new_user.id)
 
         settings = get_settings()
-        self._chat_members_service.add_user_to_chat(
-            user=new_user,
-            chat_id=settings.main_chat_id
-        )
+        self._chat_members_service.add_user_to_chat(user=new_user, chat_id=settings.main_chat_id)
 
         return new_user

@@ -3,9 +3,7 @@ from fastapi import APIRouter
 from . import auth, user, messages, contacts, chats, chat_members, data
 
 
-router = APIRouter(
-    prefix="/api"
-)
+router = APIRouter(prefix="/api")
 
 router.include_router(auth.router)
 router.include_router(contacts.router)

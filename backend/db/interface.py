@@ -168,7 +168,7 @@ class DBFacadeInterface(ABC):
 
     @abstractmethod
     def get_unread_message(self, message_id: str, user_id: int) -> tables.MessageReadStatus | None:
-        """Получение объекта информации о прочтении сообщения пользователем """
+        """Получение объекта информации о прочтении сообщения пользователем"""
         ...
 
     @abstractmethod

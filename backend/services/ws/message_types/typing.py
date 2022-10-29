@@ -8,6 +8,7 @@ from backend.services.ws.constants import MessageType
 
 class StartTypingMessage(InWSMessageMixin, BaseChatWSMessage):
     """Сообщение всем участникам чата о начале печатания"""
+
     message_type = MessageType.START_TYPING
     in_metrics_counter = ws_metrics.START_TYPING_IN_WS_MESSAGE_COUNTER
     out_metrics_counter = ws_metrics.START_TYPING_OUT_WS_MESSAGE_COUNTER
@@ -19,17 +20,12 @@ class StartTypingMessage(InWSMessageMixin, BaseChatWSMessage):
         super().__init__(login=login, db_facade=db_facade)
 
     def _get_data(self) -> models.TypingMessageData:
-        return models.TypingMessageData(
-            login=self._login,
-            text="",
-            time=get_formatted_time(),
-            chat_id=self._chat_id
-        )
+        return models.TypingMessageData(login=self._login, text="", time=get_formatted_time(), chat_id=self._chat_id)
 
 
 class StopTypingMessage(StartTypingMessage):
     """Сообщение всем участникам чата об окончании печатании"""
+
     message_type = MessageType.STOP_TYPING
     in_metrics_counter = ws_metrics.STOP_TYPING_IN_WS_MESSAGE_COUNTER
     out_metrics_counter = ws_metrics.STOP_TYPING_OUT_WS_MESSAGE_COUNTER
-

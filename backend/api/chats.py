@@ -13,15 +13,11 @@ router = APIRouter(
 )
 
 
-@router.post(
-    "/",
-    status_code=status.HTTP_201_CREATED,
-    responses=chats_responses.create_new_chat_responses
-)
+@router.post("/", status_code=status.HTTP_201_CREATED, responses=chats_responses.create_new_chat_responses)
 def create_new_chat(
-        new_chat_data: models.ChatCreate,
-        user: models.User = Depends(get_current_user),
-        chat_service: ChatService = Depends(),
+    new_chat_data: models.ChatCreate,
+    user: models.User = Depends(get_current_user),
+    chat_service: ChatService = Depends(),
 ):
     """Создание нового чата"""
     chats_metrics.CREATE_NEW_CHAT_COUNTER.inc()
@@ -31,39 +27,23 @@ def create_new_chat(
     return {"message": f"Чат {new_chat_data.chat_name} успешно создан"}
 
 
-@router.put(
-    "/{chat_id}",
-    status_code=status.HTTP_200_OK,
-    responses=chats_responses.change_chat_name_responses
-)
+@router.put("/{chat_id}", status_code=status.HTTP_200_OK, responses=chats_responses.change_chat_name_responses)
 def change_chat_name(
-        chat_id: str,
-        chat_update_data: models.ChatUpdateName,
-        user: models.User = Depends(get_current_user),
-        chat_service: ChatService = Depends(),
+    chat_id: str,
+    chat_update_data: models.ChatUpdateName,
+    user: models.User = Depends(get_current_user),
+    chat_service: ChatService = Depends(),
 ):
     """Изменение названия чата"""
     chats_metrics.CHANGE_CHAT_NAME_COUNTER.inc()
 
-    chat_service.change_chat_name(
-        chat_id=chat_id,
-        new_name=chat_update_data.chat_name,
-        user=user
-    )
+    chat_service.change_chat_name(chat_id=chat_id, new_name=chat_update_data.chat_name, user=user)
 
     return {"message": "Название чата успешно изменено"}
 
 
-@router.get(
-    "/try_leave/{chat_id}",
-    status_code=status.HTTP_200_OK,
-    responses=chats_responses.try_leave_chat_responses
-)
-def try_leave_chat(
-        chat_id: str,
-        user: models.User = Depends(get_current_user),
-        chat_service: ChatService = Depends()
-):
+@router.get("/try_leave/{chat_id}", status_code=status.HTTP_200_OK, responses=chats_responses.try_leave_chat_responses)
+def try_leave_chat(chat_id: str, user: models.User = Depends(get_current_user), chat_service: ChatService = Depends()):
     """Попытка выйти из чата, получение предупредительного сообщения"""
     # TODO настроить Grafana под новую метрику
     chats_metrics.TRY_LEAVE_CHAT_COUNTER.inc()
@@ -74,16 +54,8 @@ def try_leave_chat(
 
 
 # TODO Grafana
-@router.post(
-    "/leave/{chat_id}",
-    status_code=status.HTTP_200_OK,
-    responses=chats_responses.leave_chat_responses
-)
-def leave_chat(
-        chat_id: str,
-        user: models.User = Depends(get_current_user),
-        chat_service: ChatService = Depends()
-):
+@router.post("/leave/{chat_id}", status_code=status.HTTP_200_OK, responses=chats_responses.leave_chat_responses)
+def leave_chat(chat_id: str, user: models.User = Depends(get_current_user), chat_service: ChatService = Depends()):
     """Выход пользователя из чата"""
     # TODO настроить Grafana под новую метрику
     chats_metrics.LEAVE_CHAT_COUNTER.inc()

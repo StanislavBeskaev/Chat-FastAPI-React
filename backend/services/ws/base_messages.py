@@ -19,6 +19,7 @@ class WSMessageInterface(ABC):
 
 class InWSMessageMixin(ABC):
     """Mixin для метрики входящих ws сообщений"""
+
     in_metrics_counter = None
 
     def __init__(self, *args, **kwargs):
@@ -28,6 +29,7 @@ class InWSMessageMixin(ABC):
 
 class BaseOutWSMessage(WSMessageInterface, ABC):
     """Базовый класс для работы с исходящим сообщением WS"""
+
     message_type = None
     out_metrics_counter = None
 
@@ -35,10 +37,7 @@ class BaseOutWSMessage(WSMessageInterface, ABC):
         self._login = login
         self._db_facade = db_facade
         self._data = self._get_data()
-        self._content = {
-            "type": self.message_type,
-            "data": self._data.dict()
-        }
+        self._content = {"type": self.message_type, "data": self._data.dict()}
 
     async def send_all(self) -> None:
         """Отправка сообщения всем подключённым пользователям"""
@@ -66,9 +65,7 @@ class BaseChatWSMessage(BaseOutWSMessage, ABC):
         logger.debug(f"Отправка сообщения: {self._content}")
 
         await manager.send_message_to_logins(
-            logins=logins_to_send,
-            message=self._get_message(),
-            out_metrics_counter=self.out_metrics_counter
+            logins=logins_to_send, message=self._get_message(), out_metrics_counter=self.out_metrics_counter
         )
 
     @abstractmethod
@@ -94,9 +91,7 @@ class BaseSingleUserWSMessage(BaseOutWSMessage, ABC):
         manager = WSConnectionManager()
         logger.debug(f"Отправка сообщения: {self._content}")
         await manager.send_message_to_logins(
-            logins=[self._login],
-            message=self._get_message(),
-            out_metrics_counter=self.out_metrics_counter
+            logins=[self._login], message=self._get_message(), out_metrics_counter=self.out_metrics_counter
         )
 
     @abstractmethod

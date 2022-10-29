@@ -55,22 +55,62 @@ class DBDataService(BaseService):
         self._session = session
         self._settings = settings
         self._db_data_sources = [
-            DBDataSource(export_method=self._db_facade.get_all_users, file_name="users.json",
-                         delete_priority=8, insert_priority=1, table=tables.User),
-            DBDataSource(export_method=self._db_facade.get_all_chats, file_name="chats.json",
-                         delete_priority=6, insert_priority=2, table=tables.Chat),
-            DBDataSource(export_method=self._db_facade.get_all_messages, file_name="messages.json",
-                         delete_priority=5, insert_priority=3, table=tables.Message),
-            DBDataSource(export_method=self._db_facade.get_all_contacts, file_name="contacts.json",
-                         delete_priority=4, insert_priority=4, table=tables.Contact),
-            DBDataSource(export_method=self._db_facade.get_all_chat_members, file_name="chat_members.json",
-                         delete_priority=3, insert_priority=5, table=tables.ChatMember),
-            DBDataSource(export_method=self._db_facade.get_all_read_status_messages, file_name="messages_read_status.json",  # noqa
-                         delete_priority=2, insert_priority=6, table=tables.MessageReadStatus),
-            DBDataSource(export_method=self._db_facade.get_all_refresh_tokens, file_name="refresh_tokens.json",
-                         delete_priority=2, insert_priority=7, table=tables.RefreshToken),
-            DBDataSource(export_method=self._db_facade.get_all_profiles, file_name="profiles.json",
-                         delete_priority=1, insert_priority=8, table=tables.Profile),
+            DBDataSource(
+                export_method=self._db_facade.get_all_users,
+                file_name="users.json",
+                delete_priority=8,
+                insert_priority=1,
+                table=tables.User,
+            ),
+            DBDataSource(
+                export_method=self._db_facade.get_all_chats,
+                file_name="chats.json",
+                delete_priority=6,
+                insert_priority=2,
+                table=tables.Chat,
+            ),
+            DBDataSource(
+                export_method=self._db_facade.get_all_messages,
+                file_name="messages.json",
+                delete_priority=5,
+                insert_priority=3,
+                table=tables.Message,
+            ),
+            DBDataSource(
+                export_method=self._db_facade.get_all_contacts,
+                file_name="contacts.json",
+                delete_priority=4,
+                insert_priority=4,
+                table=tables.Contact,
+            ),
+            DBDataSource(
+                export_method=self._db_facade.get_all_chat_members,
+                file_name="chat_members.json",
+                delete_priority=3,
+                insert_priority=5,
+                table=tables.ChatMember,
+            ),
+            DBDataSource(
+                export_method=self._db_facade.get_all_read_status_messages,
+                file_name="messages_read_status.json",
+                delete_priority=2,
+                insert_priority=6,
+                table=tables.MessageReadStatus,
+            ),
+            DBDataSource(
+                export_method=self._db_facade.get_all_refresh_tokens,
+                file_name="refresh_tokens.json",
+                delete_priority=2,
+                insert_priority=7,
+                table=tables.RefreshToken,
+            ),
+            DBDataSource(
+                export_method=self._db_facade.get_all_profiles,
+                file_name="profiles.json",
+                delete_priority=1,
+                insert_priority=8,
+                table=tables.Profile,
+            ),
         ]
 
     def export_db_data(self) -> io.BytesIO:
@@ -84,9 +124,7 @@ class DBDataService(BaseService):
     def import_db_data(self, import_zip_file: UploadFile) -> None:
         """Импорт данных в базу из zip файла"""
         self._create_import_folder()
-        self._unzip_import_zip_file(
-            import_zip_file_path=self._save_import_zip_file(import_zip_file=import_zip_file)
-        )
+        self._unzip_import_zip_file(import_zip_file_path=self._save_import_zip_file(import_zip_file=import_zip_file))
         self._clear_tables()
         self._insert_import_db_data()
         # Если поменяется набор таблиц, наименования таблиц или последовательностей, то адаптировать
@@ -152,10 +190,7 @@ class DBDataService(BaseService):
         logger.debug(f"finish unzip {import_zip_file_path}")
 
     def _clear_tables(self) -> None:
-        db_data_sources_delete_order = sorted(
-            self._db_data_sources,
-            key=lambda x: x.delete_priority
-        )
+        db_data_sources_delete_order = sorted(self._db_data_sources, key=lambda x: x.delete_priority)
         for db_data_source in db_data_sources_delete_order:
             self._session.query(db_data_source.table).delete()
             logger.info(f"Очищаем таблицу {db_data_source.table.__tablename__}")
@@ -163,15 +198,11 @@ class DBDataService(BaseService):
         logger.info("Все таблицы очищены")
 
     def _insert_import_db_data(self) -> None:
-        db_data_sources_insert_order = sorted(
-            self._db_data_sources,
-            key=lambda x: x.insert_priority
-        )
+        db_data_sources_insert_order = sorted(self._db_data_sources, key=lambda x: x.insert_priority)
 
         for db_data_source in db_data_sources_insert_order:
             self._insert_import_data_to_table(
-                import_data=self._read_import_data_file(db_data_source.file_name),
-                table=db_data_source.table
+                import_data=self._read_import_data_file(db_data_source.file_name), table=db_data_source.table
             )
 
         self._session.commit()
@@ -205,9 +236,7 @@ class DBDataService(BaseService):
 
         for sequence_name, table in table_sequences_to_restart:
             next_table_id = self._session.query(func.max(table.id)).scalar() + 1
-            self._session.execute(
-                f"ALTER SEQUENCE {sequence_name} RESTART WITH {next_table_id}"
-            )
+            self._session.execute(f"ALTER SEQUENCE {sequence_name} RESTART WITH {next_table_id}")
             logger.info(f"Для последовательности {sequence_name} выставлено значение {next_table_id}")
         self._session.commit()
         logger.info("Для всех последовательностей установлены корректные значения")

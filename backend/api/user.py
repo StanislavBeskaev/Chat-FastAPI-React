@@ -20,12 +20,12 @@ router = APIRouter(
     "/change",
     response_model=models.User,
     status_code=status.HTTP_200_OK,
-    responses=user_responses.change_user_data_responses
+    responses=user_responses.change_user_data_responses,
 )
 def change_user_data(
-        user_data: models.UserUpdate,
-        current_user: models.User = Depends(get_current_user),
-        user_service: UserService = Depends()
+    user_data: models.UserUpdate,
+    current_user: models.User = Depends(get_current_user),
+    user_service: UserService = Depends(),
 ):
     """Изменение данных пользователя"""
     user_metrics.CHANGE_USER_DATA_COUNTER.inc()
@@ -34,17 +34,13 @@ def change_user_data(
     return updated_user
 
 
-@router.post(
-    "/avatar",
-    status_code=status.HTTP_201_CREATED,
-    responses=user_responses.upload_avatar_responses
-)
+@router.post("/avatar", status_code=status.HTTP_201_CREATED, responses=user_responses.upload_avatar_responses)
 def upload_avatar(
-        file: UploadFile,
-        background_tasks: BackgroundTasks,
-        user_service: UserService = Depends(),
-        current_user: models.User = Depends(get_current_user),
-        files_service: FilesService = Depends()
+    file: UploadFile,
+    background_tasks: BackgroundTasks,
+    user_service: UserService = Depends(),
+    current_user: models.User = Depends(get_current_user),
+    files_service: FilesService = Depends(),
 ):
     """Загрузка аватара пользователя"""
     user_metrics.UPLOAD_AVATAR_COUNTER.inc()
@@ -52,20 +48,13 @@ def upload_avatar(
     logger.debug(f"incoming file attrs: {file.__dict__}")
     background_tasks.add_task(files_service.delete_not_used_avatar_files)
 
-    return {
-        "avatar_file": user_service.save_avatar(user=current_user, file=file)
-    }
+    return {"avatar_file": user_service.save_avatar(user=current_user, file=file)}
 
 
 @router.get(
-    "/avatar_file/{login}",
-    status_code=status.HTTP_200_OK,
-    responses=user_responses.get_login_avatar_file_responses
+    "/avatar_file/{login}", status_code=status.HTTP_200_OK, responses=user_responses.get_login_avatar_file_responses
 )
-def get_login_avatar_file(
-        login: str,
-        user_service: UserService = Depends()
-):
+def get_login_avatar_file(login: str, user_service: UserService = Depends()):
     """Получение файла аватара пользователя по логину"""
     user_metrics.GET_LOGIN_AVATAR_FILE_COUNTER.inc()
 
@@ -76,12 +65,9 @@ def get_login_avatar_file(
     "/avatar_file_name/{login}",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(get_current_user)],
-    responses=user_responses.get_login_avatar_filename_responses
+    responses=user_responses.get_login_avatar_filename_responses,
 )
-def get_login_avatar_filename(
-        login: str,
-        user_service: UserService = Depends()
-):
+def get_login_avatar_filename(login: str, user_service: UserService = Depends()):
     """Получение названия файла аватара пользователя по логину"""
     user_metrics.GET_LOGIN_AVATAR_FILENAME_COUNTER.inc()
 
@@ -94,12 +80,9 @@ def get_login_avatar_filename(
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(get_current_user)],
     response_model=models.User,
-    responses=user_responses.get_user_info_responses
+    responses=user_responses.get_user_info_responses,
 )
-def get_user_info(
-        login: str,
-        user_service: UserService = Depends()
-):
+def get_user_info(login: str, user_service: UserService = Depends()):
     """Получение информации о пользователе по логину"""
     user_metrics.GET_USER_INFO_COUNTER.inc()
 

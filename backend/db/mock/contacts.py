@@ -19,9 +19,10 @@ class MockContactsDAO:
             {
                 "login": users_dao.find_user_by_id(contact.contact_user_id).login,
                 "name": contact.name,
-                "surname": contact.surname
+                "surname": contact.surname,
             }
-            for contact in self.contacts if contact.owner_user_id == user_id
+            for contact in self.contacts
+            if contact.owner_user_id == user_id
         ]
         contacts = [models.Contact(**contact_info) for contact_info in contacts]
 
@@ -30,9 +31,12 @@ class MockContactsDAO:
     def find_contact(self, owner_user_id: int, contact_user_id: int) -> tables.Contact | None:
         """Нахождение контакта пользователя"""
         db_contact = next(
-            (contact for contact in self.contacts
-                if contact.owner_user_id == owner_user_id and contact.contact_user_id == contact_user_id),
-            None
+            (
+                contact
+                for contact in self.contacts
+                if contact.owner_user_id == owner_user_id and contact.contact_user_id == contact_user_id
+            ),
+            None,
         )
 
         return db_contact
@@ -44,7 +48,7 @@ class MockContactsDAO:
             owner_user_id=owner_user_id,
             contact_user_id=contact_user_id,
             name=name,
-            surname=surname
+            surname=surname,
         )
         self.contacts.append(new_contact)
 

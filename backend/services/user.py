@@ -18,11 +18,7 @@ class UserService(BaseService):
 
     def change_user_data(self, user_login: str, user_data: models.UserUpdate) -> models.User:
         """Изменение данных пользователя"""
-        user = self._db_facade.change_user_data(
-            login=user_login,
-            name=user_data.name,
-            surname=user_data.surname
-        )
+        user = self._db_facade.change_user_data(login=user_login, name=user_data.name, surname=user_data.surname)
         logger.info(f"Изменение данных пользователя {user_login}, новые данные: {user_data}")
 
         return user

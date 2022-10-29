@@ -4,6 +4,7 @@ from backend.core.decorators import model_result
 
 class MockTokensDAO:
     """Mock класс для работы с токенами в БД"""
+
     refresh_tokens: list[tables.RefreshToken]
 
     def delete_all_refresh_tokens(self) -> None:
@@ -18,8 +19,7 @@ class MockTokensDAO:
     def find_refresh_token_by_user(self, user_id: int, user_agent: str) -> tables.RefreshToken | None:
         """Поиск refresh токена по пользователю и user_agent"""
         refresh_token = next(
-            (token for token in self.refresh_tokens if token.user == user_id and token.user_agent == user_agent),
-            None
+            (token for token in self.refresh_tokens if token.user == user_id and token.user_agent == user_agent), None
         )
 
         return refresh_token
@@ -27,8 +27,7 @@ class MockTokensDAO:
     def find_refresh_token_by_token(self, token: str, user_agent: str) -> tables.RefreshToken | None:
         """Поиск refresh токена по токену и user_agent"""
         refresh_token = next(
-            (tkn for tkn in self.refresh_tokens if tkn.refresh_token == token and tkn.user_agent == user_agent),
-            None
+            (tkn for tkn in self.refresh_tokens if tkn.refresh_token == token and tkn.user_agent == user_agent), None
         )
 
         return refresh_token
@@ -39,7 +38,7 @@ class MockTokensDAO:
             id=max([token.id for token in self.refresh_tokens]) + 1,
             user=user_id,
             refresh_token=refresh_token,
-            user_agent=user_agent
+            user_agent=user_agent,
         )
         self.refresh_tokens.append(token)
         return token

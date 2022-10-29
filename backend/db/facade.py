@@ -83,7 +83,9 @@ class DBFacade(DBFacadeInterface):
 
     def create_refresh_token(self, user_id: int, refresh_token: str, user_agent: str) -> tables.RefreshToken:
         """Создание refresh токена"""
-        return self._tokens_dao.create_refresh_token(user_id=user_id, refresh_token=refresh_token, user_agent=user_agent)  # noqa
+        return self._tokens_dao.create_refresh_token(
+            user_id=user_id, refresh_token=refresh_token, user_agent=user_agent
+        )
 
     def update_refresh_token(self, token: tables.RefreshToken, new_refresh_token: str) -> tables.RefreshToken:
         """Обновление refresh токена"""
@@ -157,7 +159,7 @@ class DBFacade(DBFacadeInterface):
         self._messages_dao.mark_message_as_read(message_id=message_id, user_id=user_id)
 
     def get_unread_message(self, message_id: str, user_id: int) -> tables.MessageReadStatus | None:
-        """Получение объекта информации о прочтении сообщения пользователем """
+        """Получение объекта информации о прочтении сообщения пользователем"""
         return self._messages_dao.get_unread_message(message_id=message_id, user_id=user_id)
 
     def create_info_message(self, text: str, user_id: int, chat_id: str) -> models.Message:
@@ -198,7 +200,9 @@ class DBFacade(DBFacadeInterface):
 
     def create_contact(self, owner_user_id: int, contact_user_id: int, name: str, surname: str) -> tables.Contact:
         """Создание контакта"""
-        return self._contacts_dao.create_contact(owner_user_id=owner_user_id, contact_user_id=contact_user_id, name=name, surname=surname)  # noqa
+        return self._contacts_dao.create_contact(
+            owner_user_id=owner_user_id, contact_user_id=contact_user_id, name=name, surname=surname
+        )
 
     def delete_contact(self, contact: tables.Contact) -> None:
         """Удаление контакта"""

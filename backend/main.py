@@ -25,9 +25,9 @@ from backend.services.ws import (
 from backend.services.ws_connection_manager import WSConnectionManager, WebsocketClient
 
 app = FastAPI(
-        title='API приложения для общения',
-        description='Приложение для общения',
-        version='0.1.0',
+    title='API приложения для общения',
+    description='Приложение для общения',
+    version='0.1.0',
 )
 
 app.add_middleware(
@@ -77,7 +77,7 @@ async def websocket_endpoint(websocket: WebSocket, login: str, db_facade: DBFaca
                 message_type=message_dict[MESSAGE_TYPE_KEY],
                 login=login,
                 in_data=message_dict[MESSAGE_DATA_KEY],
-                db_facade=db_facade
+                db_facade=db_facade,
             )
 
             await new_message.send_all()

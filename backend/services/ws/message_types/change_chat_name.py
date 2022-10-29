@@ -7,6 +7,7 @@ from backend.services.ws.base_messages import BaseChatWSMessage
 
 class ChangeChatNameMessage(BaseChatWSMessage):
     """Сообщение всем участникам чата об изменении названия чата"""
+
     message_type = MessageType.CHANGE_CHAT_NAME
     out_metrics_counter = ws_metrics.CHANGE_CHAT_NAME_OUT_WS_MESSAGE_COUNTER
 

@@ -12,31 +12,18 @@ class UsersDAO(BaseDAO):
     @model_result(models.UserWithPassword)
     def get_all_users(self) -> list[models.User]:
         """Получение всех записей таблицы пользователей"""
-        db_users = (
-            self.session
-            .query(tables.User)
-            .all()
-        )
+        db_users = self.session.query(tables.User).all()
         return db_users
 
     @model_result(models.Profile)
     def get_all_profiles(self) -> list[models.Profile]:
         """Получение всех записей таблицы профилей"""
-        db_profiles = (
-            self.session
-            .query(tables.Profile)
-            .all()
-        )
+        db_profiles = self.session.query(tables.Profile).all()
         return db_profiles
 
     def create_user(self, login: str, password_hash: str, name: str, surname: str) -> models.User:
         """Создание пользователя"""
-        new_user = tables.User(
-            login=login,
-            password_hash=password_hash,
-            name=name,
-            surname=surname
-        )
+        new_user = tables.User(login=login, password_hash=password_hash, name=name, surname=surname)
 
         self.session.add(new_user)
         self.session.commit()
@@ -55,23 +42,13 @@ class UsersDAO(BaseDAO):
 
     def find_user_by_login(self, login: str) -> tables.User | None:
         """Поиск пользователя по login"""
-        user = (
-            self.session
-            .query(tables.User)
-            .filter(tables.User.login == login)
-            .first()
-        )
+        user = self.session.query(tables.User).filter(tables.User.login == login).first()
 
         return user
 
     def find_user_by_id(self, user_id: int) -> tables.User | None:
         """Поиск пользователя по id"""
-        user = (
-            self.session
-            .query(tables.User)
-            .filter(tables.User.id == user_id)
-            .first()
-        )
+        user = self.session.query(tables.User).filter(tables.User.id == user_id).first()
 
         return user
 
@@ -101,8 +78,7 @@ class UsersDAO(BaseDAO):
     def get_profile_by_login(self, login: str) -> models.Profile:
         """Нахождение профайла пользователя по логину пользователя"""
         db_profile = (
-            self.session
-            .query(tables.Profile)
+            self.session.query(tables.Profile)
             .where(tables.Profile.user == tables.User.id)
             .where(tables.User.login == login)
             .first()
@@ -123,10 +99,7 @@ class UsersDAO(BaseDAO):
     def get_used_avatar_files(self) -> list[str]:
         """Получение названий используемых файлов аватаров"""
         avatar_files = (
-            self.session
-            .query(tables.Profile.avatar_file)
-            .where(tables.Profile.avatar_file is not None)
-            .all()
+            self.session.query(tables.Profile.avatar_file).where(tables.Profile.avatar_file is not None).all()
         )
 
         avatar_files = [row[0] for row in avatar_files]
@@ -134,10 +107,5 @@ class UsersDAO(BaseDAO):
         return avatar_files
 
     def _find_profile_by_user_id(self, user_id: int) -> tables.Profile:
-        db_profile = (
-            self.session
-                .query(tables.Profile)
-                .filter(tables.Profile.user == user_id)
-                .first()
-        )
+        db_profile = self.session.query(tables.Profile).filter(tables.Profile.user == user_id).first()
         return db_profile
