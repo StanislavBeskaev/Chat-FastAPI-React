@@ -18,12 +18,13 @@ router = APIRouter(
     status_code=status.HTTP_200_OK,
     response_model=dict[str, models.ChatMessages],
     responses=messages_responses.get_all_messages_responses,
+    summary="Сообщения по всем чатам"
 )
 def get_all_messages(
     user: models.User = Depends(get_current_user),
     message_service: MessageService = Depends(),
 ):
-    """Получение сообщений текущего пользователя"""
+    """Получение сообщений по всем чатам текущего пользователя"""
     messages_metrics.GET_ALL_MESSAGES_COUNTER.inc()
 
     return message_service.get_many(user=user)
@@ -34,6 +35,7 @@ def get_all_messages(
     status_code=status.HTTP_200_OK,
     response_model=models.ChatMessages,
     responses=messages_responses.get_chat_messages_responses,
+    summary="Сообщения чата"
 )
 def get_chat_messages(
     chat_id: str,
@@ -46,7 +48,12 @@ def get_chat_messages(
     return message_service.get_chat_messages(user=user, chat_id=chat_id)
 
 
-@router.put("/{message_id}", status_code=status.HTTP_200_OK, responses=messages_responses.change_message_text_responses)
+@router.put(
+    "/{message_id}",
+    status_code=status.HTTP_200_OK,
+    responses=messages_responses.change_message_text_responses,
+    summary="Изменение текста сообщения"
+)
 def change_message_text(
     message_id: str,
     change_message: models.ChangeMessageText,
@@ -61,7 +68,12 @@ def change_message_text(
     return {"message": "Текст сообщения изменён"}
 
 
-@router.delete("/{message_id}", status_code=status.HTTP_200_OK, responses=messages_responses.delete_message_responses)
+@router.delete(
+    "/{message_id}",
+    status_code=status.HTTP_200_OK,
+    responses=messages_responses.delete_message_responses,
+    summary="Удаление сообщения"
+)
 def delete_message(
     message_id: str, user: models.User = Depends(get_current_user), message_service: MessageService = Depends()
 ):

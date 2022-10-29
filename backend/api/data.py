@@ -13,9 +13,9 @@ router = APIRouter(
 )
 
 
-@router.get("/export", status_code=status.HTTP_200_OK)
+@router.get("/export", status_code=status.HTTP_200_OK, summary="Получение архива с данными базы")
 def export_db_data(user: models.User = Depends(get_current_user), db_data_service: DBDataService = Depends()):
-    """Получение выгрузки данных из базы"""
+    """Доступно только для админа"""
     logger.info("Запрос выгрузки данных из базы")
     if not UserService.is_admin(user=user):
         logger.warning("Пользователь запрашивающий выгрузку не админ, отказано")
@@ -29,11 +29,11 @@ def export_db_data(user: models.User = Depends(get_current_user), db_data_servic
     )
 
 
-@router.post("/import", status_code=status.HTTP_200_OK)
+@router.post("/import", status_code=status.HTTP_200_OK, summary="Замена данных в базе")
 def import_db_data(
     file: UploadFile, user: models.User = Depends(get_current_user), db_data_service: DBDataService = Depends()
 ):
-    """Импорт данных в базу"""
+    """Доступно только для админа"""
     logger.info("Запрос импорта данных в базу")
     if not UserService.is_admin(user=user):
         logger.warning("Пользователь импортирующий данные не админ, отказано")

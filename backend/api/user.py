@@ -21,6 +21,7 @@ router = APIRouter(
     response_model=models.User,
     status_code=status.HTTP_200_OK,
     responses=user_responses.change_user_data_responses,
+    summary="Изменение данных пользователя"
 )
 def change_user_data(
     user_data: models.UserUpdate,
@@ -34,7 +35,12 @@ def change_user_data(
     return updated_user
 
 
-@router.post("/avatar", status_code=status.HTTP_201_CREATED, responses=user_responses.upload_avatar_responses)
+@router.post(
+    "/avatar",
+    status_code=status.HTTP_201_CREATED,
+    responses=user_responses.upload_avatar_responses,
+    summary="Загрузка аватарки"
+)
 def upload_avatar(
     file: UploadFile,
     background_tasks: BackgroundTasks,
@@ -52,7 +58,10 @@ def upload_avatar(
 
 
 @router.get(
-    "/avatar_file/{login}", status_code=status.HTTP_200_OK, responses=user_responses.get_login_avatar_file_responses
+    "/avatar_file/{login}",
+    status_code=status.HTTP_200_OK,
+    responses=user_responses.get_login_avatar_file_responses,
+    summary="Файл аватара пользователя"
 )
 def get_login_avatar_file(login: str, user_service: UserService = Depends()):
     """Получение файла аватара пользователя по логину"""
@@ -66,6 +75,7 @@ def get_login_avatar_file(login: str, user_service: UserService = Depends()):
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(get_current_user)],
     responses=user_responses.get_login_avatar_filename_responses,
+    summary="Название файла аватара пользователя"
 )
 def get_login_avatar_filename(login: str, user_service: UserService = Depends()):
     """Получение названия файла аватара пользователя по логину"""
@@ -81,6 +91,7 @@ def get_login_avatar_filename(login: str, user_service: UserService = Depends())
     dependencies=[Depends(get_current_user)],
     response_model=models.User,
     responses=user_responses.get_user_info_responses,
+    summary="Информация о пользователе"
 )
 def get_user_info(login: str, user_service: UserService = Depends()):
     """Получение информации о пользователе по логину"""

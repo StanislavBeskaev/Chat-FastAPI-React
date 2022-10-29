@@ -13,7 +13,12 @@ router = APIRouter(
 )
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, responses=chats_responses.create_new_chat_responses)
+@router.post(
+    "/",
+    status_code=status.HTTP_201_CREATED,
+    responses=chats_responses.create_new_chat_responses,
+    summary="Создание чата"
+)
 def create_new_chat(
     new_chat_data: models.ChatCreate,
     user: models.User = Depends(get_current_user),
@@ -27,7 +32,12 @@ def create_new_chat(
     return {"message": f"Чат {new_chat_data.chat_name} успешно создан"}
 
 
-@router.put("/{chat_id}", status_code=status.HTTP_200_OK, responses=chats_responses.change_chat_name_responses)
+@router.put(
+    "/{chat_id}",
+    status_code=status.HTTP_200_OK,
+    responses=chats_responses.change_chat_name_responses,
+    summary="Изменение названия чата"
+)
 def change_chat_name(
     chat_id: str,
     chat_update_data: models.ChatUpdateName,
@@ -42,7 +52,12 @@ def change_chat_name(
     return {"message": "Название чата успешно изменено"}
 
 
-@router.get("/try_leave/{chat_id}", status_code=status.HTTP_200_OK, responses=chats_responses.try_leave_chat_responses)
+@router.get(
+    "/try_leave/{chat_id}",
+    status_code=status.HTTP_200_OK,
+    responses=chats_responses.try_leave_chat_responses,
+    summary="Попытка выхода из чата"
+)
 def try_leave_chat(chat_id: str, user: models.User = Depends(get_current_user), chat_service: ChatService = Depends()):
     """Попытка выйти из чата, получение предупредительного сообщения"""
     chats_metrics.TRY_LEAVE_CHAT_COUNTER.inc()
@@ -52,9 +67,17 @@ def try_leave_chat(chat_id: str, user: models.User = Depends(get_current_user), 
     return {"message": warning_message}
 
 
-@router.post("/leave/{chat_id}", status_code=status.HTTP_200_OK, responses=chats_responses.leave_chat_responses)
+@router.post(
+    "/leave/{chat_id}",
+    status_code=status.HTTP_200_OK,
+    responses=chats_responses.leave_chat_responses,
+    summary="Выход из чата"
+)
 def leave_chat(chat_id: str, user: models.User = Depends(get_current_user), chat_service: ChatService = Depends()):
-    """Выход пользователя из чата"""
+    """
+    Выход пользователя из чата.
+    Если пользователь является создателем чата, то чат удаляется
+    """
     chats_metrics.LEAVE_CHAT_COUNTER.inc()
 
     chat_service.leave_chat(chat_id=chat_id, user=user)

@@ -18,6 +18,7 @@ router = APIRouter(
     status_code=status.HTTP_200_OK,
     response_model=list[models.ChatMemberWithOnlineStatus],
     responses=chat_members_responses.get_chat_members_responses,
+    summary="Участники чата"
 )
 def get_chat_members(
     chat_id: str,
@@ -31,7 +32,10 @@ def get_chat_members(
 
 
 @router.post(
-    "/{chat_id}", status_code=status.HTTP_201_CREATED, responses=chat_members_responses.add_chat_member_responses
+    "/{chat_id}",
+    status_code=status.HTTP_201_CREATED,
+    responses=chat_members_responses.add_chat_member_responses,
+    summary="Добавление пользователя к чату"
 )
 def add_chat_member(
     chat_id: str,
@@ -39,7 +43,7 @@ def add_chat_member(
     chat_members_service: ChatMembersService = Depends(),
     current_user: models.User = Depends(get_current_user),
 ):
-    """Добавление участника к чату"""
+    """Для добавления необходимо быть в чате"""
     chat_members_metrics.ADD_CHAT_MEMBER_COUNTER.inc()
 
     chat_members_service.add_login_to_chat(action_user=current_user, login=chat_member.login, chat_id=chat_id)
@@ -48,7 +52,10 @@ def add_chat_member(
 
 
 @router.delete(
-    "/{chat_id}", status_code=status.HTTP_200_OK, responses=chat_members_responses.delete_chat_member_responses
+    "/{chat_id}",
+    status_code=status.HTTP_200_OK,
+    responses=chat_members_responses.delete_chat_member_responses,
+    summary="Удаление пользователя из чата"
 )
 def delete_chat_member(
     chat_id: str,
@@ -56,7 +63,7 @@ def delete_chat_member(
     chat_members_service: ChatMembersService = Depends(),
     current_user: models.User = Depends(get_current_user),
 ):
-    """Удаление участника из чата"""
+    """Удалять может только создатель чата"""
     chat_members_metrics.DELETE_CHAT_MEMBERS_COUNTER.inc()
 
     chat_members_service.delete_login_from_chat(action_user=current_user, login=chat_member.login, chat_id=chat_id)
