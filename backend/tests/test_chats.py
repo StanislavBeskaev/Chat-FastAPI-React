@@ -1,4 +1,6 @@
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
+import pytest
 
 from backend.db.mock.facade import MockDBFacade
 from backend.services.ws import MessageType
@@ -202,16 +204,76 @@ class TestChats(BaseTest):
         assert response.status_code == 403
         assert response.json() == self.exception_response("Нельзя покинуть главный чат")
 
-    def test_leave_chat_success(self, client: TestClient, db_facade: MockDBFacade):
+    def test_leave_chat_success_not_creator(self, client: TestClient, db_facade: MockDBFacade):
+        leaved_chat_id = test_data.TEST_CHAT_ID
         not_creator = test_data.users[1]
         tokens = self.login(client=client, username=not_creator.login, password="password1")
         response = client.post(
-            url=f"{self.chats_url}leave/{test_data.TEST_CHAT_ID}",
+            url=f"{self.chats_url}leave/{leaved_chat_id}",
             headers=self.get_authorization_headers(access_token=tokens.access_token)
         )
 
         assert response.status_code == 200
         assert response.json() == {"message": "Вы вышли из чата"}
 
-        test_chat_members = db_facade.get_chat_members(chat_id=test_data.TEST_CHAT_ID)
+        test_chat_members = db_facade.get_chat_members(chat_id=leaved_chat_id)
+        assert test_chat_members is not None
+        assert len(test_chat_members) > 0
         assert not_creator.login not in [member.login for member in test_chat_members]
+
+    def test_leave_chat_success_creator(self, client: TestClient, db_facade: MockDBFacade):
+        leaved_chat_id = test_data.TEST_CHAT_ID
+        response = client.post(
+            url=f"{self.chats_url}leave/{leaved_chat_id}",
+            headers=self.get_authorization_headers()
+        )
+
+        assert response.status_code == 200
+        assert response.json() == {"message": "Вы вышли из чата"}
+
+        leaved_chat_messages = db_facade.get_chat_messages(chat_id=leaved_chat_id)
+        assert len(leaved_chat_messages) == 0
+
+        leaved_chat_members = db_facade.get_chat_members(chat_id=leaved_chat_id)
+        assert len(leaved_chat_members) == 0
+
+        with pytest.raises(HTTPException) as exc_info:
+            db_facade.get_chat_by_id(chat_id=leaved_chat_id)
+        assert 1 == 1
+        assert exc_info.value.status_code == 404
+        assert exc_info.value.detail == f"Чата с id {leaved_chat_id} не существует"
+
+    def test_leave_chat_not_auth(self, client: TestClient):
+        response = client.post(
+            url=f"{self.chats_url}leave/{test_data.TEST_CHAT_ID}"
+        )
+        assert response.status_code == 401
+        assert response.json() == self.NOT_AUTH_RESPONSE
+
+    def test_leave_chat_not_exist_chat(self, client: TestClient):
+        bad_chat_id = "bad_chat_id"
+        response = client.post(
+            url=f"{self.chats_url}leave/{bad_chat_id}",
+            headers=self.get_authorization_headers()
+        )
+        assert response.status_code == 404
+        assert response.json() == self.exception_response(f"Чата с id {bad_chat_id} не существует")
+
+    def test_leave_chat_not_chat_member(self, client: TestClient):
+        tokens = self.login(client=client, username="user2", password="password2")
+        response = client.post(
+            url=f"{self.chats_url}leave/{test_data.TEST_CHAT_ID}",
+            headers=self.get_authorization_headers(access_token=tokens.access_token)
+        )
+
+        assert response.status_code == 400
+        assert response.json() == self.exception_response("Вы не участник чата")
+
+    def test_leave_main(self, client: TestClient, settings: Settings):
+        response = client.post(
+            url=f"{self.chats_url}leave/{settings.main_chat_id}",
+            headers=self.get_authorization_headers()
+        )
+
+        assert response.status_code == 403
+        assert response.json() == self.exception_response("Нельзя покинуть главный чат")

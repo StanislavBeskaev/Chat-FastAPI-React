@@ -57,3 +57,7 @@ class MockChatsDAO:
         chat.name = new_name
 
         return chat
+
+    def delete_chat(self, chat_id: str) -> None:
+        """Удаление чата"""
+        self.chats = [chat for chat in self.chats if chat.id != chat_id]

@@ -104,3 +104,39 @@ try_leave_chat_responses = DocResponses.create_instance_with_not_auth_response(
         )
     ]
 ).to_openapi()
+
+
+leave_chat_responses = DocResponses.create_instance_with_not_auth_response(
+    responses=[
+        StatusCodeDocResponseExample(
+            status_code=status.HTTP_200_OK,
+            response_example=DocResponseExample(
+                description="Выход из чата выполнен",
+                example={
+                    "message": "Вы вышли из чата"
+                }
+            )
+        ),
+        StatusCodeDocResponseExample(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            response_example=DocResponseExample(
+                description="Вы не участник чата",
+                example={"detail": "Вы не участник чата"}
+            )
+        ),
+        StatusCodeDocResponseExample(
+            status_code=status.HTTP_403_FORBIDDEN,
+            response_example=DocResponseExample(
+                description="Нельзя покинуть главный чат",
+                example={"detail": "Нельзя покинуть главный чат"}
+            )
+        ),
+        StatusCodeDocResponseExample(
+            status_code=status.HTTP_404_NOT_FOUND,
+            response_example=DocResponseExample(
+                description="Чат не найден",
+                example=_chat_not_found_example
+            )
+        )
+    ]
+).to_openapi()

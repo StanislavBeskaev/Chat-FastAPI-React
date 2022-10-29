@@ -40,3 +40,7 @@ class MockChatMembersDAO:
     def delete_chat_member(self, chat_member: tables.ChatMember) -> None:
         """Удаление участника из чата"""
         self.chat_members.remove(chat_member)
+
+    def delete_all_members_from_chat(self, chat_id: str) -> None:
+        """Удаление всех участников чата"""
+        self.chat_members = [chat_member for chat_member in self.chat_members if chat_member.chat_id != chat_id]

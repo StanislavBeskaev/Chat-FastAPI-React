@@ -212,3 +212,19 @@ class MockMessagesDAO:
 
         logger.info(f"Удалено сообщение '{message.text}' c id {message.id},"
                     f"чата {message.chat_id} пользователя {message.user_id}")
+
+    def get_chat_messages(self, chat_id: str) -> list[tables.Message]:
+        """Получение всех сообщений чата"""
+        chat_messages = [message for message in self.messages if message.chat_id == chat_id]
+        return chat_messages
+
+    def delete_chat_messages(self, chat_id: str) -> None:
+        """Удаление всех сообщений чата"""
+        chat_messages = self.get_chat_messages(chat_id=chat_id)
+        self.messages_read_status = [
+            message_read_status for message_read_status in self.messages_read_status
+            if message_read_status.message_id not in chat_messages
+        ]
+        self.messages = [
+            message for message in self.messages if message.chat_id != chat_id
+        ]

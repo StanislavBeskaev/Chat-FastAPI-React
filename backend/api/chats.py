@@ -73,12 +73,11 @@ def try_leave_chat(
     return {"message": warning_message}
 
 
-# TODO тесты
-# TODO документация
 # TODO Grafana
 @router.post(
     "/leave/{chat_id}",
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    responses=chats_responses.leave_chat_responses
 )
 def leave_chat(
         chat_id: str,
@@ -86,6 +85,7 @@ def leave_chat(
         chat_service: ChatService = Depends()
 ):
     """Выход пользователя из чата"""
+    # TODO настроить Grafana под новую метрику
     chats_metrics.LEAVE_CHAT_COUNTER.inc()
 
     chat_service.leave_chat(chat_id=chat_id, user=user)

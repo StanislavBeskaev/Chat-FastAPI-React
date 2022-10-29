@@ -116,10 +116,11 @@ class MockDBFacade(DBFacadeInterface):
         """Изменение названия чата"""
         return self.chats_dao.change_chat_name(chat_id=chat_id, new_name=new_name)
 
-    # TODO реализовать
     def delete_chat(self, chat_id) -> None:
         """Удаление чата"""
-        pass
+        self.messages_dao.delete_chat_messages(chat_id=chat_id)
+        self.chat_members_dao.delete_all_members_from_chat(chat_id=chat_id)
+        self.chats_dao.delete_chat(chat_id=chat_id)
 
     def get_all_chat_members(self) -> list[models.ChatMemberFull]:
         """Получение всех записей таблицы участников чатов"""
@@ -199,6 +200,10 @@ class MockDBFacade(DBFacadeInterface):
     def delete_message(self, message_id: str) -> None:
         """Удаление сообщения из базы"""
         self.messages_dao.delete_message(message_id=message_id)
+
+    def get_chat_messages(self, chat_id: str) -> list[tables.Message]:
+        """Получение сообщений чата"""
+        return self.messages_dao.get_chat_messages(chat_id=chat_id)
 
     def get_all_contacts(self) -> list[models.ContactFull]:
         """Получение всех записей таблицы контактов из базы"""
