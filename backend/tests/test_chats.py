@@ -131,10 +131,9 @@ class TestChats(BaseTest):
 
     def test_change_chat_name_not_creator(self, client: TestClient):
         not_creator = test_data.users[1]
-        tokens = self.login(client=client, username=not_creator.login, password="password1")
         response = client.put(
             url=f"{self.chats_url}{test_data.TEST_CHAT_ID}",
-            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            headers=self.get_authorization_headers(username=not_creator.login, password=not_creator.password_hash),
             json={"chat_name": test_data.TEST_CHAT_NAME},
         )
 
@@ -143,10 +142,9 @@ class TestChats(BaseTest):
 
     def test_success_try_leave_chat_not_creator(self, client: TestClient):
         not_creator = test_data.users[1]
-        tokens = self.login(client=client, username=not_creator.login, password="password1")
         response = client.get(
             url=f"{self.chats_url}try_leave/{test_data.TEST_CHAT_ID}",
-            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            headers=self.get_authorization_headers(username=not_creator.login, password=not_creator.password_hash),
         )
 
         assert response.status_code == 200
@@ -175,10 +173,9 @@ class TestChats(BaseTest):
         assert response.json() == self.NOT_AUTH_RESPONSE
 
     def test_try_leave_chat_not_chat_member(self, client: TestClient):
-        tokens = self.login(client=client, username="user2", password="password2")
         response = client.get(
             url=f"{self.chats_url}try_leave/{test_data.TEST_CHAT_ID}",
-            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            headers=self.get_authorization_headers(username="user2", password="user2"),
         )
 
         assert response.status_code == 400
@@ -195,10 +192,9 @@ class TestChats(BaseTest):
     def test_leave_chat_success_not_creator(self, client: TestClient, db_facade: MockDBFacade):
         leaved_chat_id = test_data.TEST_CHAT_ID
         not_creator = test_data.users[1]
-        tokens = self.login(client=client, username=not_creator.login, password="password1")
         response = client.post(
             url=f"{self.chats_url}leave/{leaved_chat_id}",
-            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            headers=self.get_authorization_headers(username=not_creator.login, password=not_creator.password_hash),
         )
 
         assert response.status_code == 200
@@ -240,10 +236,9 @@ class TestChats(BaseTest):
         assert response.json() == self.exception_response(f"Чата с id {bad_chat_id} не существует")
 
     def test_leave_chat_not_chat_member(self, client: TestClient):
-        tokens = self.login(client=client, username="user2", password="password2")
         response = client.post(
             url=f"{self.chats_url}leave/{test_data.TEST_CHAT_ID}",
-            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            headers=self.get_authorization_headers(username="user2", password="user2"),
         )
 
         assert response.status_code == 400

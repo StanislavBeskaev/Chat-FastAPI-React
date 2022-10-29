@@ -81,11 +81,10 @@ class TestChatMembers(BaseTest):
         assert response.json() == self.exception_response(f"Чата с id {not_exist_chat_id} не существует")
 
     def test_add_chat_member_by_not_chat_member(self, client: TestClient):
-        tokens = self.login(client=client, username="user2", password="password2")
         candidate = "new"
         response = client.post(
             url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}",
-            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            headers=self.get_authorization_headers(username="user2", password="user2"),
             json={"login": candidate},
         )
         assert response.status_code == 403
@@ -193,10 +192,9 @@ class TestChatMembers(BaseTest):
         assert response.json() == self.exception_response(f"Пользователя с логином {not_exist_user} не существует")
 
     def test_delete_chat_member_by_not_chat_creator(self, client):
-        tokens = self.login(client=client, username="new", password="password2")
         response = client.delete(
             url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}",
-            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            headers=self.get_authorization_headers(username="new", password="new"),
             json={"login": "new"},
         )
         assert response.status_code == 403
@@ -240,10 +238,9 @@ class TestChatMembers(BaseTest):
         assert response.json() == self.exception_response(f"Чата с id {not_exist_chat_chat_id} не существует")
 
     def test_get_chat_members_by_not_chat_member(self, client: TestClient):
-        tokens = self.login(client=client, username="user2", password="password2")
         response = client.get(
             url=f"{self.chat_members_url}{test_data.TEST_CHAT_ID}",
-            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            headers=self.get_authorization_headers(username="user2", password="user2"),
         )
         assert response.status_code == 403
         assert response.json() == self.exception_response(f"Вы не участник чата {test_data.TEST_CHAT_ID}")

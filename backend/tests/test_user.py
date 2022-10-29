@@ -40,7 +40,8 @@ class TestUser(BaseTest):
 
     def test_get_user_info_wrong_access_token(self, client: TestClient):
         response = client.get(
-            f"{self.user_url}/info/user2", headers=self.get_authorization_headers(access_token="bad.access.token")
+            f"{self.user_url}/info/user2",
+            headers=self.get_authorization_headers(username="user1", password="bad_password")
         )
         assert response.status_code == 401
         assert response.json() == self.BAD_TOKEN_RESPONSE
@@ -69,7 +70,7 @@ class TestUser(BaseTest):
     def test_change_user_data_wrong_access_token(self, client: TestClient):
         response = client.put(
             f"{self.user_url}/change",
-            headers=self.get_authorization_headers(access_token=self.BAD_PAYLOAD_ACCESS_TOKEN),
+            headers=self.get_authorization_headers(**self.BAD_CREDENTIALS),
             json={"name": "new_name", "surname": "new_surname"},
         )
         assert response.status_code == 401
@@ -94,7 +95,7 @@ class TestUser(BaseTest):
         with open(os.path.join(TEST_FILES_FOLDER, "avatar_1.jpeg"), mode="rb") as file:
             response = client.post(
                 f"{self.user_url}/avatar",
-                headers=self.get_authorization_headers(access_token="bad.access.token"),
+                headers=self.get_authorization_headers(**self.BAD_CREDENTIALS),
                 files={"file": file},
             )
         assert response.status_code == 401

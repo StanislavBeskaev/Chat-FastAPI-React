@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from backend import tables
-from backend.services.auth import AuthService
 
 # Данные для тестов
 TEST_CHAT_ID = "TEST"
@@ -25,14 +24,14 @@ refresh_tokens = [
     tables.RefreshToken(id=2, user=2, refresh_token="123", user_agent="321"),
 ]
 users = [
-    tables.User(id=1, login="user", name="user", surname="surname", password_hash=AuthService.hash_password("password")),  # noqa
-    tables.User(id=2, login="user1", name="user1", surname="surname1", password_hash=AuthService.hash_password("password1")),  # noqa
-    tables.User(id=3, login="new", name="new", surname="", password_hash=AuthService.hash_password("password2")),
-    tables.User(id=4, login="user2", name="user2", surname="surname2", password_hash=AuthService.hash_password("password2")),  # noqa
-    tables.User(id=5, login="some", name="some", surname="", password_hash=AuthService.hash_password("password3")),
-    tables.User(id=6, login="user3", name="user3", surname="surname3", password_hash=AuthService.hash_password("password3")),  # noqa
-    tables.User(id=7, login="user4", name="user4", surname="surname4", password_hash=AuthService.hash_password("password4")),  # noqa
-    tables.User(id=8, login="user5", name="user5", surname="surname5", password_hash=AuthService.hash_password("password5")),  # noqa
+    tables.User(id=1, login="user", name="user", surname="surname", password_hash="user"),
+    tables.User(id=2, login="user1", name="user1", surname="surname1", password_hash="user1"),
+    tables.User(id=3, login="new", name="new", surname="", password_hash="new"),
+    tables.User(id=4, login="user2", name="user2", surname="surname2", password_hash="user2"),
+    tables.User(id=5, login="some", name="some", surname="", password_hash="some"),
+    tables.User(id=6, login="user3", name="user3", surname="surname3", password_hash="user3"),
+    tables.User(id=7, login="user4", name="user4", surname="surname4", password_hash="user4"),
+    tables.User(id=8, login="user5", name="user5", surname="surname5", password_hash="user5"),
 ]
 chat_members = [
     tables.ChatMember(id=1, user_id=1, chat_id=TEST_CHAT_ID),

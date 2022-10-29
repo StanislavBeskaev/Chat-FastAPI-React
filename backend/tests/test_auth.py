@@ -119,7 +119,7 @@ class TestAuth(BaseTest):
         assert response.json() == self.exception_response("Не валидный refresh_token")
 
     def test_refresh_bad_miss_refresh_token_in_bd(self, client: TestClient, db_facade: MockDBFacade):
-        response = client.post(f"{self.auth_url}/login", data={"username": "user", "password": "password"})
+        response = client.post(f"{self.auth_url}/login", data={"username": "user", "password": "user"})
         assert response.status_code == 200
         tokens = models.Tokens.parse_obj(response.json())
 
@@ -149,7 +149,7 @@ class TestAuth(BaseTest):
         assert refresh_response.json() == self.exception_response("Не удалось обновить токены")
 
     def test_success_logout(self, client: TestClient):
-        login_response = client.post(f"{self.auth_url}/login", data={"username": "user", "password": "password"})
+        login_response = client.post(f"{self.auth_url}/login", data={"username": "user", "password": "user"})
         assert login_response.status_code == 200
         tokens = models.Tokens.parse_obj(login_response.json())
 

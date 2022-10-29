@@ -26,7 +26,7 @@ class TestContact(BaseTest):
 
     def test_add_wrong_token(self, client: TestClient):
         response = client.post(
-            self.contacts_url, headers=self.get_authorization_headers(access_token="cool_token"), json={"login": "user"}
+            self.contacts_url, headers=self.get_authorization_headers(**self.BAD_CREDENTIALS), json={"login": "user"}
         )
         assert response.status_code == 401
         assert response.json() == self.BAD_TOKEN_RESPONSE

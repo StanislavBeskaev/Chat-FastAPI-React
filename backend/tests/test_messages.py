@@ -77,13 +77,12 @@ class TestMessages(BaseTest):
         assert response.json() == self.exception_response(f"Сообщение с id {bad_message_id} не найдено")
 
     def test_change_message_text_not_owner(self, client: TestClient):
-        tokens = self.login(client=client, username="user1", password="password1")
         change_message_id = "1"
         new_message_text = "Новый текст"
 
         response = client.put(
             url=f"{self.messages_url}{change_message_id}",
-            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            headers=self.get_authorization_headers(username="user1", password="user1"),
             json={"text": new_message_text},
         )
         assert response.status_code == 403
@@ -145,12 +144,11 @@ class TestMessages(BaseTest):
         assert response.json() == self.exception_response(f"Сообщение с id {bad_message_id} не найдено")
 
     def test_delete_message_not_owner(self, client: TestClient):
-        tokens = self.login(client=client, username="user1", password="password1")
         delete_message_id = "1"
 
         response = client.delete(
             url=f"{self.messages_url}{delete_message_id}",
-            headers=self.get_authorization_headers(access_token=tokens.access_token),
+            headers=self.get_authorization_headers(username="user1", password="user1"),
         )
         assert response.status_code == 403
         assert response.json() == self.exception_response("Только автор может удалять сообщение!")
