@@ -22,6 +22,7 @@ router = APIRouter(
     status_code=status.HTTP_200_OK,
     response_model=list[models.Contact],
     responses=contacts_responses.get_contacts_responses,
+    summary="Получение контактов"
 )
 def get_contacts(user: models.User = Depends(get_current_user), contact_service: ContactService = Depends()):
     """Получение контактов текущего пользователя"""
@@ -35,6 +36,7 @@ def get_contacts(user: models.User = Depends(get_current_user), contact_service:
     status_code=status.HTTP_201_CREATED,
     response_model=models.Contact,
     responses=contacts_responses.create_contact_responses,
+    summary="Добавление контакта"
 )
 def create_contact(
     new_contact: models.ContactCreate,
@@ -47,7 +49,12 @@ def create_contact(
     return contact_service.create(user=user, contact_login=new_contact.login)
 
 
-@router.delete("/", status_code=status.HTTP_200_OK, responses=contacts_responses.delete_contact_responses)
+@router.delete(
+    "/",
+    status_code=status.HTTP_200_OK,
+    responses=contacts_responses.delete_contact_responses,
+    summary="Удаление контакта"
+)
 def delete_contact(
     contact_to_delete: models.ContactDelete,
     user: models.User = Depends(get_current_user),
@@ -65,6 +72,7 @@ def delete_contact(
     status_code=status.HTTP_200_OK,
     response_model=models.Contact,
     responses=contacts_responses.get_contact_info_responses,
+    summary="Информация о контакте"
 )
 def get_contact_info(
     login: str, user: models.User = Depends(get_current_user), contact_service: ContactService = Depends()
@@ -75,7 +83,12 @@ def get_contact_info(
     return contact_service.get_by_login(user=user, contact_login=login)
 
 
-@router.put("/", status_code=status.HTTP_200_OK, responses=contacts_responses.change_contact_responses)
+@router.put(
+    "/",
+    status_code=status.HTTP_200_OK,
+    responses=contacts_responses.change_contact_responses,
+    summary="Изменение контакта"
+)
 def change_contact(
     contact_data: models.ContactChange,
     user: models.User = Depends(get_current_user),

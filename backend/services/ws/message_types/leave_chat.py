@@ -5,7 +5,6 @@ from backend.services.ws.constants import MessageType
 from backend.services.ws.base_messages import BaseSingleUserWSMessage
 
 
-# TODO обновить графики в Grafana
 class LeaveChatMessage(BaseSingleUserWSMessage):
     """Сообщение о выходе из чата"""
 

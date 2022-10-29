@@ -5,7 +5,6 @@ from backend.services.ws.constants import MessageType
 from backend.services.ws.base_messages import BaseChatWSMessage
 
 
-# TODO обновить графики в Grafana
 class DeleteChatMessage(BaseChatWSMessage):
     """Сообщение об удалении чата"""
 

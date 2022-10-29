@@ -21,6 +21,7 @@ REFRESH_TOKEN_COOKIE_KEY = "refreshToken"
     response_model=models.Tokens,
     status_code=status.HTTP_201_CREATED,
     responses=auth_responses.registration_responses,
+    summary="Регистрация"
 )
 def registration(
     request: Request,
@@ -40,7 +41,11 @@ def registration(
 
 
 @router.post(
-    "/login", response_model=models.Tokens, status_code=status.HTTP_200_OK, responses=auth_responses.login_responses
+    "/login",
+    response_model=models.Tokens,
+    status_code=status.HTTP_200_OK,
+    responses=auth_responses.login_responses,
+    summary="Вход в систему"
 )
 def login(
     request: Request,
@@ -62,7 +67,11 @@ def login(
 
 
 @router.get(
-    "/refresh", response_model=models.Tokens, status_code=status.HTTP_200_OK, responses=auth_responses.refresh_responses
+    "/refresh",
+    response_model=models.Tokens,
+    status_code=status.HTTP_200_OK,
+    responses=auth_responses.refresh_responses,
+    summary="Обновление токенов доступа"
 )
 def refresh_tokens(
     request: Request,
@@ -81,7 +90,12 @@ def refresh_tokens(
     return tokens
 
 
-@router.post("/logout", status_code=status.HTTP_200_OK, responses=auth_responses.logout_responses)
+@router.post(
+    "/logout",
+    status_code=status.HTTP_200_OK,
+    responses=auth_responses.logout_responses,
+    summary="Выход из системы"
+)
 def logout(
     request: Request,
     response: Response,
