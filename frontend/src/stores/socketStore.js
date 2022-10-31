@@ -132,49 +132,42 @@ class SocketStore {
       const msg = JSON.parse(e.data)
       logMessages('SocketStore, сообщение из ws: ', msg)
 
-      // TODO маппинг
-      switch (msg.type) {
-        case 'TEXT':
-          messagesStore.addMessage(msg.data, this.sendReadMessage.bind(this))
-          break
-        case 'STATUS':
-          await this._handleStatusMessage(msg.data)
-          break
-        case 'START_TYPING':
-          messagesStore.addTypingLogin(msg.data.chat_id, msg.data.login)
-          break
-        case 'STOP_TYPING':
-          messagesStore.deleteTypingLogin(msg.data.chat_id, msg.data.login)
-          break
-        case 'NEW_CHAT':
-          messagesStore.addNewChat(msg.data)
-          this._showAddNewChatNotification(msg.data)
-          break
-        case 'CHANGE_CHAT_NAME':
-          this._handleChangeChatNameMessage(msg.data)
-          break
-        case 'ADD_TO_CHAT':
-          await this._handleAddToChatMessage(msg.data)
-          break
-        case 'DELETE_FROM_CHAT':
-          await this._handleDeleteFromChatMessage(msg.data)
-          break
-        case 'CHANGE_MESSAGE_TEXT':
-          messagesStore.changeMessageText(msg.data)
-          break
-        case 'DELETE_MESSAGE':
-          messagesStore.deleteMessage(msg.data)
-          break
-        case 'LEAVE_CHAT':
-          this._handleLeaveFromChatMessage(msg.data)
-          break
-        case 'DELETE_CHAT':
-          this._handleDeleteChatMessage(msg.data)
-          break
-        default:
-          logMessages('SocketStore, неожиданное сообщение из ws:', msg)
+      const messageHandlers = {
+        "TEXT": this._handleTextMessage.bind(this),
+        "STATUS": this._handleStatusMessage.bind(this),
+        "START_TYPING": this._handleStartTypingMessage.bind(this),
+        "STOP_TYPING": this._handleStopTypingMessage.bind(this),
+        "NEW_CHAT": this._handleNewChatMessage.bind(this),
+        "CHANGE_CHAT_NAME": this._handleChangeChatNameMessage.bind(this),
+        "ADD_TO_CHAT": this._handleAddToChatMessage.bind(this),
+        "DELETE_FROM_CHAT": this._handleDeleteFromChatMessage.bind(this),
+        "CHANGE_MESSAGE_TEXT": this._handleChangeMessageTextMessage.bind(this),
+        "DELETE_MESSAGE": this._handleDeleteMessageMessage.bind(this),
+        "LEAVE_CHAT": this._handleLeaveFromChatMessage.bind(this),
+        "DELETE_CHAT": this._handleDeleteChatMessage.bind(this),
+        DEFAULT: async (data) => {logMessages('SocketStore, неожиданное сообщение из ws:', msg)}
       }
+
+      const handler = messageHandlers[msg.type] || messageHandlers.DEFAULT
+      await handler(msg.data)
     }
+  }
+
+  async _handleTextMessage(messageData) {
+    messagesStore.addMessage(messageData, this.sendReadMessage.bind(this))
+  }
+
+  async _handleStartTypingMessage(messageData) {
+    messagesStore.addTypingLogin(messageData.chat_id, messageData.login)
+  }
+
+  async _handleStopTypingMessage(messageData) {
+    messagesStore.deleteTypingLogin(messageData.chat_id, messageData.login)
+  }
+
+  async _handleNewChatMessage(messageData) {
+    messagesStore.addNewChat(messageData)
+    this._showAddNewChatNotification(messageData)
   }
 
   async _handleStatusMessage(messageData) {
@@ -195,7 +188,7 @@ class SocketStore {
     }
   }
 
-  _handleChangeChatNameMessage(messageData) {
+  async _handleChangeChatNameMessage(messageData) {
     const chatId = messageData["chat_id"]
     const previousChatName = messagesStore.getChatNameById(chatId)
     messagesStore.changeChatName(messageData)
@@ -231,7 +224,15 @@ class SocketStore {
     }
   }
 
-  _handleLeaveFromChatMessage(messageData) {
+  async _handleChangeMessageTextMessage(messageData) {
+    messagesStore.changeMessageText(messageData)
+  }
+
+  async _handleDeleteMessageMessage(messageData) {
+    messagesStore.deleteMessage(messageData)
+  }
+
+  async _handleLeaveFromChatMessage(messageData) {
     const {chat_id: messageChatId} = messageData
     if (messageChatId === messagesStore.selectedChatId) this.sendStopTyping(messageChatId)
     if (chatMembersModalStore.show && messageChatId === chatMembersModalStore.chatId) chatMembersModalStore.close()
@@ -239,7 +240,7 @@ class SocketStore {
     this._showLeaveFromChatNotification(messageData)
   }
 
-  _handleDeleteChatMessage(messageData) {
+  async _handleDeleteChatMessage(messageData) {
     const {chat_id: messageChatId} = messageData
     if (messageChatId === messagesStore.selectedChatId) this.sendStopTyping(messageChatId)
     if (chatMembersModalStore.show && messageChatId === chatMembersModalStore.chatId) chatMembersModalStore.close()
