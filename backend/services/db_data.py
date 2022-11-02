@@ -16,6 +16,7 @@ from backend import tables
 from backend.db.facade import DBFacade
 from backend.db_config import get_session
 from backend.services import BaseService
+from backend.services.files import FilesService
 from backend.settings import Settings, get_settings
 from backend.tables import Base
 
@@ -23,6 +24,7 @@ from backend.tables import Base
 TMP_FOLDER = "tmp"
 EXPORT_FOLDER = "export"
 IMPORT_FOLDER = "import"
+FILES_FOLDER = "files"
 
 
 @dataclass
@@ -54,6 +56,7 @@ class DBDataService(BaseService):
         super().__init__(db_facade=DBFacade(session=session))
         self._session = session
         self._settings = settings
+        self._file_service = FilesService(db_facade=self._db_facade)
         self._db_data_sources = [
             DBDataSource(
                 export_method=self._db_facade.get_all_users,
@@ -129,6 +132,7 @@ class DBDataService(BaseService):
         self._insert_import_db_data()
         # Если поменяется набор таблиц, наименования таблиц или последовательностей, то адаптировать
         self._set_correct_table_sequences_value()
+        self._replace_files()
 
     def _create_export_folder(self) -> None:
         export_folder_path = self._get_export_folder_path()
@@ -160,6 +164,12 @@ class DBDataService(BaseService):
                 export_source_file_path = self._export_db_data_source(db_data_source=export_source)
                 zip_file.write(filename=export_source_file_path, arcname=os.path.basename(export_source_file_path))
                 logger.info(f"Файл {export_source_file_path} записан в выгружаемый архив")
+
+            for file_name in self._file_service.get_all_file_names():
+                file_path = FilesService.get_file_path(file_name)
+                path_in_archive = os.path.join(FILES_FOLDER, os.path.basename(file_path))
+                zip_file.write(filename=file_path, arcname=path_in_archive)
+                logger.info(f"Файл аватарки {path_in_archive} записан в выгружаемый архив")
 
         export_object.seek(0)
         return export_object
@@ -240,3 +250,7 @@ class DBDataService(BaseService):
             logger.info(f"Для последовательности {sequence_name} выставлено значение {next_table_id}")
         self._session.commit()
         logger.info("Для всех последовательностей установлены корректные значения")
+
+    def _replace_files(self) -> None:
+        files_folder_in_import = os.path.join(self._settings.base_dir, TMP_FOLDER, IMPORT_FOLDER, FILES_FOLDER)
+        FilesService.replace_files_by_folder(folder_path=files_folder_in_import)

@@ -1,4 +1,5 @@
 import os
+
 from fastapi import UploadFile
 from loguru import logger
 
@@ -35,6 +36,39 @@ class FilesService(BaseService):
 
         return file_extension
 
+    @classmethod
+    def get_file_path(cls, file_name: str) -> str:
+        """Получение пути до файла в папке с файлами"""
+        return os.path.join(cls._get_files_folder_path(), file_name)
+
+    @classmethod
+    def get_no_avatar_file_path(cls) -> str:
+        """Путь до файла"""
+        settings = get_settings()
+        return os.path.join(settings.base_dir, IMAGES_FOLDER, NO_AVATAR_FILE)
+
+    @classmethod
+    def replace_files_by_folder(cls, folder_path: str) -> None:
+        """Замена папки с файлами на указанную папку"""
+        logger.info(f"Заменяем папку с файлами на папку: {folder_path}")
+        files_folder_path = cls._get_files_folder_path()
+        if os.listdir(files_folder_path):
+            logger.debug(f"Папка с файлами не пустая, очищаем")
+            cls.clear_files_folder()
+
+        os.rename(src=folder_path, dst=files_folder_path)
+        logger.info(f"Содержимое папки с файлами заменено")
+
+    @classmethod
+    def clear_files_folder(cls) -> None:
+        """Очистка папки с файлами"""
+        logger.info("Очищаем папку с файлами")
+        files_folder_path = cls._get_files_folder_path()
+        for file_name in os.listdir(files_folder_path):
+            os.remove(cls.get_file_path(file_name))
+            logger.debug(f"Удалён файл {file_name}")
+        logger.info(f"Очищена папка с файлами")
+
     @check_files_folder
     def save_file(self, file: UploadFile, file_name: str) -> str:
         """Сохранение файла"""
@@ -46,24 +80,12 @@ class FilesService(BaseService):
 
         return file_path
 
-    @classmethod
-    def get_file_path(cls, file_name: str) -> str:
-        """Получение пути до файла в папке с файлами"""
-        settings = get_settings()
-        return os.path.join(settings.base_dir, FILES_FOLDER, file_name)
-
-    @classmethod
-    def get_no_avatar_file_path(cls) -> str:
-        """Путь до файла"""
-        settings = get_settings()
-        return os.path.join(settings.base_dir, IMAGES_FOLDER, NO_AVATAR_FILE)
-
     def delete_not_used_avatar_files(self) -> None:
         """Удаление не используемых файлов аватарок"""
         logger.debug("Выполняется удаление не используемых файлов аватарок")
         not_used_avatar_files = [
             file_name
-            for file_name in self._get_all_file_names()
+            for file_name in self.get_all_file_names()
             if file_name not in self._db_facade.get_used_avatar_files()
         ]
 
@@ -71,10 +93,14 @@ class FilesService(BaseService):
             logger.info(f"Удаляем не используемый файл: {file_name}")
             os.remove(self.get_file_path(file_name))
 
-    def _get_all_file_names(self) -> list[str]:
+    def get_all_file_names(self) -> list[str]:
         """Получение названий всех файлов из папки с файлами"""
         file_names = [
             file_name for file_name in os.listdir(FILES_FOLDER) if os.path.isfile(self.get_file_path(file_name))
         ]
 
         return file_names
+
+    @staticmethod
+    def _get_files_folder_path() -> str:
+        return os.path.join(get_settings().base_dir, FILES_FOLDER)
