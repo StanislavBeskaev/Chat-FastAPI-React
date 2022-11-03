@@ -18,6 +18,7 @@
  - Отображение онлайн статуса участников чата и обновление в реальном времени
  - Отображение уведомлений (вход/выход пользователей, добавление/удаления из чата)
  - Функционал переподключения, при потере соединения
+ - Голосовой ввод сообщения
  <img src="docs/images/chat_notification.png" width="600">
  <img src="docs/images/chat_members.png" width="600">
  <img src="docs/images/chat_message_context_menu.png" width="600">
