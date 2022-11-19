@@ -4,7 +4,7 @@ import {observer} from 'mobx-react-lite'
 import EmojiPicker from './EmojiPicker'
 
 import messagesStore from '../../stores/messagesStore'
-import Microphone from "./Microphone"
+import Dictaphone from "./Dictaphone"
 
 
 const STOP_TYPING_DELAY = 3_000
@@ -59,7 +59,7 @@ const TextForm = ({sendTextMessage, sendStartTyping, sendStopTyping}) => {
   return (
     <div className="d-flex">
       <EmojiPicker/>
-      <Microphone />
+      <Dictaphone />
       <Form onSubmit={handleSubmit} className="flex-grow-1">
         <Form.Group className="m-2">
           <InputGroup>

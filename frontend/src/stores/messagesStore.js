@@ -162,11 +162,11 @@ class MessagesStore {
     this.selectedChatText = this.chats[chatId].text
     this.selectedChatTyping = false
     this.needScrollToNewMessage = false
-    this._focusTextInput()
+    this.focusTextInput()
   }
 
-  _focusTextInput() {
-    if (this.textInputRef.current) this.textInputRef.current.focus()
+  focusTextInput() {
+    if (this.textInputRef?.current) this.textInputRef.current.focus()
   }
 
   // Метод для добавления чата, когда текущего пользователя добавляют в чат
@@ -395,12 +395,13 @@ class MessagesStore {
   setSelectedChatText(text) {
     this.chats[this.selectedChatId].text = text
     this.selectedChatText = text
+    this.focusTextInput()
   }
 
   addTextToSelectedChat(text) {
     const newSelectedChatText = `${this.selectedChatText}${text}`
     this.setSelectedChatText(newSelectedChatText)
-    this._focusTextInput()
+    this.focusTextInput()
   }
 
   setSelectedChatTyping(bool) {
