@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 from starlette.testclient import WebSocketTestSession
 
 from backend.db.mock.facade import MockDBFacade
-from backend.services.ws.constants import MessageType, OnlineStatus, MESSAGE_TYPE_KEY, MESSAGE_DATA_KEY
+from backend.services.ws.constants import MESSAGE_DATA_KEY, MESSAGE_TYPE_KEY, MessageType, OnlineStatus
 from backend.tests import data as test_data
 from backend.tests.base import BaseTest
 

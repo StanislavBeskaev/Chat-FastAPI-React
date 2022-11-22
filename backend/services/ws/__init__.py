@@ -1,22 +1,22 @@
 from backend.db.interface import DBFacadeInterface
 from backend.services.ws.base_messages import BaseOutWSMessage
-from backend.services.ws.constants import MESSAGE_TYPE_KEY, MESSAGE_DATA_KEY, MessageType
+from backend.services.ws.constants import MESSAGE_DATA_KEY, MESSAGE_TYPE_KEY, MessageType
 from backend.services.ws.message_types import (
-    OnlineMessage,
-    OfflineMessage,
-    StartTypingMessage,
-    TextMessage,
-    StopTypingMessage,
-    NewChatMessage,
-    ChangeChatNameMessage,
-    InfoMessage,
     AddLoginToChatMessage,
-    DeleteLoginFromChatMessage,
-    ReadMessageWSMessage,
+    ChangeChatNameMessage,
     ChangeMessageTextMessage,
-    DeleteMessageMessage,
-    LeaveChatMessage,
     DeleteChatMessage,
+    DeleteLoginFromChatMessage,
+    DeleteMessageMessage,
+    InfoMessage,
+    LeaveChatMessage,
+    NewChatMessage,
+    OfflineMessage,
+    OnlineMessage,
+    ReadMessageWSMessage,
+    StartTypingMessage,
+    StopTypingMessage,
+    TextMessage,
 )
 
 

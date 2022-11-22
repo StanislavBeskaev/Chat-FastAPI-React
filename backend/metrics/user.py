@@ -1,6 +1,5 @@
 from backend.metrics import RequestCounter
 
-
 CHANGE_USER_DATA_COUNTER = RequestCounter("change_user_data", "Количество запросов на изменение данных пользователя")
 UPLOAD_AVATAR_COUNTER = RequestCounter("upload_avatar", "Количество запросов на загрузку аватара")
 GET_LOGIN_AVATAR_FILE_COUNTER = RequestCounter(

@@ -1,6 +1,6 @@
 from fastapi import status
 
-from backend.core.docs import DocResponses, DocResponseExample, StatusCodeDocResponseExample
+from backend.core.docs import DocResponseExample, DocResponses, StatusCodeDocResponseExample
 from backend.models import ChatMessages, MessageData
 
 _success_get_all_messages_example = {
@@ -96,7 +96,7 @@ get_chat_messages_responses = DocResponses.create_instance_with_not_auth_respons
             status_code=status.HTTP_404_NOT_FOUND,
             response_example=DocResponseExample(
                 "Запрос сообщений не существующего чата",
-                example={"detail": f"Чата с id not_exist_chat_id не существует"},
+                example={"detail": "Чата с id not_exist_chat_id не существует"},
             ),
         ),
     ]

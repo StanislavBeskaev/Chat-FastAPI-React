@@ -4,19 +4,19 @@ from fastapi import Depends, HTTPException
 from loguru import logger
 
 from backend import models, tables
-from backend.settings import get_settings
 from backend.db.facade import get_db_facade
 from backend.db.interface import DBFacadeInterface
 from backend.services import BaseService
 from backend.services.chat_members import ChatMembersService
 from backend.services.ws import (
-    NewChatMessage,
     ChangeChatNameMessage,
-    InfoMessage,
-    DeleteLoginFromChatMessage,
-    LeaveChatMessage,
     DeleteChatMessage,
+    DeleteLoginFromChatMessage,
+    InfoMessage,
+    LeaveChatMessage,
+    NewChatMessage,
 )
+from backend.settings import get_settings
 
 
 class ChatService(BaseService):

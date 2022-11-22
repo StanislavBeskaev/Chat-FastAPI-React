@@ -2,7 +2,7 @@ import json
 import os
 from pathlib import Path
 
-from fastapi import FastAPI, Request, WebSocketDisconnect, WebSocket, Depends
+from fastapi import Depends, FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -16,13 +16,13 @@ from backend.db.interface import DBFacadeInterface
 from backend.init_app import init_app
 from backend.services.files import FilesService
 from backend.services.ws import (
-    OnlineMessage,
-    OfflineMessage,
-    MESSAGE_TYPE_KEY,
     MESSAGE_DATA_KEY,
+    MESSAGE_TYPE_KEY,
+    OfflineMessage,
+    OnlineMessage,
     create_message_by_type,
 )
-from backend.services.ws_connection_manager import WSConnectionManager, WebsocketClient
+from backend.services.ws_connection_manager import WebsocketClient, WSConnectionManager
 
 app = FastAPI(
     title='API приложения для общения',

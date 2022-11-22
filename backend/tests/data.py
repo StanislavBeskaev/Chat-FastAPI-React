@@ -10,9 +10,15 @@ SECOND_CHAT_NAME = "SECOND_CHAT"
 MESSAGES_TIME = datetime(year=2022, month=5, day=9, hour=9, minute=42)
 
 messages = [
-    tables.Message(id="1", chat_id=TEST_CHAT_ID, text="Первое", user_id=1, type=tables.MessageType.TEXT, time=MESSAGES_TIME),  # noqa
-    tables.Message(id="2", chat_id=TEST_CHAT_ID, text="Как дела?", user_id=1, type=tables.MessageType.TEXT, time=MESSAGES_TIME),  # noqa
-    tables.Message(id="3", chat_id=TEST_CHAT_ID, text="куку", user_id=1, type=tables.MessageType.TEXT, time=MESSAGES_TIME),  # noqa
+    tables.Message(
+        id="1", chat_id=TEST_CHAT_ID, text="Первое", user_id=1, type=tables.MessageType.TEXT, time=MESSAGES_TIME
+    ),
+    tables.Message(
+        id="2", chat_id=TEST_CHAT_ID, text="Как дела?", user_id=1, type=tables.MessageType.TEXT, time=MESSAGES_TIME
+    ),
+    tables.Message(
+        id="3", chat_id=TEST_CHAT_ID, text="куку", user_id=1, type=tables.MessageType.TEXT, time=MESSAGES_TIME
+    ),
 ]
 messages_read_status = [
     tables.MessageReadStatus(message_id="1", user_id=2, is_read=False),

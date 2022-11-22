@@ -10,7 +10,6 @@ from backend.settings import Settings
 from backend.tests import data as test_data
 from backend.tests.base import BaseTest
 
-
 TEST_FILES_FOLDER = os.path.join(Path(__file__).resolve().parent, "files")
 
 
@@ -41,7 +40,7 @@ class TestUser(BaseTest):
     def test_get_user_info_wrong_access_token(self, client: TestClient):
         response = client.get(
             f"{self.user_url}/info/user2",
-            headers=self.get_authorization_headers(username="user1", password="bad_password")
+            headers=self.get_authorization_headers(username="user1", password="bad_password"),
         )
         assert response.status_code == 401
         assert response.json() == self.BAD_TOKEN_RESPONSE

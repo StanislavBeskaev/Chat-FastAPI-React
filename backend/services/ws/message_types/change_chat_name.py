@@ -1,8 +1,8 @@
 from backend import models
 from backend.db.interface import DBFacadeInterface
 from backend.metrics import ws as ws_metrics
-from backend.services.ws.constants import MessageType
 from backend.services.ws.base_messages import BaseChatWSMessage
+from backend.services.ws.constants import MessageType
 
 
 class ChangeChatNameMessage(BaseChatWSMessage):

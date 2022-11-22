@@ -51,7 +51,7 @@ class MessageService(BaseService):
         """Изменение текста сообщения"""
         logger.debug(f"Попытка изменения текста сообщения. Входные данные: " f"{message_id=} {new_text=} {user=}")
         if not new_text:
-            logger.warning(f"Передан пустой текст для сообщения")
+            logger.warning("Передан пустой текст для сообщения")
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Сообщение не может быть пустым")
 
         # Тут будет 404 ошибка если сообщения нет

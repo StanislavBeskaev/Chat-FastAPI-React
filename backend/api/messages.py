@@ -6,7 +6,6 @@ from backend.dependencies import get_current_user
 from backend.metrics import messages as messages_metrics
 from backend.services.messages import MessageService
 
-
 router = APIRouter(
     prefix='/messages',
     tags=['messages'],
@@ -18,7 +17,7 @@ router = APIRouter(
     status_code=status.HTTP_200_OK,
     response_model=dict[str, models.ChatMessages],
     responses=messages_responses.get_all_messages_responses,
-    summary="Сообщения по всем чатам"
+    summary="Сообщения по всем чатам",
 )
 def get_all_messages(
     user: models.User = Depends(get_current_user),
@@ -35,7 +34,7 @@ def get_all_messages(
     status_code=status.HTTP_200_OK,
     response_model=models.ChatMessages,
     responses=messages_responses.get_chat_messages_responses,
-    summary="Сообщения чата"
+    summary="Сообщения чата",
 )
 def get_chat_messages(
     chat_id: str,
@@ -52,7 +51,7 @@ def get_chat_messages(
     "/{message_id}",
     status_code=status.HTTP_200_OK,
     responses=messages_responses.change_message_text_responses,
-    summary="Изменение текста сообщения"
+    summary="Изменение текста сообщения",
 )
 def change_message_text(
     message_id: str,
@@ -72,7 +71,7 @@ def change_message_text(
     "/{message_id}",
     status_code=status.HTTP_200_OK,
     responses=messages_responses.delete_message_responses,
-    summary="Удаление сообщения"
+    summary="Удаление сообщения",
 )
 def delete_message(
     message_id: str, user: models.User = Depends(get_current_user), message_service: MessageService = Depends()

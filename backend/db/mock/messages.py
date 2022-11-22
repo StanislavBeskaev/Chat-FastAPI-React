@@ -4,7 +4,7 @@ from uuid import uuid4
 from fastapi import HTTPException, status
 from loguru import logger
 
-from backend import tables, models
+from backend import models, tables
 from backend.core.decorators import model_result
 from backend.core.time import get_current_time
 from backend.db.mock.chat_members import MockChatMembersDAO

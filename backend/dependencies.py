@@ -4,7 +4,6 @@ from fastapi.security import OAuth2PasswordBearer
 from backend import models
 from backend.services.token import TokenService
 
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/auth/login')
 
 

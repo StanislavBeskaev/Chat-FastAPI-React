@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, validator, Field
+from pydantic import BaseModel, Field, validator
 
 from backend import tables
 from backend.core.time import get_formatted_time

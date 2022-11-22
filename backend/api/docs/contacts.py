@@ -1,6 +1,6 @@
 from fastapi import status
 
-from backend.core.docs import DocResponses, DocResponseExample, StatusCodeDocResponseExample
+from backend.core.docs import DocResponseExample, DocResponses, StatusCodeDocResponseExample
 from backend.models import Contact
 
 _success_get_contacts_example = [
@@ -72,7 +72,7 @@ delete_contact_responses = DocResponses.create_instance_with_not_auth_response(
         StatusCodeDocResponseExample(
             status_code=status.HTTP_200_OK,
             response_example=DocResponseExample(
-                description="Успешное удаление контакта", example={"message": f"Контакт login удалён"}
+                description="Успешное удаление контакта", example={"message": "Контакт login удалён"}
             ),
         ),
         _user_contact_not_found_status_code_example,
@@ -97,7 +97,7 @@ change_contact_responses = DocResponses.create_instance_with_not_auth_response(
         StatusCodeDocResponseExample(
             status_code=status.HTTP_200_OK,
             response_example=DocResponseExample(
-                description="Успешное изменение контакта", example={"message": f"Контакт login изменён"}
+                description="Успешное изменение контакта", example={"message": "Контакт login изменён"}
             ),
         ),
         _user_contact_not_found_status_code_example,

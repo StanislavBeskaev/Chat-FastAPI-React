@@ -1,11 +1,11 @@
-from abc import ABC, abstractmethod
 import random
+from abc import ABC, abstractmethod
 
 from backend import models
 from backend.core.time import get_formatted_time
 from backend.metrics import ws as ws_metrics
 from backend.services.ws.base_messages import BaseOutWSMessage
-from backend.services.ws.constants import OnlineStatus, MessageType
+from backend.services.ws.constants import MessageType, OnlineStatus
 
 
 class StatusMessageData(models.WSMessageData):

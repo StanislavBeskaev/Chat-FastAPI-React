@@ -6,7 +6,6 @@ from backend.dependencies import get_current_user
 from backend.metrics import chat_members as chat_members_metrics
 from backend.services.chat_members import ChatMembersService
 
-
 router = APIRouter(
     prefix='/chat_members',
     tags=['chat_members'],
@@ -18,7 +17,7 @@ router = APIRouter(
     status_code=status.HTTP_200_OK,
     response_model=list[models.ChatMemberWithOnlineStatus],
     responses=chat_members_responses.get_chat_members_responses,
-    summary="Участники чата"
+    summary="Участники чата",
 )
 def get_chat_members(
     chat_id: str,
@@ -35,7 +34,7 @@ def get_chat_members(
     "/{chat_id}",
     status_code=status.HTTP_201_CREATED,
     responses=chat_members_responses.add_chat_member_responses,
-    summary="Добавление пользователя к чату"
+    summary="Добавление пользователя к чату",
 )
 def add_chat_member(
     chat_id: str,
@@ -55,7 +54,7 @@ def add_chat_member(
     "/{chat_id}",
     status_code=status.HTTP_200_OK,
     responses=chat_members_responses.delete_chat_member_responses,
-    summary="Удаление пользователя из чата"
+    summary="Удаление пользователя из чата",
 )
 def delete_chat_member(
     chat_id: str,

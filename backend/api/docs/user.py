@@ -1,6 +1,6 @@
 from fastapi import status
 
-from backend.core.docs import DocResponses, DocResponseExample, StatusCodeDocResponseExample
+from backend.core.docs import DocResponseExample, DocResponses, StatusCodeDocResponseExample
 from backend.models import User
 
 _success_change_user_data_example = User(id=1, login="user", name="Новое имя", surname="Новая фамилия").dict()

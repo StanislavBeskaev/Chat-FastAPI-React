@@ -3,7 +3,6 @@ from sqlalchemy.orm import sessionmaker
 
 from backend.settings import get_settings
 
-
 settings = get_settings()
 connection_url = settings.sqlalchemy_connection_url
 connect_args = {'check_same_thread': False} if connection_url.startswith("sqlite") else {}

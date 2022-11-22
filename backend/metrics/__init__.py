@@ -1,8 +1,7 @@
-from typing import Optional, Dict
+from typing import Dict, Optional
 
 from loguru import logger
 from prometheus_client import Counter
-
 
 TOTAL_REQUEST_COUNTER = Counter("total_request", "Количество запросов по всем endpoint's")
 TOTAL_WS_MESSAGES_COUNTER = Counter("total_ws_messages", "Количество всех ws сообщений")

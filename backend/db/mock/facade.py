@@ -1,8 +1,7 @@
 from backend import models, tables
-
 from backend.db.interface import DBFacadeInterface
-from backend.db.mock.chats import MockChatsDAO
 from backend.db.mock.chat_members import MockChatMembersDAO
+from backend.db.mock.chats import MockChatsDAO
 from backend.db.mock.contacts import MockContactsDAO
 from backend.db.mock.messages import MockMessagesDAO
 from backend.db.mock.tokens import MockTokensDAO

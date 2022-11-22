@@ -26,7 +26,7 @@ class ContactService(BaseService):
 
         if self._find_contact(user=user, contact_login=contact_login):
             logger.warning(f"Пользователь {user.login} попытка добавить уже существующий контакт {contact_login}")
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Такой контакт уже существует")
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Такой контакт уже существует")
 
         # Тут будет 404 если пользователь не найден
         contact_user_info = self._db_facade.get_user_info(login=contact_login)

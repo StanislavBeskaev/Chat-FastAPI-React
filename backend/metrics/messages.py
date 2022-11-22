@@ -1,6 +1,5 @@
 from backend.metrics import RequestCounter
 
-
 GET_ALL_MESSAGES_COUNTER = RequestCounter(
     "get_all_messages", "Количество запросов на получение сообщений текущего пользователя"
 )

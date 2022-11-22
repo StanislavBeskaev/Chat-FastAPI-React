@@ -136,7 +136,7 @@ class TestContact(BaseTest):
             json={"login": changed_contact_user, "name": "Пользователь", "surname": "Первый"},
         )
         assert response.status_code == 200
-        assert response.json() == {"message": f"Контакт user1 изменён"}
+        assert response.json() == {"message": "Контакт user1 изменён"}
 
         our_user = db_facade.find_user_by_login(login=self.DEFAULT_USER)
         assert our_user is not None

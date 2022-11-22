@@ -2,7 +2,6 @@ from starlette.testclient import WebSocketTestSession
 
 from backend.services.ws.constants import MessageType, OnlineStatus
 
-
 AUTHORIZATION = "Authorization"
 BEARER = "Bearer"
 

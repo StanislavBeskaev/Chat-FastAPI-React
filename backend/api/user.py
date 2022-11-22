@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, UploadFile, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile, status
 from fastapi.responses import FileResponse
 from loguru import logger
 
@@ -8,7 +8,6 @@ from backend.dependencies import get_current_user
 from backend.metrics import user as user_metrics
 from backend.services.files import FilesService
 from backend.services.user import UserService
-
 
 router = APIRouter(
     prefix='/user',
@@ -21,7 +20,7 @@ router = APIRouter(
     response_model=models.User,
     status_code=status.HTTP_200_OK,
     responses=user_responses.change_user_data_responses,
-    summary="Изменение данных пользователя"
+    summary="Изменение данных пользователя",
 )
 def change_user_data(
     user_data: models.UserUpdate,
@@ -39,7 +38,7 @@ def change_user_data(
     "/avatar",
     status_code=status.HTTP_201_CREATED,
     responses=user_responses.upload_avatar_responses,
-    summary="Загрузка аватарки"
+    summary="Загрузка аватарки",
 )
 def upload_avatar(
     file: UploadFile,
@@ -61,7 +60,7 @@ def upload_avatar(
     "/avatar_file/{login}",
     status_code=status.HTTP_200_OK,
     responses=user_responses.get_login_avatar_file_responses,
-    summary="Файл аватара пользователя"
+    summary="Файл аватара пользователя",
 )
 def get_login_avatar_file(login: str, user_service: UserService = Depends()):
     """Получение файла аватара пользователя по логину"""
@@ -75,7 +74,7 @@ def get_login_avatar_file(login: str, user_service: UserService = Depends()):
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(get_current_user)],
     responses=user_responses.get_login_avatar_filename_responses,
-    summary="Название файла аватара пользователя"
+    summary="Название файла аватара пользователя",
 )
 def get_login_avatar_filename(login: str, user_service: UserService = Depends()):
     """Получение названия файла аватара пользователя по логину"""
@@ -91,7 +90,7 @@ def get_login_avatar_filename(login: str, user_service: UserService = Depends())
     dependencies=[Depends(get_current_user)],
     response_model=models.User,
     responses=user_responses.get_user_info_responses,
-    summary="Информация о пользователе"
+    summary="Информация о пользователе",
 )
 def get_user_info(login: str, user_service: UserService = Depends()):
     """Получение информации о пользователе по логину"""

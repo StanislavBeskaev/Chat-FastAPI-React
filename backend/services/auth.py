@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status, Depends
+from fastapi import Depends, HTTPException, status
 from loguru import logger
 from passlib.hash import bcrypt
 from pydantic import ValidationError
@@ -6,10 +6,10 @@ from pydantic import ValidationError
 from backend import models
 from backend.db.facade import get_db_facade
 from backend.db.interface import DBFacadeInterface
-from backend.settings import get_settings
 from backend.services import BaseService
 from backend.services.chat_members import ChatMembersService
 from backend.services.token import TokenService
+from backend.settings import get_settings
 
 
 class AuthService(BaseService):
@@ -68,7 +68,7 @@ class AuthService(BaseService):
         """Обновление токенов"""
         logger.debug(f"Попытка обновление токенов: {refresh_token=} {user_agent=}")
         if not refresh_token:
-            logger.warning(f"refresh токен не передан, обновление не выполняется")
+            logger.warning("refresh токен не передан, обновление не выполняется")
             raise HTTPException(status_code=401, detail="Не валидный refresh_token")
 
         user_data = self._token_service.verify_refresh_token(token=refresh_token)
@@ -86,14 +86,14 @@ class AuthService(BaseService):
 
         tokens = self._token_service.generate_tokens(user=user, user_agent=user_agent)
 
-        logger.debug(f"Токены успешно обновлены")
+        logger.debug("Токены успешно обновлены")
         return tokens
 
     def logout(self, refresh_token: str | None, user_agent: str) -> None:
         """Выход из системы"""
         logger.debug(f"Попытка выхода из системы, refresh_token: {refresh_token} ")
         if not refresh_token:
-            logger.warning(f"refresh токен не передан, выход не возможен")
+            logger.warning("refresh токен не передан, выход не возможен")
             raise HTTPException(status_code=401, detail="Не валидный refresh_token")
 
         user_data = self._token_service.verify_refresh_token(token=refresh_token)

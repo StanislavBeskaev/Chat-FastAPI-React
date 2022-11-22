@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 
-from . import auth, user, messages, contacts, chats, chat_members, data
-
+from . import auth, chat_members, chats, contacts, data, messages, user
 
 router = APIRouter(prefix="/api")
 

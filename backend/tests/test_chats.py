@@ -1,6 +1,6 @@
+import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
-import pytest
 
 from backend.db.mock.facade import MockDBFacade
 from backend.services.ws import MessageType

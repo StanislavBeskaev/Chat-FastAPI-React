@@ -4,13 +4,11 @@ import shutil
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from backend.db_config import engine
 from backend import tables
-from backend.db_config import get_session
-from backend.settings import get_settings, Settings
+from backend.db_config import engine, get_session
 from backend.services.auth import AuthService
-from backend.services.files import check_files_folder, IMAGES_FOLDER, FilesService
-
+from backend.services.files import IMAGES_FOLDER, FilesService, check_files_folder
+from backend.settings import Settings, get_settings
 
 ADMIN_AVATAR = "admin.png"
 
@@ -89,7 +87,7 @@ def _create_main_chat_if_needed(session: Session, settings: Settings) -> None:
     session.commit()
 
     logger.info(f"Создан главный чат с id: {settings.main_chat_id}")
-    logger.info(f"Админ добавлен в главный чат как участник")
+    logger.info("Админ добавлен в главный чат как участник")
 
 
 def _is_main_chat_exist(session: Session, settings: Settings) -> bool:

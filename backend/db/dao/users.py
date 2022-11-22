@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from loguru import logger
 
-from backend import tables, models
+from backend import models, tables
 from backend.core.decorators import model_result
 from backend.db.dao.base_dao import BaseDAO
 

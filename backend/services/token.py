@@ -1,14 +1,13 @@
 from datetime import datetime, timedelta
 
 from fastapi import HTTPException, status
-from jose import jwt, JWTError
+from jose import JWTError, jwt
 from loguru import logger
 from pydantic import ValidationError
 
 from backend import models, tables
-from backend.settings import get_settings, Settings
 from backend.services import BaseService
-
+from backend.settings import Settings, get_settings
 
 USER_JWT_KEY = "user"
 
@@ -97,7 +96,7 @@ class TokenService(BaseService):
             settings = get_settings()
             payload = jwt.decode(token=token, key=settings.jwt_access_secret, algorithms=[settings.jwt_algorithm])
         except JWTError:
-            logger.warning(f"access_token не валидный")
+            logger.warning("access_token не валидный")
             raise exception from None
 
         logger.debug(f"{payload=}")
@@ -121,7 +120,7 @@ class TokenService(BaseService):
         try:
             payload = jwt.decode(token=token, key=settings.jwt_refresh_secret, algorithms=[settings.jwt_algorithm])
         except JWTError:
-            logger.warning(f"refresh токен не валидный")
+            logger.warning("refresh токен не валидный")
             raise exception from None
 
         logger.debug(f"{payload=}")

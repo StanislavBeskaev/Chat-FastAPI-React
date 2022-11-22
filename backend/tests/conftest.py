@@ -1,17 +1,17 @@
 import copy
 from functools import partial
 
+import pytest
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.testclient import TestClient
-import pytest
 
 from backend import models
-from backend.dependencies import get_current_user
-from backend.settings import get_settings
 from backend.db.facade import get_db_facade
 from backend.db.mock.facade import MockDBFacade
+from backend.dependencies import get_current_user
 from backend.main import app
+from backend.settings import get_settings
 from backend.tests import data as test_data
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/auth/login')
@@ -39,8 +39,7 @@ def db_facade():
 @pytest.fixture
 def auth_mocker(mocker):
     mocker.patch(
-        "passlib.hash.bcrypt.verify",
-        lambda plain_password, hashed_password: plain_password == hashed_password
+        "passlib.hash.bcrypt.verify", lambda plain_password, hashed_password: plain_password == hashed_password
     )
 
 

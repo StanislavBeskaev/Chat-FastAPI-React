@@ -3,7 +3,7 @@ from loguru import logger
 from backend import models
 from backend.db.interface import DBFacadeInterface
 from backend.metrics import ws as ws_metrics
-from backend.services.ws.base_messages import NoAnswerWSMessage, InWSMessageMixin
+from backend.services.ws.base_messages import InWSMessageMixin, NoAnswerWSMessage
 
 
 class ReadMessageWSMessage(InWSMessageMixin, NoAnswerWSMessage):

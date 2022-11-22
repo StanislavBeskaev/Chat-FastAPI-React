@@ -1,6 +1,5 @@
 from backend.metrics import RequestCounter
 
-
 GET_CONTACTS_COUNTER = RequestCounter("get_contacts", "Количество запросов на получение списка контактов")
 CREATE_CONTACT_COUNTER = RequestCounter("create_contact", "Количество запросов на создание контактов")
 DELETE_CONTACT_COUNTER = RequestCounter("delete_contact", "Количество запросов на удаление контактов")

@@ -5,7 +5,7 @@ from loguru import logger
 
 from backend import models
 from backend.services import BaseService
-from backend.services.ws import InfoMessage, AddLoginToChatMessage, DeleteLoginFromChatMessage
+from backend.services.ws import AddLoginToChatMessage, DeleteLoginFromChatMessage, InfoMessage
 from backend.services.ws_connection_manager import WSConnectionManager
 
 

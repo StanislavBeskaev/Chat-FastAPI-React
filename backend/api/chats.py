@@ -6,7 +6,6 @@ from backend.dependencies import get_current_user
 from backend.metrics import chats as chats_metrics
 from backend.services.chat import ChatService
 
-
 router = APIRouter(
     prefix='/chats',
     tags=['chats'],
@@ -17,7 +16,7 @@ router = APIRouter(
     "/",
     status_code=status.HTTP_201_CREATED,
     responses=chats_responses.create_new_chat_responses,
-    summary="Создание чата"
+    summary="Создание чата",
 )
 def create_new_chat(
     new_chat_data: models.ChatCreate,
@@ -36,7 +35,7 @@ def create_new_chat(
     "/{chat_id}",
     status_code=status.HTTP_200_OK,
     responses=chats_responses.change_chat_name_responses,
-    summary="Изменение названия чата"
+    summary="Изменение названия чата",
 )
 def change_chat_name(
     chat_id: str,
@@ -56,7 +55,7 @@ def change_chat_name(
     "/try_leave/{chat_id}",
     status_code=status.HTTP_200_OK,
     responses=chats_responses.try_leave_chat_responses,
-    summary="Попытка выхода из чата"
+    summary="Попытка выхода из чата",
 )
 def try_leave_chat(chat_id: str, user: models.User = Depends(get_current_user), chat_service: ChatService = Depends()):
     """Попытка выйти из чата, получение предупредительного сообщения"""
@@ -71,7 +70,7 @@ def try_leave_chat(chat_id: str, user: models.User = Depends(get_current_user), 
     "/leave/{chat_id}",
     status_code=status.HTTP_200_OK,
     responses=chats_responses.leave_chat_responses,
-    summary="Выход из чата"
+    summary="Выход из чата",
 )
 def leave_chat(chat_id: str, user: models.User = Depends(get_current_user), chat_service: ChatService = Depends()):
     """

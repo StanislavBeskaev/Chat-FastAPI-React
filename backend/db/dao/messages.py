@@ -3,10 +3,10 @@ from uuid import uuid4
 
 from fastapi import HTTPException, status
 from loguru import logger
-from sqlalchemy import and_, delete
+from sqlalchemy import and_
 from sqlalchemy.orm import Query, aliased
 
-from backend import tables, models
+from backend import models, tables
 from backend.core.decorators import model_result
 from backend.core.time import get_current_time
 from backend.db.dao.base_dao import BaseDAO

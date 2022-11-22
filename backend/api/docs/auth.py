@@ -1,8 +1,7 @@
 from fastapi import status
 
-from backend.core.docs import DocResponseExample, StatusCodeDocResponseExample, DocResponses
+from backend.core.docs import DocResponseExample, DocResponses, StatusCodeDocResponseExample
 from backend.models import Tokens, User
-
 
 _user_already_exist_registration_example = {"detail": "Пользователь с таким логином уже существует"}
 _success_registration_example = Tokens(

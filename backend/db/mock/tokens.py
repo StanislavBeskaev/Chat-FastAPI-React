@@ -1,4 +1,4 @@
-from backend import tables, models
+from backend import models, tables
 from backend.core.decorators import model_result
 
 

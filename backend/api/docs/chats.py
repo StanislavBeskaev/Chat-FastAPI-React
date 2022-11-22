@@ -1,9 +1,8 @@
 from fastapi import status
 
-from backend.core.docs import DocResponses, DocResponseExample, StatusCodeDocResponseExample
+from backend.core.docs import DocResponseExample, DocResponses, StatusCodeDocResponseExample
 
-
-_success_create_new_chat_example = {"message": f"Чат new_chat успешно создан"}
+_success_create_new_chat_example = {"message": "Чат new_chat успешно создан"}
 _bad_request_create_new_chat_example = {
     "detail": "Не указано имя чата/ Не указаны участники чата/ Необходимо добавить хотя бы ещё одного участника/ В списке участников есть не существующие пользователи"  # noqa
 }
@@ -12,7 +11,7 @@ _success_change_chat_name_example = {"message": "Название чата ус�
 _bad_request_change_chat_name_example = {"detail": "Укажите название чата/ Название чата совпадает с текущим"}
 _not_creator_error_change_chat_name_example = {"detail": "Изменить название чата может только создатель"}
 
-_chat_not_found_example = {"detail": f"Чата с id chat_id не существует"}
+_chat_not_found_example = {"detail": "Чата с id chat_id не существует"}
 
 create_new_chat_responses = DocResponses.create_instance_with_not_auth_response(
     responses=[

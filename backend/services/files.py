@@ -6,7 +6,6 @@ from loguru import logger
 from backend.services import BaseService
 from backend.settings import get_settings
 
-
 FILES_FOLDER = "files"
 IMAGES_FOLDER = "images"
 NO_AVATAR_FILE = "no_avatar.png"
@@ -53,11 +52,11 @@ class FilesService(BaseService):
         logger.info(f"Заменяем папку с файлами на папку: {folder_path}")
         files_folder_path = cls._get_files_folder_path()
         if os.listdir(files_folder_path):
-            logger.debug(f"Папка с файлами не пустая, очищаем")
+            logger.debug("Папка с файлами не пустая, очищаем")
             cls.clear_files_folder()
 
         os.rename(src=folder_path, dst=files_folder_path)
-        logger.info(f"Содержимое папки с файлами заменено")
+        logger.info("Содержимое папки с файлами заменено")
 
     @classmethod
     def clear_files_folder(cls) -> None:
@@ -67,7 +66,7 @@ class FilesService(BaseService):
         for file_name in os.listdir(files_folder_path):
             os.remove(cls.get_file_path(file_name))
             logger.debug(f"Удалён файл {file_name}")
-        logger.info(f"Очищена папка с файлами")
+        logger.info("Очищена папка с файлами")
 
     @check_files_folder
     def save_file(self, file: UploadFile, file_name: str) -> str:

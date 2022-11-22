@@ -1,7 +1,6 @@
 from functools import wraps
 from typing import Callable, Type, TypeVar
 
-
 Model = TypeVar("Model")
 Result = Model | list[Model] | None
 

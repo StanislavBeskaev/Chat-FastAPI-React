@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 MESSAGE_TYPE_KEY = "type"
 MESSAGE_DATA_KEY = "data"
 

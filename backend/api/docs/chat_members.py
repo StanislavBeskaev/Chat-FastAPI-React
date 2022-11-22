@@ -1,8 +1,7 @@
 from fastapi import status
 
-from backend.core.docs import DocResponseExample, StatusCodeDocResponseExample, DocResponses
+from backend.core.docs import DocResponseExample, DocResponses, StatusCodeDocResponseExample
 from backend.models import ChatMemberWithOnlineStatus
-
 
 _success_get_chat_members_example = [
     ChatMemberWithOnlineStatus(login="admin", is_online=True).dict(),
@@ -20,10 +19,10 @@ _not_chat_member_status_code_response_example = StatusCodeDocResponseExample(
     ),
 )
 
-_success_add_chat_member_example = {"message": f"Пользователь login добавлен к чату: chat_id"}
+_success_add_chat_member_example = {"message": "Пользователь login добавлен к чату: chat_id"}
 _not_exist_user_example = {"detail": "Пользователя с логином login не существует"}
 
-_success_delete_chat_member_example = {"message": f"Пользователь login удалён из чата: chat_id"}
+_success_delete_chat_member_example = {"message": "Пользователь login удалён из чата: chat_id"}
 _user_is_not_chat_creator_example = {"detail": "Только создатель может удалять из чата"}
 _login_is_not_chat_member_example = {"detail": "Пользователя login нет в чате"}
 

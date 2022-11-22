@@ -1,5 +1,4 @@
-from backend.metrics import OutWSCounter, InWSCounter
-
+from backend.metrics import InWSCounter, OutWSCounter
 
 START_TYPING_OUT_WS_MESSAGE_COUNTER = OutWSCounter(
     "start_typing_out_ws_message", "Количество исходящих ws сообщений о начале печатания"

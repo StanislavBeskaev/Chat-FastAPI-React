@@ -1,15 +1,8 @@
 from fastapi import Depends
 
 from backend import models, tables
+from backend.db.dao import ChatMembersDAO, ChatsDAO, ContactsDAO, MessagesDAO, TokensDAO, UsersDAO
 from backend.db.interface import DBFacadeInterface
-from backend.db.dao import (
-    ChatsDAO,
-    ChatMembersDAO,
-    ContactsDAO,
-    MessagesDAO,
-    TokensDAO,
-    UsersDAO,
-)
 from backend.db_config import Session, get_session
 
 
