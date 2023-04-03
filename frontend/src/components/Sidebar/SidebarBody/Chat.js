@@ -19,7 +19,7 @@ const Chat = ({chatId, chatName, selected,  notViewedMessagesCount}) => {
 
     return (
         <div
-          className="d-flex justify-content-between"
+          className="d-flex justify-content-between align-items-center"
           onMouseOver={() => setShowDeleteBtn(true)}
           onMouseOut={() => setShowDeleteBtn(false)}
         >
@@ -38,7 +38,14 @@ const Chat = ({chatId, chatName, selected,  notViewedMessagesCount}) => {
               }
               {
                 showDeleteBtn && chatId !== "MAIN"
-                  ? <Button style={{fontSize: 8}} variant="danger" size="sm" onClick={handleDelete}>X</Button>
+                  ? <Button
+                      style={{fontSize: 8}}
+                      variant="danger"
+                      size="sm"
+                      onClick={handleDelete}
+                  >
+                    X
+                </Button>
                   : null
               }
             </div>
