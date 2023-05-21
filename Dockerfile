@@ -1,4 +1,4 @@
-FROM nikolaik/python-nodejs:python3.10-nodejs14-slim
+FROM nikolaik/python-nodejs:python3.10-nodejs14
 
 ENV PYTHONFAULTHANDLER=1 \
   PYTHONUNBUFFERED=1 \
